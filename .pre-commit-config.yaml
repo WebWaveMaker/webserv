@@ -1,0 +1,14 @@
+repos:
+-   repo: local
+    hooks:
+    -   id: docker-compiler-check
+        name: Docker C++98 Compiler Check
+        entry: sh
+        args:
+        - -c
+        - |
+          docker run --rm -v "$(pwd):/app" cpp-version-check 
+        language: system
+        pass_filenames: false
+        verbose: true
+        files: \.(cpp|hpp|h)$

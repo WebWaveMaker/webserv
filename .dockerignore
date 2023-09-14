@@ -1,0 +1,7 @@
+.vscode
+.git
+.clang-format
+.github
+clang-format-all
+LICENSE
+README.md
