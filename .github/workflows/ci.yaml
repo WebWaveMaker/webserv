@@ -37,7 +37,6 @@ jobs:
 
   commitlint:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' # pull_request 이벤트에서만 실행
     steps:
       - uses: actions/checkout@v3
       - uses: wagoid/commitlint-github-action@v5
