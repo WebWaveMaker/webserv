@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  cpp_version_check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: C++ version check
+        run: |
+          git submodule update --init
+          docker build -t cpp-version-check .
+          docker run --rm -v "$(pwd):/app" cpp-version-check
+
+  formatting-check:
+    name: Formatting Check
+    needs: cpp_version_check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run clang-format style check for C/C++/Protobuf programs.
+        uses: jidicula/clang-format-action@v4.11.0
+        with:
+          clang-format-version: "16"
+          check-path: "."
+          fallback-style: "Google" # optional
+
+  commitlint:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' # pull_request 이벤트에서만 실행
+    steps:
+      - uses: actions/checkout@v3
+      - uses: wagoid/commitlint-github-action@v5
