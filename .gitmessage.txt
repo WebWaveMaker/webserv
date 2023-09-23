@@ -1,0 +1,40 @@
+################
+# [Type][Scope (optional)]: [Description]
+# 제목은 50자 이내 / 변경사항이 "무엇"인지 명확히 작성 / 끝에 마침표 X
+# 예) feat : 로그인 기능 추가
+
+# 바로 아래 공백 유지 (제목과 본문의 분리를 위함)
+
+################
+# Body Message (선택사항)
+# 본문(구체적인 내용)을 아랫줄에 작성
+# 여러 줄의 메시지를 작성할 땐 "-"로 구분 (한 줄은 72자 이내)
+
+################
+# 꼬릿말(footer)을 아랫줄에 작성 (현재 커밋과 관련된 이슈 번호 추가 등)
+# 예) Close #7
+
+# Issue Tracker Number or URL
+
+# --- COMMIT END ---
+# <type> list
+# - feat: (new feature)
+# - fix: (bug fix)
+# - docs: (changes to documentation)
+# - style: (formatting, missing semi colons, etc; no code change)
+# - refactor: (refactoring production code)
+# - test: (adding missing tests, refactoring tests; no production code change)
+# - chore: (updating grunt tasks etc; no production code change)
+# ------------------
+# Remember me
+#   Use the imperative mood in the subject line
+#     제목은 명령문 사용 (과거형 X)
+#   Do not end the subject line with a period
+#     제목 끝에 마침표(.) 금지
+#   Separate subject from body with a blank line
+#     제목과 본문을 한 줄 띄워 분리하기 (빈 행으로 구분)
+#   Use the body to explain what and why vs. how
+#     본문은 "어떻게" 보다 "무엇을", "왜"를 설명한다.
+#   Can use multiple lines with "-" for bullet points in body
+#     본문에 여러줄의 메시지(목록)를 작성할 땐 "-"로 구분
+# ------------------
