@@ -9,6 +9,7 @@
  * 
  */
 
+#include <cerrno>
 #include "ServerManager.hpp"
 
 int main(int ac, char** av) {
