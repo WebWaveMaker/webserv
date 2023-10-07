@@ -8,7 +8,7 @@ class ServerManager {
    private:
    public:
 	ServerManager();
-	ServerManager(int ac, char **&av);
+	ServerManager(int ac, char**& av);
 	ServerManager(const ServerManager& obj);
 	~ServerManager();
 	ServerManager& operator=(const ServerManager& obj);
