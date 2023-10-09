@@ -12,18 +12,19 @@
  */
 class ALogger {
    private:
-	ALogger(const ALogger& obj);
-	ALogger& operator=(const ALogger& obj);
-
    protected:
+	const std::string msg_;
 	const int fd_;
-	const std::string &msg_;
 
    public:
-	ALogger(const int fd = STDOUT_FILENO);
+	ALogger(const std::string& msg, const int fd);
+	ALogger(const ALogger& obj);
+	ALogger& operator=(const ALogger& obj);
 	virtual ~ALogger();
 	std::string getCurTime(void);
-	void log() = 0;
+	std::string getMsg(void) const;
+	int getFd(void) const;
+	virtual void log() = 0;
 };
 
 #endif
