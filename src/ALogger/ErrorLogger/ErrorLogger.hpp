@@ -7,7 +7,7 @@
 /**
  * @brief 
  * 
- * @param _logLevel // ERROR, WARN, INFO, DEBUG
+ * @param _logLevel // LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG
  * 
  */
 class ErrorLogger : public ALogger {
@@ -15,12 +15,21 @@ class ErrorLogger : public ALogger {
 	const enum LogLevel _logLevel;
 
    public:
-	ErrorLogger(const std::string& msg, const int fd, enum LogLevel logLevel);
+	ErrorLogger(const int fd, enum LogLevel logLevel);
 	ErrorLogger(const ErrorLogger& obj);
-	~ErrorLogger();
+	virtual ~ErrorLogger();
 	ErrorLogger& operator=(const ErrorLogger& obj);
-	virtual void log();
+
+	// override
+	virtual std::string makeLogMsg(const std::string& msg);
+	virtual void log(const std::string& msg, const int arg);
+
+	// getter
 	enum LogLevel getLogLevel(void) const;
+
+	// static method
+	static void systemCallError(const char* file, const int line, const char* func, const std::string& msg);
+	static void systemCallError(const char* file, const int line, const char* func);
 };
 
 #endif
