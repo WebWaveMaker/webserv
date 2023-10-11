@@ -14,14 +14,14 @@ ALogger& ALogger::operator=(const ALogger& obj) {
 	return *this;
 }
 
-std::string ALogger::getCurTime(void) {
+std::string ALogger::getCurTime(const char* format) {
 	const std::time_t t = std::time(NULL);
 	const std::tm* localTime = std::localtime(&t);
 
 	char buf[42];
-	std::strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S", localTime);
+	std::strftime(buf, sizeof(buf), format, localTime);
 
-	return std::string(buf);
+	return DARK_BLUE + std::string(buf) + RESET;
 }
 
 int ALogger::getFd(void) const {

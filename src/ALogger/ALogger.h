@@ -8,4 +8,10 @@
 #include "color.h"
 #include "utils.hpp"
 
+namespace logTimeFormat {
+	static const char* accessTimeFormat = "[%d/%b/%Y:%H:%M:%S] ";
+	static const char* errorTimeFormat = "%Y/%m/%d %H:%M:%S ";
+	static const char* systemTimeFormat = "%a, %d %b %Y %H:%M:%S ";
+};	// namespace logTimeFormat
+
 #endif
