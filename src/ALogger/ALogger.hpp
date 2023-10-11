@@ -8,23 +8,27 @@
  * @brief 
  * 
  * @param fd_ default value = STDOUT_FILENO
- * @param msg_
  */
 class ALogger {
    private:
    protected:
-	const std::string msg_;
 	const int fd_;
 
+	static std::string getCurTime(void);
+
    public:
-	ALogger(const std::string& msg, const int fd);
+	ALogger();
+	ALogger(const int fd);
 	ALogger(const ALogger& obj);
 	ALogger& operator=(const ALogger& obj);
 	virtual ~ALogger();
-	std::string getCurTime(void);
-	std::string getMsg(void) const;
+
+	// getter
 	int getFd(void) const;
-	virtual void log() = 0;
+
+	// pure method
+	virtual std::string makeLogMsg(const std::string& msg) = 0;
+	virtual void log(const std::string& msg, const int arg) = 0;
 };
 
 #endif
