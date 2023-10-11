@@ -14,8 +14,6 @@ class ALogger {
    protected:
 	const int fd_;
 
-	static std::string getCurTime(void);
-
    public:
 	//OCF
 	ALogger();
