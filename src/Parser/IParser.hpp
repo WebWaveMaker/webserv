@@ -1,27 +1,25 @@
-
 #pragma once
-#ifndef _IPARSER_HPP
-#define _IPARSER_HPP
-#include <string>
+#include "IParser.h"
 
-/**
- * @brief Interface for parsing a string into a given type
- * 
- * @tparam T Type to parse into
- */
 template <typename T>
-class IParser
-{
-public:
-    // Virtual destructor to ensure derived classes are cleaned up correctly
-    virtual ~IParser() {}
+class IParser {
+   public:
+	/**
+     * @brief 가상 소멸자 
+     */
+	virtual ~IParser() {}
 
-    // Unified parse method
-    virtual bool Parse(const std::string &content, T &method) = 0;
+	/**
+     * @brief 파싱 메소드
+     * @param content 파싱할 내용
+     * @param method 파싱된 결과 
+     * @return 파싱 성공 여부 
+     */
+	virtual bool parse(const std::string& content, T& method) = 0;
 
-protected:
-    // Protected constructor to prevent instantiation of the interface
-    IParser() {}
+   protected:
+	/**
+     * @brief 보호된 생성자 
+     */
+	IParser() {}
 };
-
-#endif // _IPARSER_HPP
