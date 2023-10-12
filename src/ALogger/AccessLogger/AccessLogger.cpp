@@ -6,6 +6,7 @@ AccessLogger::~AccessLogger() {}
 AccessLogger& AccessLogger::operator=(const AccessLogger& obj) {
 	if (this == &obj)
 		return *this;
+	this->ALogger::operator=(obj);
 	return *this;
 }
 
