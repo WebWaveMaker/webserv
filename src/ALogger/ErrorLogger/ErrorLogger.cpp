@@ -31,6 +31,7 @@ ErrorLogger::~ErrorLogger() {}
 ErrorLogger& ErrorLogger::operator=(const ErrorLogger& obj) {
 	if (this == &obj)
 		return *this;
+	this->ALogger::operator=(obj);
 	const_cast<enum LogLevel&>(_logLevel) = obj.getLogLevel();
 	const_cast<std::string&>(_logLevelStr) = obj.getLogLevelStr();
 	return *this;
