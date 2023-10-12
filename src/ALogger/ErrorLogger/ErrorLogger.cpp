@@ -72,16 +72,17 @@ void ErrorLogger::systemCallError(const char* file, const int line, const char* 
 	std::cerr << ErrorLogger::makeLogMsg(file, line, func, msg) << std::endl;
 }
 
-std::string ErrorLogger::makeLogMsg(const std::string& msg, const std::string& func) {
+std::string ErrorLogger::makeLogMsg(const std::string& msg, const std::string& func, void* arg) {
+	(void)arg;	// for extra value;
 	return ALogger::getCurTime(logTimeFormat::errorTimeFormat) + RED + "[" + this->_logLevelStr + "] " + RESET + func +
 		   "() failed " + "(" + msg + ")\n";
 }
 
 // logLevel에 따라 logLevel을 다르게 출력.
-void ErrorLogger::log(const std::string& msg, const char* func, const int arg) {
-	if (this->_logLevel != arg)
+void ErrorLogger::log(const std::string& msg, const char* func, const int enum__, void* arg) {
+	if (this->_logLevel != enum__)
 		return;
-	const std::string buf = this->makeLogMsg(msg, func);
+	const std::string buf = this->makeLogMsg(msg, func, arg);
 
 	if (write(this->fd_, buf.c_str(), buf.size()) == -1)
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);

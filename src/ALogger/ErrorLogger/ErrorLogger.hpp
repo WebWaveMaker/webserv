@@ -23,8 +23,8 @@ class ErrorLogger : public ALogger {
 	ErrorLogger& operator=(const ErrorLogger& obj);
 
 	// override
-	virtual std::string makeLogMsg(const std::string& msg, const std::string& func);
-	virtual void log(const std::string& msg, const char* func, const int arg);
+	virtual std::string makeLogMsg(const std::string& msg, const std::string& func, void* arg);
+	virtual void log(const std::string& msg, const char* func, const int enum__, void* arg);
 
 	// getter
 	enum LogLevel getLogLevel(void) const;
