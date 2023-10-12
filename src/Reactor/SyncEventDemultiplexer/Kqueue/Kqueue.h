@@ -8,10 +8,4 @@
 
 typedef int fd_t;
 
-/**
- * @brief 
- * 
- */
-enum FdSetType { CLIENT_FD, SERVER_FD };
-
 #endif
