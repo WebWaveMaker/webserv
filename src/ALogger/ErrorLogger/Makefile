@@ -5,27 +5,21 @@
 #                                                     +:+ +:+         +:+      #
 #    By: jgo <jgo@student.42seoul.kr>               +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2022/11/23 14:05:59 by jgo               #+#    #+#              #
-#    Updated: 2023/10/09 16:40:22 by jgo              ###   ########.fr        #
+#    Created: 2023/04/07 19:34:14 by jgo               #+#    #+#              #
+#    Updated: 2023/10/11 14:15:24 by jgo              ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 ifndef TOPDIR
-	TOPDIR := $(abspath ../)
+	TOPDIR := $(abspath ../../../)
 endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-NAME :=	$(PROJECT_NAME)
+SRCS := ErrorLogger.cpp
 
-DIRS := ServerManager \
-		ALogger
+OBJS := $(SRCS:.cpp=.o)
+DEPS := $(SRCS:.cpp=.d)
 
-LIBS :=	$(addsuffix .a, $(addprefix lib/, $(DIRS)))
-SRCS := main.cpp
-
-OBJS :=	$(SRCS:.cpp=.o)
-DEPS :=	$(SRCS:.cpp=.d)
-
--include	$(DEPS)
-include		$(TOPDIR)/config/makefile/recipes.mk
+-include $(DEPS)
+include $(TOPDIR)/config/makefile/libRecipes.mk
