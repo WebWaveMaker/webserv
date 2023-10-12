@@ -1,3 +1,4 @@
-[submodule "config/makefile"]
-	path = config/makefile
-	url = https://github.com/WebWaveMaker/makefile.git
+[submodule "config/makefileConfig"]
+	path = config/makefileConfig
+	url = https://github.com/WebWaveMaker/makefileConfig
+	branch = main
