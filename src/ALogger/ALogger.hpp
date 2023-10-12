@@ -31,8 +31,8 @@ class ALogger {
 	static std::string getCurTime(const char* format);
 
 	// pure method
-	virtual std::string makeLogMsg(const std::string& msg, const std::string& func) = 0;
-	virtual void log(const std::string& msg, const char* func, const int arg) = 0;
+	virtual std::string makeLogMsg(const std::string& msg, const std::string& func, void* arg) = 0;
+	virtual void log(const std::string& msg, const char* func, const int enum__, void* arg) = 0;
 };
 
 #endif
