@@ -2,7 +2,8 @@
 #ifndef ACCESSLOGGER_H
 #define ACCESSLOGGER_H
 
-#include "ALogger.h"
+#include "ALogger.hpp"
+#include "ErrorLogger.hpp"
 
 /**
  * @brief 
