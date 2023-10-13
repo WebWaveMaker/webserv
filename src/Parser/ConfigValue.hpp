@@ -6,7 +6,7 @@
 
 class ConfigValue {
    public:
-	enum ValueType { BOOL, UINT, STRING, LOG };
+	enum ValueType { BOOL, UINT, STRING, LOG, MEDVEC, STRVEC };
 
    private:
 	ValueType type;
@@ -16,6 +16,8 @@ class ConfigValue {
 		unsigned int integer;
 		char* str[sizeof(std::string)];						   // Aligned storage for string
 		char* log[sizeof(std::pair<std::string, LogLevels>)];  // Aligned storage for pair
+		char* medvec[sizeof(std::vector<HttpMethod>)];		   // Aligned storage for method vector
+		char* strvec[sizeof(std::vector<std::string>)];		   // Aligned storage for string vector
 	} data;
 
    public:
@@ -24,6 +26,8 @@ class ConfigValue {
 	ConfigValue(unsigned int i);
 	ConfigValue(const std::string& s);
 	ConfigValue(const std::pair<std::string, LogLevels>& l);
+	ConfigValue(const std::vector<HttpMethod>& v);
+	ConfigValue(const std::vector<std::string>& v);
 	ConfigValue(const ConfigValue& other);
 	~ConfigValue();
 
@@ -32,6 +36,8 @@ class ConfigValue {
 	ConfigValue& operator=(unsigned int i);
 	ConfigValue& operator=(const std::string& s);
 	ConfigValue& operator=(const std::pair<std::string, LogLevels>& l);
+	ConfigValue& operator=(const std::vector<HttpMethod>& v);
+	ConfigValue& operator=(const std::vector<std::string>& v);
 	ConfigValue& operator=(const ConfigValue& other);
 
 	// Getter functions
@@ -39,6 +45,8 @@ class ConfigValue {
 	unsigned int asUint() const;
 	std::string asString() const;
 	std::pair<std::string, LogLevels> asLog() const;
+	std::vector<HttpMethod> asMedVec() const;
+	std::vector<std::string> asStrVec() const;
 
 	// Check the type
 	ValueType getType() const;
