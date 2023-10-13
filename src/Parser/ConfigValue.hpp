@@ -16,8 +16,6 @@ class ConfigValue {
 		unsigned int integer;
 		char* str[sizeof(std::string)];						   // Aligned storage for string
 		char* log[sizeof(std::pair<std::string, LogLevels>)];  // Aligned storage for pair
-		Data() {}											   // Constructor
-		~Data() {}											   // Destructor
 	} data;
 
    public:

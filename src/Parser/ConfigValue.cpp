@@ -66,28 +66,38 @@ ConfigValue& ConfigValue::operator=(unsigned int i) {
 }
 
 ConfigValue& ConfigValue::operator=(const std::string& s) {
+	// If the current type is STRING, then destroy the old string before placement-new
 	if (type == STRING) {
-		asString() = s;
-	} else {
-		if (type == LOG) {
-			asLog().~pair();
-		}
-		new (&data.str) std::string(s);
-		type = STRING;
+		reinterpret_cast<std::string*>(data.str)->~basic_string();
+	} else if (type == LOG) {
+		// If the current type is LOG, then destroy the old pair before placement-new
+		reinterpret_cast<std::pair<std::string, LogLevels>*>(data.log)->~pair();
 	}
+
+	// Construct the new string at the correct location
+	new (data.str) std::string(s);
+
+	// Update the type
+	type = STRING;
+
 	return *this;
 }
 
 ConfigValue& ConfigValue::operator=(const std::pair<std::string, LogLevels>& l) {
-	if (type == LOG) {
-		asLog() = l;
-	} else {
-		if (type == STRING) {
-			asString().~basic_string();
-		}
-		new (&data.log) std::pair<std::string, LogLevels>(l);
-		type = LOG;
+	// If the current type is STRING, then destroy the old string before placement-new
+	if (type == STRING) {
+		reinterpret_cast<std::string*>(data.str)->~basic_string();
+	} else if (type == LOG) {
+		// If the current type is LOG, then destroy the old pair before placement-new
+		reinterpret_cast<std::pair<std::string, LogLevels>*>(data.log)->~pair();
 	}
+
+	// Construct the new pair at the correct location
+	new (data.log) std::pair<std::string, LogLevels>(l);
+
+	// Update the type
+	type = LOG;
+
 	return *this;
 }
 
@@ -120,18 +130,30 @@ ConfigValue& ConfigValue::operator=(const ConfigValue& other) {
 
 // Getter functions
 bool ConfigValue::asBool() const {
+	if (type != BOOL) {
+		throw std::runtime_error("Invalid type");
+	}
 	return data.boolean;
 }
 
 unsigned int ConfigValue::asUint() const {
+	if (type != UINT) {
+		throw std::runtime_error("Invalid type");
+	}
 	return data.integer;
 }
 
 std::string ConfigValue::asString() const {
+	if (type != STRING) {
+		throw std::runtime_error("Invalid type");
+	}
 	return *reinterpret_cast<const std::string*>(&data.str);
 }
 
 std::pair<std::string, LogLevels> ConfigValue::asLog() const {
+	if (type != LOG) {
+		throw std::runtime_error("Invalid type");
+	}
 	return *reinterpret_cast<const std::pair<std::string, LogLevels>*>(&data.log);
 }
 
