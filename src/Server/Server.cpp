@@ -9,9 +9,12 @@
 Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 	std::cout << "server constructor called\n";
 	// logger 생성
-	// this->_fd = socket(AF_INET, SOCK_STREAM, 0);
+	this->_fd = socket(AF_INET, SOCK_STREAM, 0);
+	// this->_accessLoger = new AccessLogger(this->_fd);
+	// this->_errorLogger = new ErrorLogger(thils->_fd, loglevel);
 	if (this->_fd < 0) {
 		//errorlog
+		// this->_errorLogger->systemCallError(const char* file, const int line, const char* func, const std::string& msg);
 		throw std::runtime_error("socket faild\n");
 	}
 
@@ -22,10 +25,12 @@ Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 		// this->_serverAddr.sin_port = htons(_serverConfig->get(PORT).int;);
 
 		if (bind(this->_fd, (struct sockaddr*)&this->_serverAddr, sizeof(this->_serverAddr)) < 0) {
+			// this->_errorLogger->systemCallError(const char* file, const int line, const char* func, const std::string& msg);
 			throw std::runtime_error("bind() error\n");
 		}
 
 		if (listen(this->_fd, 5) < 0) {
+			// this->_errorLogger->systemCallError(const char* file, const int line, const char* func, const std::string& msg);
 			throw std::runtime_error("listen() error\n");
 		}
 		// Read event 등록
@@ -49,18 +54,24 @@ const sockaddr_in& Server::getAddr() const {
 }
 
 ServerEventHandler& Server::getEventHandler() const {
-	return (*this->eventHandler);
+	return (*(this->_eventHandler));
 }
 
 AccessLogger& Server::getAccessLogger() const {
-	return (*this->accessLoger);
+	return (*(this->_accessLogger));
 }
 
 ErrorLogger& Server::getErrorLogger() const {
-	return (*this->errorLogger);
+	return (*(this->_errorLogger));
 }
 
 Server::~Server() {
 	std::cout << "Server destructor called\n";
 	// delete
+	for (std::map<int, Client*>::iterator it = this->_clients.begin(); it != this->_clients.end(); ++it)
+		delete it->second;
+	this->_clients.clear();
+	// delete _eventHandler;
+	delete this->_accessLogger;
+	delete this->_errorLogger;
 }

@@ -15,10 +15,10 @@ class Server {
 	const ServerConfig& _serverConfig;
 	int _fd;
 	struct sockaddr_in _serverAddr;
-	std::map<int, Client&> _clients;
-	ServerEventHandler* eventHandler;
-	AccessLogger* accessLoger;
-	ErrorLogger* errorLogger;
+	std::map<int, Client*> _clients;
+	ServerEventHandler* _eventHandler;
+	AccessLogger* _accessLogger;
+	ErrorLogger* _errorLogger;
 
 	Server(const Server& obj);
 	Server& operator=(const Server& obj);
