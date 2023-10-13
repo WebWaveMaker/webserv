@@ -6,5 +6,14 @@ http {
     error_page 424 404 /4242.html;
     error_page 502 503 504 /50x.html;
     error_log /var/log/nginx/error.log debug;
-            
+        server {
+        listen 4242;
+        server_name localhost;
+        root /var/www/html;
+        }
+        server {
+        listen 8282;
+        server_name outside;
+        root /var/www/4242;
+        }
 }

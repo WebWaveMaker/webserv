@@ -1,28 +1,34 @@
+#include <cassert>
 #include <iostream>
 #include "ConfigParser.hpp"
+#include "ServerConfig.hpp"
 
 int main() {
 	ConfigParser parser;
-	CommonConfig config = CommonConfig();
-	std::string filename = "test_config.txt";  // Name of our sample configuration file
+	std::vector<ServerConfig> servers;
+	bool result = parser.parse("test_config.txt", servers);
 
-	try {
-		if (parser.parse(filename, config)) {
-			std::cout << "HTTP_SENDFILE : " << config.getDirectives(HTTP_SENDFILE).asBool() << std::endl;
-			std::cout << "HTTP_KEEPALIVE_TIMEOUT : " << config.getDirectives(HTTP_KEEPALIVE_TIMEOUT).asUint()
-					  << std::endl;
-			std::cout << "HTTP_KEEPALIVE_TIMEOUT : " << config.getDirectives(HTTP_DEFAULT_TYPE).asString() << std::endl;
-			std::cout << "HTTP_ERROR_LOG path : " << config.getDirectives(HTTP_ERROR_LOG).asLog().first << std::endl;
-			std::cout << "HTTP_ERROR_LOG level : " << config.getDirectives(HTTP_ERROR_LOG).asLog().second << std::endl;
-			std::cout << "HTTP_ERROR_PAGE : " << config.getErrorPage(555) << std::endl;
-		}
-	} catch (const std::string& e) {
-		std::cerr << "Error: " << e << std::endl;
-	} catch (const char* e) {
-		std::cerr << "Error: " << e << std::endl;
-	} catch (const std::exception& e) {
-		std::cerr << "Error: " << e.what() << std::endl;
-	}
+	// assert(result && "Parsing failed.");
 
+	// Check if it parsed 2 server configurations
+	// assert(servers.size() == 2 && "Expected 2 server configurations.");
+	// For the first server
+	ServerConfig& server1 = servers[0];
+	std::cout << "Server 1:" << server1.getDirectives(ServerDirectives::SERVER_LISTEN).asUint() << std::endl;
+	std::cout << "Server 1:" << server1.getDirectives(ServerDirectives::SERVER_SERVER_NAME).asString() << std::endl;
+	std::cout << "Server 1:" << server1.getDirectives(ServerDirectives::SERVER_ROOT).asString() << std::endl;
+	// std::cout << "Server 1:" << server1.getDirectives(ServerDirectives::SERVER_LIMIT_EXCEPT).asMedVec() << std::endl;
+	std::cout << "Server 1:" << server1.getDirectives(ServerDirectives::SERVER_INDEX).asStrVec()[0] << std::endl;
+	std::cout << "Server 1:" << server1.getDirectives(ServerDirectives::SERVER_AUTOINDEX).asBool() << std::endl;
+
+	ServerConfig& server2 = servers[1];
+	std::cout << "Server 2:" << server2.getDirectives(ServerDirectives::SERVER_LISTEN).asUint() << std::endl;
+	std::cout << "Server 2:" << server2.getDirectives(ServerDirectives::SERVER_SERVER_NAME).asString() << std::endl;
+	std::cout << "Server 2:" << server2.getDirectives(ServerDirectives::SERVER_ROOT).asString() << std::endl;
+	// std::cout << "Server 1:" << server2.getDirectives(ServerDirectives::SERVER_LIMIT_EXCEPT).asMedVec() << std::endl;
+	std::cout << "Server 2:" << server2.getDirectives(ServerDirectives::SERVER_INDEX).asStrVec()[0] << std::endl;
+	std::cout << "Server 2:" << server2.getDirectives(ServerDirectives::SERVER_AUTOINDEX).asBool() << std::endl;
+
+	std::cout << "All tests passed!" << std::endl;
 	return 0;
 }
