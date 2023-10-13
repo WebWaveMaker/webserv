@@ -1,15 +1,11 @@
 // ConfigParser.cpp
 #include "ConfigParser.hpp"
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <vector>
 
 ConfigParser::ConfigParser() {}
 
 ConfigParser::~ConfigParser() {}
 
-bool ConfigParser::parse(const std::string& filename, ConfigStore& config) {
+bool ConfigParser::parse(const std::string& filename, CommonConfig& commonConfig) {
 	std::ifstream infile(filename.c_str());
 	if (infile.is_open() == false) {
 		throw "Could not open file: " + filename;
@@ -20,7 +16,16 @@ bool ConfigParser::parse(const std::string& filename, ConfigStore& config) {
 	size_t position = 0;
 	HttpBlock http = HttpBlock();
 	bool t = this->httpBlockTokenizer(content, position, http);
-	config.setServerConfig(http);
+
+	for (const Directive& directive : http.directives) {
+		try {
+			commonConfig.setDirectives(directive.name, directive.parameters);
+		} catch (const std::runtime_error& e) {
+			std::cerr << "Exception while setting value in CommonConfig: " << e.what() << std::endl;
+			return false;
+		}
+	}
+
 	return t;
 }
 
@@ -67,59 +72,59 @@ bool ConfigParser::directiveTokenizer(const std::string& content, size_t& positi
 	return this->match(content, position, ";");
 }
 
-bool ConfigParser::locationBlockTokenizer(const std::string& content, size_t& position, LocationBlock& locationBlock) {
-	// locationBlockTokenizer는 location 블록을 파싱합니다.
-	this->skipWhitespace(content, position);
-	size_t startPos = position;
-	while (position < content.size() && content[position] != '{')
-		position++;
+// bool ConfigParser::locationBlockTokenizer(const std::string& content, size_t& position, LocationBlock& locationBlock) {
+// 	// locationBlockTokenizer는 location 블록을 파싱합니다.
+// 	this->skipWhitespace(content, position);
+// 	size_t startPos = position;
+// 	while (position < content.size() && content[position] != '{')
+// 		position++;
 
-	locationBlock.identifier = content.substr(startPos, position - startPos);
-	this->skipWhitespace(content, position);  // 이 부분을 추가하여 공백을 건너뜁니다.
+// 	locationBlock.identifier = content.substr(startPos, position - startPos);
+// 	this->skipWhitespace(content, position);  // 이 부분을 추가하여 공백을 건너뜁니다.
 
-	if (this->match(content, position, "{") == false)
-		return false;
+// 	if (this->match(content, position, "{") == false)
+// 		return false;
 
-	while (position < content.size()) {
-		this->skipWhitespace(content, position);
-		if (this->match(content, position, "}")) {
-			// 종료 중괄호를 찾으면 루프를 종료합니다.
-			return true;
-		} else {
-			Directive directive;
-			if (!this->directiveTokenizer(content, position, directive))
-				return false;
-			locationBlock.directives.push_back(directive);
-		}
-	}
+// 	while (position < content.size()) {
+// 		this->skipWhitespace(content, position);
+// 		if (this->match(content, position, "}")) {
+// 			// 종료 중괄호를 찾으면 루프를 종료합니다.
+// 			return true;
+// 		} else {
+// 			Directive directive;
+// 			if (!this->directiveTokenizer(content, position, directive))
+// 				return false;
+// 			locationBlock.directives.push_back(directive);
+// 		}
+// 	}
 
-	return false;  // 블록의 종료를 찾지 못하면 false를 반환합니다.
-}
+// 	return false;  // 블록의 종료를 찾지 못하면 false를 반환합니다.
+// }
 
-bool ConfigParser::serverBlockTokenizer(const std::string& content, size_t& position, ServerBlock& serverBlock) {
-	if (this->match(content, position, "{") == false)
-		return false;
+// bool ConfigParser::serverBlockTokenizer(const std::string& content, size_t& position, ServerBlock& serverBlock) {
+// 	if (this->match(content, position, "{") == false)
+// 		return false;
 
-	while (position < content.size()) {
-		this->skipWhitespace(content, position);
-		if (this->match(content, position, "}")) {
-			// 종료 중괄호를 찾으면 루프를 종료합니다.
-			return true;
-		} else if (this->match(content, position, "location")) {
-			LocationBlock locationBlock;
-			if (this->locationBlockTokenizer(content, position, locationBlock) == false)
-				return false;
-			serverBlock.locations.push_back(locationBlock);
-		} else {
-			Directive directive;
-			if (this->directiveTokenizer(content, position, directive) == false)
-				return false;
-			serverBlock.directives.push_back(directive);
-		}
-	}
+// 	while (position < content.size()) {
+// 		this->skipWhitespace(content, position);
+// 		if (this->match(content, position, "}")) {
+// 			// 종료 중괄호를 찾으면 루프를 종료합니다.
+// 			return true;
+// 		} else if (this->match(content, position, "location")) {
+// 			LocationBlock locationBlock;
+// 			if (this->locationBlockTokenizer(content, position, locationBlock) == false)
+// 				return false;
+// 			serverBlock.locations.push_back(locationBlock);
+// 		} else {
+// 			Directive directive;
+// 			if (this->directiveTokenizer(content, position, directive) == false)
+// 				return false;
+// 			serverBlock.directives.push_back(directive);
+// 		}
+// 	}
 
-	return false;  // 블록의 종료를 찾지 못하면 false를 반환합니다.
-}
+// 	return false;  // 블록의 종료를 찾지 못하면 false를 반환합니다.
+// }
 
 bool ConfigParser::httpBlockTokenizer(const std::string& content, size_t& position, HttpBlock& httpBlock) {
 	if (this->match(content, position, "http") == false) {
@@ -131,20 +136,19 @@ bool ConfigParser::httpBlockTokenizer(const std::string& content, size_t& positi
 	}
 
 	while (position < content.size() && this->match(content, position, "}") == false) {
-		if (this->match(content, position, "server")) {
-			ServerBlock serverBlock;
-			if (this->serverBlockTokenizer(content, position, serverBlock) == false) {
-				throw "Failed to parse server block inside http block at position: " + std::to_string(position);
-			}
-			httpBlock.servers.push_back(serverBlock);
-		} else {
-			Directive directive;
-			if (this->directiveTokenizer(content, position, directive) == false) {
-				throw "Failed to parse directive inside http block at position: " + std::to_string(position);
-			}
-			httpBlock.directives.push_back(directive);
+		// if (this->match(content, position, "server")) {
+		// 	ServerBlock serverBlock;
+		// 	if (this->serverBlockTokenizer(content, position, serverBlock) == false) {
+		// 		throw "Failed to parse server block inside http block at position: " + std::to_string(position);
+		// 	}
+		// 	httpBlock.servers.push_back(serverBlock);
+		// } else {
+		Directive directive;
+		if (this->directiveTokenizer(content, position, directive) == false) {
+			throw "Failed to parse directive inside http block at position: " + std::to_string(position);
 		}
+		httpBlock.directives.push_back(directive);
 	}
-
 	return true;
 }
+// }
