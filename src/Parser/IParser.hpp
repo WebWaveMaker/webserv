@@ -1,6 +1,5 @@
 #pragma once
-#include "IParser.h"
-
+#include <string>
 template <typename T>
 class IParser {
    public:

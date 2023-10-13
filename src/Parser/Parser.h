@@ -7,6 +7,7 @@
 #include <map>
 #include <new>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -46,6 +47,8 @@ struct HttpBlock {
 	std::vector<ServerBlock> servers;
 };
 
+enum ValueType { BOOL, UINT, STRING, LOG };
+
 enum HttpDirectives {
 	HTTP_SENDFILE,			   // on : true, off : false default : true
 	HTTP_KEEPALIVE_TIMEOUT,	   // int default : 75
@@ -82,5 +85,7 @@ enum LocationDirectives {
 enum LogLevels { LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG };
 
 enum HttpMethod { GET, POST, DELETE, PUT };
+
+extern unsigned int stringToDecimal(const std::string& value);
 
 #endif	// _PARSER_H
