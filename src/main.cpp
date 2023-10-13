@@ -15,8 +15,7 @@
 int main(int ac, char** av) {
 	try {
 		ServerManager serverManager(ac, av);
-	} catch (const std::exception& e) {
-		std::cerr << e.what() << '\n';
+	} catch (...) {
 		return errno;
 	}
 	return EXIT_SUCCESS;
