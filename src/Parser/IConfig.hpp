@@ -11,7 +11,7 @@ class IConfig {
    protected:
 	std::map<T, ConfigValue> _directives = {};			   // 지시어를 저장
 	std::map<unsigned int, std::string> _errorPages = {};  // 에러 페이지를 저장
-	T2 _block = 0;										   // vector<server> or map<std::string, location>
+	T2 _block = T2();									   // 블록을 저장
 
 	ConfigValue addBooleanValue(const std::string& value) {
 		if (value == "on") {
@@ -45,6 +45,8 @@ class IConfig {
 		}
 		return ConfigValue(std::make_pair(value[0], level));
 	}
+	ConfigValue addMedVecValue(const std::vector<HttpMethod>& value) { return ConfigValue(value); }
+	ConfigValue addStrVecValue(const std::vector<std::string>& value) { return ConfigValue(value); }
 
    public:
 	IConfig() {}
