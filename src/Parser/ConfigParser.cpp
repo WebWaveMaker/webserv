@@ -19,7 +19,6 @@ bool ConfigParser::parse(const std::string& filename, std::vector<ServerConfig>&
 	CommonConfig commonConfig;
 	for (const Directive& directive : http.directives) {
 		try {
-			std::cout << "common directive.name: " << directive.name << std::endl;
 			commonConfig.setDirectives(directive.name, directive.parameters);
 		} catch (const std::runtime_error& e) {
 			std::cerr << "Exception while setting value in commonConfig: " << e.what() << std::endl;
@@ -31,7 +30,6 @@ bool ConfigParser::parse(const std::string& filename, std::vector<ServerConfig>&
 		ServerConfig serverConfig(commonConfig);
 		for (const Directive& directive : serverBlock.directives) {
 			try {
-				std::cout << "server directive.name: " << directive.name << std::endl;
 				serverConfig.setDirectives(directive.name, directive.parameters);
 			} catch (const std::runtime_error& e) {
 				std::cerr << "Exception while setting value in serverConfig: " << e.what() << std::endl;
