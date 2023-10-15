@@ -2,13 +2,16 @@
 
 ServerConfig::ServerConfig(CommonConfig& commonConfig) : _commonConfig(commonConfig) {}
 
-ServerConfig::ServerConfig(const ServerConfig& other) : _commonConfig(other._commonConfig) {}
+ServerConfig::ServerConfig(const ServerConfig& other)
+	: _commonConfig(other._commonConfig), _values(other._values), _errorPages(other._errorPages) {}
 
 ServerConfig::~ServerConfig() {}
 
 ServerConfig& ServerConfig::operator=(const ServerConfig& other) {
 	if (this != &other) {
 		_commonConfig = other._commonConfig;
+		_values = other._values;
+		_errorPages = other._errorPages;
 	}
 	return *this;
 }
