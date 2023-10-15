@@ -1,19 +1,14 @@
 #include "Server.hpp"
 
-/*
-	추가 생성필요
-	ServerEventHandler* eventHandler;
-	AccessLogger* accessLoger;
-	ErrorLogger* errorLogger;
-*/
 Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 	std::cout << "server constructor called\n";
-	// logger 생성
+
+	// this->_eventHandler = ServerEventHandler();
+
 	this->_fd = socket(AF_INET, SOCK_STREAM, 0);
 	// this->_accessLoger = new AccessLogger(this->_fd);
 	// this->_errorLogger = new ErrorLogger(thils->_fd, loglevel);
 	if (this->_fd < 0) {
-		//errorlog
 		// this->_errorLogger->systemCallError(const char* file, const int line, const char* func, const std::string& msg);
 		throw std::runtime_error("socket faild\n");
 	}
@@ -33,12 +28,17 @@ Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 			// this->_errorLogger->systemCallError(const char* file, const int line, const char* func, const std::string& msg);
 			throw std::runtime_error("listen() error\n");
 		}
-		// Read event 등록
+
+		// ReadEvent 등록
 	} catch (std::exception& e) {
-		//errorlog
 		close(this->_fd);
 		throw;
 	}
+}
+
+void Server::registerReadEvent() {
+	// Dispatcher* dispatcher = Tsingleton->GetInstance();
+	// dispatcher->registerHandler(dynamic_cast<IEventHandler->_eventHandler)
 }
 
 int Server::getFd() const {

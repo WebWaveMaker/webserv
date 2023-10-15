@@ -25,6 +25,8 @@ class Server {
 
    public:
 	Server(ServerConfig& serverConfig);
+	void registerEvent(EventType type);
+
 	int getFd() const;
 	const ServerConfig& getConfig() const;
 	const sockaddr_in& getAddr() const;
