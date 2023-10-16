@@ -3,7 +3,6 @@
 Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 	std::cout << "server constructor called\n";
 
-
 	this->_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->_fd < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
