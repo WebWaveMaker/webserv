@@ -1,19 +1,18 @@
 #include "Server.hpp"
 
-/*
-	추가 생성필요
-	ServerEventHandler* eventHandler;
-	AccessLogger* accessLoger;
-	ErrorLogger* errorLogger;
-*/
 Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 	std::cout << "server constructor called\n";
-	// logger 생성
-	// this->_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+
+	this->_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->_fd < 0) {
-		//errorlog
+		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
 		throw std::runtime_error("socket faild\n");
 	}
+
+	// this->_eventHandler = ServerEventHandler();
+	this->_accessLogger = new AccessLogger(this->_fd);
+	this->_errorLogger = new ErrorLogger(this->_fd, LOG_ERROR);
 
 	try {
 		std::memset(&this->_serverAddr, 0, sizeof(this->_serverAddr));
@@ -22,19 +21,25 @@ Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 		// this->_serverAddr.sin_port = htons(_serverConfig->get(PORT).int;);
 
 		if (bind(this->_fd, (struct sockaddr*)&this->_serverAddr, sizeof(this->_serverAddr)) < 0) {
+			this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
 			throw std::runtime_error("bind() error\n");
 		}
 
 		if (listen(this->_fd, 5) < 0) {
+			this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
 			throw std::runtime_error("listen() error\n");
 		}
-		// Read event 등록
+
+		// ReadEvent 등록
+		// this->registerEvent(READ);
 	} catch (std::exception& e) {
-		//errorlog
 		close(this->_fd);
 		throw;
 	}
 }
+
+// void Server::registerEvent(EventType type) {
+// }
 
 int Server::getFd() const {
 	return (this->_fd);
@@ -49,18 +54,24 @@ const sockaddr_in& Server::getAddr() const {
 }
 
 ServerEventHandler& Server::getEventHandler() const {
-	return (*this->eventHandler);
+	return (*(this->_eventHandler));
 }
 
 AccessLogger& Server::getAccessLogger() const {
-	return (*this->accessLoger);
+	return (*(this->_accessLogger));
 }
 
 ErrorLogger& Server::getErrorLogger() const {
-	return (*this->errorLogger);
+	return (*(this->_errorLogger));
 }
 
 Server::~Server() {
 	std::cout << "Server destructor called\n";
 	// delete
+	for (std::map<int, Client*>::iterator it = this->_clients.begin(); it != this->_clients.end(); ++it)
+		delete it->second;
+	this->_clients.clear();
+	// delete _eventHandler;
+	delete this->_accessLogger;
+	delete this->_errorLogger;
 }

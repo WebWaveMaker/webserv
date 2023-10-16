@@ -3,29 +3,23 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: sanghwal <sanghwal@student.42seoul.kr>     +#+  +:+       +#+         #
+#    By: jgo <jgo@student.42seoul.fr>               +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2022/11/23 14:05:59 by jgo               #+#    #+#              #
-#    Updated: 2023/10/16 18:31:21 by sanghwal         ###   ########seoul.kr   #
+#    Created: 2023/04/07 19:34:14 by jgo               #+#    #+#              #
+#    Updated: 2023/10/12 10:51:51 by jgo              ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 ifndef TOPDIR
-	TOPDIR := $(abspath ../)
+	TOPDIR := $(abspath ../../../)
 endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-NAME :=	$(PROJECT_NAME)
+SRCS := AccessLogger.cpp
 
-DIRS := ServerManager \
-		ALogger
+OBJS := $(SRCS:.cpp=.o)
+DEPS := $(SRCS:.cpp=.d)
 
-LIBS :=	$(addsuffix .a, $(addprefix lib/, $(DIRS)))
-SRCS := main.cpp
-
-OBJS :=	$(SRCS:.cpp=.o)
-DEPS :=	$(SRCS:.cpp=.d)
-
--include	$(DEPS)
-include		$(TOPDIR)/config/makefile/recipes.mk
+-include $(DEPS)
+include $(TOPDIR)/config/makefile/libRecipes.mk
