@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "AccessLogger.cpp"
+#include "Client.cpp"
 #include "ErrorLogger.cpp"
 
 class ServerConfig;
