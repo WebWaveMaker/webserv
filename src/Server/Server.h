@@ -15,4 +15,15 @@
 #include <map>
 #include <vector>
 
+#include "AccessLogger.cpp"
+#include "ErrorLogger.cpp"
+
+class ServerConfig;
+class Client;
+class ServerEventHandler;
+class AccessLogger;
+class ErrorLogger;
+
+enum EventType;
+
 #endif

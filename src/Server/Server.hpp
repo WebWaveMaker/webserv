@@ -4,12 +4,6 @@
 
 #include "Server.h"
 
-class ServerConfig;
-class Client;
-class ServerEventHandler;
-class AccessLogger;
-class ErrorLogger;
-
 class Server {
    private:
 	const ServerConfig& _serverConfig;

@@ -3,15 +3,16 @@
 Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 	std::cout << "server constructor called\n";
 
-	// this->_eventHandler = ServerEventHandler();
 
 	this->_fd = socket(AF_INET, SOCK_STREAM, 0);
-	// this->_accessLoger = new AccessLogger(this->_fd);
-	// this->_errorLogger = new ErrorLogger(thils->_fd, loglevel);
 	if (this->_fd < 0) {
-		// this->_errorLogger->systemCallError(const char* file, const int line, const char* func, const std::string& msg);
+		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
 		throw std::runtime_error("socket faild\n");
 	}
+
+	// this->_eventHandler = ServerEventHandler();
+	this->_accessLogger = new AccessLogger(this->_fd);
+	this->_errorLogger = new ErrorLogger(this->_fd, LOG_ERROR);
 
 	try {
 		std::memset(&this->_serverAddr, 0, sizeof(this->_serverAddr));
@@ -20,26 +21,25 @@ Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 		// this->_serverAddr.sin_port = htons(_serverConfig->get(PORT).int;);
 
 		if (bind(this->_fd, (struct sockaddr*)&this->_serverAddr, sizeof(this->_serverAddr)) < 0) {
-			// this->_errorLogger->systemCallError(const char* file, const int line, const char* func, const std::string& msg);
+			this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
 			throw std::runtime_error("bind() error\n");
 		}
 
 		if (listen(this->_fd, 5) < 0) {
-			// this->_errorLogger->systemCallError(const char* file, const int line, const char* func, const std::string& msg);
+			this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
 			throw std::runtime_error("listen() error\n");
 		}
 
 		// ReadEvent 등록
+		// this->registerEvent(READ);
 	} catch (std::exception& e) {
 		close(this->_fd);
 		throw;
 	}
 }
 
-void Server::registerReadEvent() {
-	// Dispatcher* dispatcher = Tsingleton->GetInstance();
-	// dispatcher->registerHandler(dynamic_cast<IEventHandler->_eventHandler)
-}
+// void Server::registerEvent(EventType type) {
+// }
 
 int Server::getFd() const {
 	return (this->_fd);
