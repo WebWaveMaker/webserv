@@ -10,8 +10,8 @@ ServerManager::ServerManager(ConfigStore& configStore) : _config(configStore) {
 
 void ServerManager::CreateServer(std::vector<ServerConfig*>& ServerConfigs) {
 	try {
-		for (std::vector<ServerConfig&>::iterator it = ServerConfigs.begin(); it != ServerConfigs.end(); ++it) {
-			Server* server = new Server(*it);
+		for (std::vector<ServerConfig*>::iterator it = ServerConfigs.begin(); it != ServerConfigs.end(); ++it) {
+			Server* server = new Server(**it);
 			std::map<int, Server*>::iterator sIt = this->_servers.find(server->getFd());
 
 			if (sIt == this->_servers.end()) {
