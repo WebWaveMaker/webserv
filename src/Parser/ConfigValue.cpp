@@ -1,5 +1,7 @@
 #include "ConfigValue.hpp"
+//all test passed
 // Constructors for each type
+
 ConfigValue::ConfigValue(bool b) : type(BOOL) {
 	data.boolean = b;
 }
@@ -26,6 +28,8 @@ ConfigValue::ConfigValue(const std::vector<std::string>& v) : type(STRVEC) {
 
 ConfigValue::ConfigValue(const ConfigValue& other) : type(other.type) {
 	switch (type) {
+		case NONE:
+			break;
 		case BOOL:
 			data.boolean = other.data.boolean;
 			break;
@@ -120,11 +124,14 @@ ConfigValue& ConfigValue::operator=(const ConfigValue& other) {
 		data.boolean = other.data.boolean;
 	} else if (type == STRVEC) {
 		reinterpret_cast<std::vector<std::string>*>(&data.strvec)->~vector();
+	} else if (type == NONE) {
 	} else {
 		throw std::runtime_error("operator Invalid type");
 	}
 	type = other.type;
 	switch (type) {
+		case NONE:
+			break;
 		case BOOL:
 			data.boolean = other.data.boolean;
 			break;
@@ -148,6 +155,14 @@ ConfigValue& ConfigValue::operator=(const ConfigValue& other) {
 }
 
 // Getter functions
+
+void* ConfigValue::asNULL() const {
+	if (type != NONE) {
+		throw std::runtime_error("Invalid type getNone");
+	}
+	return NULL;
+}
+
 bool ConfigValue::asBool() const {
 	if (type != BOOL) {
 		throw std::runtime_error("Invalid type asBool");
@@ -156,6 +171,8 @@ bool ConfigValue::asBool() const {
 }
 
 unsigned int ConfigValue::asUint() const {
+	// std::cerr << type << std::endl;
+	// std::cerr << data.integer << std::endl;
 	if (type != UINT) {
 		throw std::runtime_error("Invalid type asUint");
 	}

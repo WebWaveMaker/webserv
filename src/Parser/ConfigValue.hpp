@@ -6,7 +6,7 @@
 
 class ConfigValue {
    public:
-	enum ValueType { BOOL, UINT, STRING, LOG, MEDVEC, STRVEC };
+	enum ValueType { NONE, BOOL, UINT, STRING, LOG, MEDVEC, STRVEC };
 
    private:
 	ValueType type;
@@ -22,6 +22,7 @@ class ConfigValue {
 
    public:
 	// Constructors and Destructors for each type
+	ConfigValue() : type(NONE) {}
 	ConfigValue(bool b);
 	ConfigValue(unsigned int i);
 	ConfigValue(const std::string& s);
@@ -41,6 +42,7 @@ class ConfigValue {
 	ConfigValue& operator=(const ConfigValue& other);
 
 	// Getter functions
+	void* asNULL() const;
 	bool asBool() const;
 	unsigned int asUint() const;
 	std::string asString() const;
