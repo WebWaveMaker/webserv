@@ -2,26 +2,31 @@
 #ifndef SERVERCONFIG_HPP
 #define SERVERCONFIG_HPP
 
-#include "CommonConfig.hpp"	 // Include CommonConfig class
-#include "IConfig.hpp"		 // Include IConfig class
+#include "AConfig.hpp"	   // Include IConfig class
+#include "HttpConfig.hpp"  // Include CommonConfig class
+#include "LocationConfig.hpp"
 #include "Parser.h"
 
-class ServerConfig : public IConfig<ServerDirectives, CommonConfig> {
+class HttpConfig;
+class LocationConfig;
+
+class ServerConfig : public AConfig {
    private:
-	std::map<ServerDirectives, ConfigValue> _values;  // 각 서버에 대응하는 설정 값들을 저장
-	std::map<unsigned int, std::string> _errorPages;  // 오류 페이지들을 저장
-	CommonConfig& _commonConfig;
+	HttpConfig* _parent;
+	std::map<std::string, LocationConfig*> _locations;
 
    public:
-	ServerConfig(CommonConfig& commonConfig);
+	ServerConfig();
+	ServerConfig(HttpConfig* parent);  // Moved initialization to constructor initializer list
 	ServerConfig(const ServerConfig& other);
 	~ServerConfig();
 	ServerConfig& operator=(const ServerConfig& other);
 
-	void setErrorPage(const std::vector<std::string>& values);
-	void setDirectives(const std::string& directive, const std::vector<std::string>& values);
-	ConfigValue getDirectives(ServerDirectives method) const;
-	std::string getErrorPage(unsigned int error_code) const;
+	virtual void setDirectives(const std::string& directive, const std::vector<std::string>& values);
+	virtual void setErrorPage(const std::vector<std::string>& values);
+	virtual std::string getErrorPage(unsigned int error_code) const;
+	virtual ConfigValue getDirectives(Directives method) const;
+	void setLocations(std::string identifier, LocationConfig* location);
+	LocationConfig* getLocation(const std::string& identifier) const;
 };
-
 #endif	// SERVERCONFIG_HPP
