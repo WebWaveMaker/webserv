@@ -1,11 +1,12 @@
 // ConfigParser.cpp
 #include "ConfigParser.hpp"
+#include "HttpConfig.hpp"
 
 ConfigParser::ConfigParser() {}
 
 ConfigParser::~ConfigParser() {}
 
-bool ConfigParser::parse(const std::string& filename, std::vector<ServerConfig>& servers) {
+bool ConfigParser::parse(const std::string& filename, std::vector<ServerConfig*>& Servers) {
 	std::ifstream infile(filename.c_str());
 	if (infile.is_open() == false) {
 		throw "Could not open file: " + filename;
@@ -16,27 +17,39 @@ bool ConfigParser::parse(const std::string& filename, std::vector<ServerConfig>&
 	size_t position = 0;
 	HttpBlock http = HttpBlock();
 	bool t = this->httpBlockTokenizer(content, position, http);
-	CommonConfig commonConfig;
+	HttpConfig* httpConfig = new HttpConfig();
 	for (const Directive& directive : http.directives) {
 		try {
-			commonConfig.setDirectives(directive.name, directive.parameters);
+			httpConfig->setDirectives(directive.name, directive.parameters);
 		} catch (const std::runtime_error& e) {
 			std::cerr << "Exception while setting value in commonConfig: " << e.what() << std::endl;
 			return false;
 		}
 	}
-
+	int i = 0;
 	for (const ServerBlock& serverBlock : http.servers) {
-		ServerConfig serverConfig(commonConfig);
+		ServerConfig* serverConfig = new ServerConfig(httpConfig);
 		for (const Directive& directive : serverBlock.directives) {
 			try {
-				serverConfig.setDirectives(directive.name, directive.parameters);
+				serverConfig->setDirectives(directive.name, directive.parameters);
 			} catch (const std::runtime_error& e) {
 				std::cerr << "Exception while setting value in serverConfig: " << e.what() << std::endl;
 				return false;
 			}
 		}
-		servers.push_back(serverConfig);
+		for (const LocationBlock& locationBlock : serverBlock.locations) {
+			LocationConfig* locationConfig = new LocationConfig(serverConfig);
+			for (const Directive& directive : locationBlock.directives) {
+				try {
+					locationConfig->setDirectives(directive.name, directive.parameters);
+				} catch (const std::runtime_error& e) {
+					std::cerr << "Exception while setting value in locationConfig: " << e.what() << std::endl;
+					return false;
+				}
+			}
+			serverConfig->setLocations(locationBlock.identifier, locationConfig);
+		}
+		Servers.push_back(serverConfig);
 	}
 	return true;
 }
@@ -84,34 +97,38 @@ bool ConfigParser::directiveTokenizer(const std::string& content, size_t& positi
 	return this->match(content, position, ";");
 }
 
-// bool ConfigParser::locationBlockTokenizer(const std::string& content, size_t& position, LocationBlock& locationBlock) {
-// 	// locationBlockTokenizer는 location 블록을 파싱합니다.
-// 	this->skipWhitespace(content, position);
-// 	size_t startPos = position;
-// 	while (position < content.size() && content[position] != '{')
-// 		position++;
+bool ConfigParser::locationBlockTokenizer(const std::string& content, size_t& position, LocationBlock& locationBlock) {
+	// locationBlockTokenizer는 location 블록을 파싱합니다.
+	this->skipWhitespace(content, position);
+	size_t startPos = position;
+	while (position < content.size() && content[position] != '{' && std::isspace(content[position]) == false &&
+		   content[position] != ';')
+		position++;
 
-// 	locationBlock.identifier = content.substr(startPos, position - startPos);
-// 	this->skipWhitespace(content, position);  // 이 부분을 추가하여 공백을 건너뜁니다.
+	locationBlock.identifier = content.substr(startPos, position - startPos);
+	if (locationBlock.identifier.empty()) {
+		locationBlock.identifier = "/";
+	}
+	this->skipWhitespace(content, position);  // 이 부분을 추가하여 공백을 건너뜁니다.
 
-// 	if (this->match(content, position, "{") == false)
-// 		return false;
+	if (this->match(content, position, "{") == false)
+		return false;
 
-// 	while (position < content.size()) {
-// 		this->skipWhitespace(content, position);
-// 		if (this->match(content, position, "}")) {
-// 			// 종료 중괄호를 찾으면 루프를 종료합니다.
-// 			return true;
-// 		} else {
-// 			Directive directive;
-// 			if (!this->directiveTokenizer(content, position, directive))
-// 				return false;
-// 			locationBlock.directives.push_back(directive);
-// 		}
-// 	}
+	while (position < content.size()) {
+		this->skipWhitespace(content, position);
+		if (this->match(content, position, "}")) {
+			// 종료 중괄호를 찾으면 루프를 종료합니다.
+			return true;
+		} else {
+			Directive directive;
+			if (!this->directiveTokenizer(content, position, directive))
+				return false;
+			locationBlock.directives.push_back(directive);
+		}
+	}
 
-// 	return false;  // 블록의 종료를 찾지 못하면 false를 반환합니다.
-// }
+	return false;  // 블록의 종료를 찾지 못하면 false를 반환합니다.
+}
 
 bool ConfigParser::serverBlockTokenizer(const std::string& content, size_t& position, ServerBlock& serverBlock) {
 	if (this->match(content, position, "{") == false)
@@ -122,11 +139,11 @@ bool ConfigParser::serverBlockTokenizer(const std::string& content, size_t& posi
 		if (this->match(content, position, "}")) {
 			// 종료 중괄호를 찾으면 루프를 종료합니다.
 			return true;
-			// } else if (this->match(content, position, "location")) {
-			// 	LocationBlock locationBlock;
-			// 	if (this->locationBlockTokenizer(content, position, locationBlock) == false)
-			// 		return false;
-			// 	serverBlock.locations.push_back(locationBlock);
+		} else if (this->match(content, position, "location")) {
+			LocationBlock locationBlock;
+			if (this->locationBlockTokenizer(content, position, locationBlock) == false)
+				return false;
+			serverBlock.locations.push_back(locationBlock);
 		} else {
 			Directive directive;
 			if (this->directiveTokenizer(content, position, directive) == false)
@@ -136,9 +153,6 @@ bool ConfigParser::serverBlockTokenizer(const std::string& content, size_t& posi
 	}
 	return false;  // 블록의 종료를 찾지 못하면 false를 반환합니다.
 }
-
-// 	return false;  // 블록의 종료를 찾지 못하면 false를 반환합니다.
-// }
 
 bool ConfigParser::httpBlockTokenizer(const std::string& content, size_t& position, HttpBlock& httpBlock) {
 	if (this->match(content, position, "http") == false) {
