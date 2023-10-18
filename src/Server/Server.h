@@ -15,9 +15,10 @@
 #include <map>
 #include <vector>
 
-#include "AccessLogger.cpp"
-#include "Client.cpp"
-#include "ErrorLogger.cpp"
+#include "AccessLogger.hpp"
+#include "Client.hpp"
+#include "ErrorLogger.hpp"
+#include "ServerConfig.hpp"
 
 class ServerConfig;
 class Client;
