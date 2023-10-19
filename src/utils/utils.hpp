@@ -6,6 +6,7 @@
 
 namespace utils {
 	std::string itos(const int& num);
+	std::string getCurTime(const char* format);
 
 	const class nullptr_t {
 	   public:
