@@ -12,6 +12,7 @@ ServerEventHandler::ServerEventHandler(handle_t handleFd, std::map<int, Client*>
 	std::cout << this->_handleFd << " | ServerEventHandler constructor called\n";
 	// AccessLogger* _accessLogger;
 	// ErrorLogger* _errorLogger;
+	//
 }
 
 handle_t ServerEventHandler::getHandle() const {
