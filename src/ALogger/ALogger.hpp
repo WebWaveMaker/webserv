@@ -16,6 +16,7 @@ class ALogger {
 
 	// pure method
 	virtual std::string makeLogMsg(const std::string& msg, const std::string& func, void* arg) = 0;
+
    public:
 	//OCF
 	ALogger();
@@ -28,9 +29,6 @@ class ALogger {
 	int getFd(void) const;
 
 	// method
-
-	// static method
-	static std::string getCurTime(const char* format);
 
 	// pure method
 	virtual void log(const std::string& msg, const char* func, const int enum__, void* arg) = 0;
