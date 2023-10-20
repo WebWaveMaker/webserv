@@ -8,6 +8,7 @@
 #include "TSingleton.hpp"
 #include "color.h"
 #include "nullptr_t.hpp"
+#include <vector>
 
 namespace logTimeFormat {
 	static const char* accessTimeFormat = " [%d/%b/%Y:%H:%M:%S] ";

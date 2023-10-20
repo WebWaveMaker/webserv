@@ -32,6 +32,7 @@ namespace utils {
 		}
 		return atoi(value.c_str());
 	}
+
 	std::string getCurTime(const char* format) {
 		const std::time_t t = std::time(NULL);
 		const std::tm* localTime = std::localtime(&t);
@@ -40,6 +41,41 @@ namespace utils {
 		std::strftime(buf, sizeof(buf), format, localTime);
 
 		return DARK_BLUE + std::string(buf) + RESET;
+	}
+	unsigned int stoui(const std::string s) {
+		unsigned int i;
+		std::istringstream(s) >> i;
+		return i;
+	}
+
+	std::vector<std::string> split(std::string input, const std::string& delimiter) {
+		std::vector<std::string> rv;
+		size_t pos = 0;
+		std::string token;
+		while ((pos = input.find(delimiter)) != std::string::npos) {
+			token = input.substr(0, pos);
+			rv.push_back(token);
+			input.erase(0, pos + delimiter.length());
+		}
+
+		return rv;
+	}
+
+	std::string join(std::vector<std::string>& elems, std::string delim) {
+		std::stringstream ss;
+		std::vector<std::string>::iterator it = elems.begin();
+
+		ss << *it++;
+		while (it != elems.end())
+			ss << delim << *it++;
+		return ss.str();
+	}
+
+	std::string trim(const std::string& source) {
+		std::string s(source);
+		s.erase(0, s.find_first_not_of(" \n\r\t"));
+		s.erase(s.find_last_not_of(" \n\r\t") + 1);
+		return s;
 	}
 
 }  // namespace utils

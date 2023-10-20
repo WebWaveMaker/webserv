@@ -47,10 +47,12 @@ namespace utils {
 				if (*_cnt == 0) {
 					delete _ptr;
 					delete _cnt;
+					_ptr = u::nullptr_t;
 				}
-				_ptr = u::nullptr_t;
 			}
 		};
+
+		void upCnt(void) { ++(*_cnt); }
 
 		C* get(void) const throw() { return _ptr; }
 		C& operator*() const throw() { return *_ptr; }
@@ -58,4 +60,5 @@ namespace utils {
 	};
 
 }  // namespace utils
+
 #endif
