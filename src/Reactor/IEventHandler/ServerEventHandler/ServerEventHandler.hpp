@@ -10,8 +10,8 @@ class ErrorLogger;
 
 class ServerEventHandler : public reactor::IEventHandler {
    private:
-	std::map<int, Client*>* _clients;
 	handle_t _handleFd;
+	std::map<int, Client*>* _clients;
 	AccessLogger* _accessLogger;
 	ErrorLogger* _errorLogger;
 	ServerEventHandler& operator=(const ServerEventHandler& obj);

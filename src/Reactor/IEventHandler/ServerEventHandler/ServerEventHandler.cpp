@@ -48,5 +48,5 @@ void ServerEventHandler::handleWrite() {}
 void ServerEventHandler::handleError() {}
 
 ServerEventHandler::~ServerEventHandler() {
-	"ServerEventHandler destructor called\n";
+	std::cout << "ServerEventHandler destructor called\n";
 }

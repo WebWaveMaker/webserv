@@ -9,7 +9,7 @@ namespace utils {
 
 	   public:
 		static T* getInstance() {
-			if (_instance == nullptr_t) {
+			if (_instance == NULL) {
 				_instance = new T;
 				std::atexit(deleteInstance);
 			}
@@ -21,9 +21,9 @@ namespace utils {
 		virtual ~TSingleton() {}
 
 		static void deleteInstance() {
-			if (_instance != nullptr_t)
+			if (_instance != NULL)
 				delete _instance;
-			_instance = nullptr_t;
+			_instance = NULL;
 		}
 
 	   private:
@@ -31,7 +31,7 @@ namespace utils {
 	};
 
 	template <class T>
-	T* TSingleton<T>::_instance = nullptr_t;
+	T* TSingleton<T>::_instance = NULL;
 
 }  // namespace utils
 
