@@ -18,7 +18,8 @@ class ServerEventHandler : public reactor::IEventHandler {
 	ServerEventHandler(const ServerEventHandler& obj);
 
    public:
-	ServerEventHandler(handle_t handleFd, std::map<int, Client*>* clients);
+	ServerEventHandler(handle_t handleFd, std::map<int, Client*>* clients, AccessLogger* accessLogger,
+					   ErrorLogger* errorLogger);
 	virtual handle_t getHandle() const;
 	virtual void handleRead();
 	virtual void handleWrite();
