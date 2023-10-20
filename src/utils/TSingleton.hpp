@@ -2,8 +2,6 @@
 #ifndef TSINGLETON_HPP
 #define TSINGLETON_HPP
 
-#include "utils.h"
-
 namespace utils {
 
 	template <class T>

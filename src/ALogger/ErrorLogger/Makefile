@@ -14,12 +14,16 @@ ifndef TOPDIR
 	TOPDIR := $(abspath ../../../)
 endif
 
+ifndef DSTDIR
+	DSTDIR := $(abspath ../)
+endif
+
 include $(TOPDIR)/config/makefile/common.mk
 
-SRCS := ErrorLogger.cpp
+SRCS := $(addprefix $(DSTDIR)/objs/, ErrorLogger.cpp)
 
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 
 -include $(DEPS)
-include $(TOPDIR)/config/makefile/libRecipes.mk
+include $(TOPDIR)/config/makefile/objRecipes.mk

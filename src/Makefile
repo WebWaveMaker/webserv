@@ -18,8 +18,10 @@ include $(TOPDIR)/config/makefile/common.mk
 
 NAME :=	$(PROJECT_NAME)
 
-DIRS := ServerManager \
-		ALogger
+DIRS :=	ALogger \
+		Reactor \
+		ServerManager \
+		utils
 
 LIBS :=	$(addsuffix .a, $(addprefix lib/, $(DIRS)))
 SRCS := main.cpp
