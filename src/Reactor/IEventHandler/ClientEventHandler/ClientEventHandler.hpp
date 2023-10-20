@@ -2,18 +2,25 @@
 #ifndef CLIENTEVENTHANDLER_HPP
 #define CLIENTEVENTHANDLER_HPP
 
-class ClientEventHandler {
+#include "ClientEventHandler.h"
+
+class Client;
+
+class ClientEventHandler : public reactor::IEventHandler {
    private:
-   public:
-	ClientEventHandler();
+	handle_t _handleFd;
+	Client* _client;
 	ClientEventHandler(const ClientEventHandler& obj);
-	~ClientEventHandler();
 	ClientEventHandler& operator=(const ClientEventHandler& obj);
+
+   public:
+	ClientEventHandler(handle_t handleFd, Client* client);
+	~ClientEventHandler();
+
+	virtual handle_t getHandle() const;
+	virtual void handleRead();
+	virtual void handleWrite();
+	virtual void handleError();
 };
 
 #endif
-
-ClientEventHandler::ClientEventHandler() {}
-ClientEventHandler::ClientEventHandler(const ClientEventHandler& obj) {}
-ClientEventHandler::~ClientEventHandler() {}
-ClientEventHandler& ClientEventHandler::operator=(const ClientEventHandler& obj) {}
