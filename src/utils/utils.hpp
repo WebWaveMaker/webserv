@@ -6,6 +6,9 @@
 
 namespace utils {
 	std::string itos(const int& num);
-}
+
+}  // namespace utils
+
+namespace u = utils;
 
 #endif

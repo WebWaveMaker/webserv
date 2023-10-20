@@ -5,4 +5,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "TSingleton.hpp"
+#include "nullptr_t.hpp"
+
 #endif

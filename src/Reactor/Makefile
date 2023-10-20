@@ -16,13 +16,10 @@ endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-DIRS := ErrorLogger
-
-SRCS := ALogger.cpp
+DIRS := Dispatcher \
+		IEventHandler \
+		SyncEventDemultiplexer
 
 LIBS :=	$(wildcard objs/*.o)
-OBJS := $(SRCS:.cpp=.o)
-DEPS := $(SRCS:.cpp=.d)
 
--include $(DEPS)
 include $(TOPDIR)/config/makefile/libRecipes.mk
