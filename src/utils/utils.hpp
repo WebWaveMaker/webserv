@@ -9,6 +9,5 @@ namespace utils {
 
 }  // namespace utils
 
-namespace u = utils;
 
 #endif
