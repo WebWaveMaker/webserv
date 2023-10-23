@@ -9,6 +9,7 @@
 
 #include "ConfigValue.hpp"	// For ConfigValue class
 #include "Parser.h"			// For LogLevels enum
+#include "utils.hpp"		// For stringToDecimal() function
 
 #include <map>	   // For std::map
 #include <string>  // For std::string

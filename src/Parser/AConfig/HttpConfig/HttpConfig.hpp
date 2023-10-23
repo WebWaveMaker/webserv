@@ -9,6 +9,7 @@
 
 #include "AConfig.hpp"
 #include "Parser.h"
+#include "utils.hpp"
 
 /**
  * @class HttpConfig

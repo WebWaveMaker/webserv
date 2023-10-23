@@ -4,6 +4,7 @@
 
 #include "Parser.h"
 #include "ServerConfig.hpp"
+#include "utils.hpp"
 
 class ServerConfig;
 
