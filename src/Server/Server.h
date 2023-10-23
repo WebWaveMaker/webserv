@@ -18,6 +18,7 @@
 #include "AccessLogger.hpp"
 #include "Client.hpp"
 #include "ErrorLogger.hpp"
+#include "ICallback.hpp"
 #include "ServerConfig.hpp"
 
 class ServerConfig;
@@ -25,6 +26,7 @@ class Client;
 class ServerEventHandler;
 class AccessLogger;
 class ErrorLogger;
+class ClientEventHandler;
 
 enum EventType;
 

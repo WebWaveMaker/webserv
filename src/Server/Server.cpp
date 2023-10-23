@@ -40,6 +40,22 @@ Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 // void Server::registerEvent(EventType type) {
 // }
 
+void Server::execute(int key) {
+	this->removeClient(key);
+}
+
+void Server::removeClient(int key) {
+	std::map<int, ClientEventHandler*>::iterator it = this->_clients.find(key);
+
+	if (it != this->_clients.end()) {
+		delete it->second;
+		this->_clients.erase(key);
+	} else {
+		this->_errorLogger->log("Not Found client\n", __func__, LOG_ERROR, NULL);
+		throw std::runtime_error("removeClient Error\n");
+	}
+}
+
 int Server::getFd() const {
 	return (this->_fd);
 }
@@ -67,7 +83,7 @@ ErrorLogger& Server::getErrorLogger() const {
 Server::~Server() {
 	std::cout << "Server destructor called\n";
 	// delete
-	for (std::map<int, Client*>::iterator it = this->_clients.begin(); it != this->_clients.end(); ++it)
+	for (std::map<int, ClientEventHandler*>::iterator it = this->_clients.begin(); it != this->_clients.end(); ++it)
 		delete it->second;
 	this->_clients.clear();
 	// delete _eventHandler;

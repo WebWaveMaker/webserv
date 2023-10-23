@@ -4,12 +4,12 @@
 
 #include "Server.h"
 
-class Server {
+class Server : public ICallback {
    private:
 	const ServerConfig& _serverConfig;
 	int _fd;
 	struct sockaddr_in _serverAddr;
-	std::map<int, Client*> _clients;
+	std::map<int, ClientEventHandler*> _clients;
 	ServerEventHandler* _eventHandler;
 	AccessLogger* _accessLogger;
 	ErrorLogger* _errorLogger;
@@ -20,6 +20,8 @@ class Server {
    public:
 	Server(ServerConfig& serverConfig);
 	void registerEvent(EventType type);
+	virtual void execute(int key);
+	void removeClient(int key);
 
 	int getFd() const;
 	const ServerConfig& getConfig() const;
