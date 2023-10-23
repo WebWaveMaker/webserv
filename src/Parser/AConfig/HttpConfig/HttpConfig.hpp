@@ -8,6 +8,7 @@
 #define HTTPCONFIG_HPP
 
 #include "AConfig.hpp"
+#include "ErrorLogger.hpp"
 #include "Parser.h"
 #include "utils.hpp"
 

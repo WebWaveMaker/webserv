@@ -24,24 +24,24 @@ void HttpConfig::setDirectives(const std::string& directive, const std::vector<s
 		_directives.insert(std::make_pair(DEFAULT_TYPE, addStringValue(values[0])));
 	} else if (directive == "error_log") {
 		if (values.size() != 2)
-			throw std::runtime_error("Invalid number of parameters for error_log");
+			throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid number of parameters for error_log");
 		_directives.insert(std::make_pair(ERROR_LOG, addLogValue(values)));
 	} else if (directive == "client_max_body_size") {
 		_directives.insert(std::make_pair(CLIENT_MAX_BODY_SIZE, addUnsignedIntValue(values[0])));
 	} else {
-		throw std::runtime_error("Invalid directive : " + directive);
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid directive" + directive);
 	}
 }
 
 void HttpConfig::setErrorPage(const std::vector<std::string>& values) {
 	const unsigned int size = values.size();
 	if (size < 2) {
-		throw std::runtime_error("Invalid number of parameters for error_page");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid number of parameters for error_page");
 	}
 	for (unsigned int i = 0; i < size - 1; i++) {
 		unsigned int error_code = static_cast<unsigned int>(stringToDecimal(values[i]));
 		if (error_code == 0 || error_code > 599) {
-			throw std::runtime_error("Invalid error code");
+			throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid error code");
 		}
 		_errorPages.insert(std::make_pair(error_code, values[size - 1]));
 	}
@@ -89,7 +89,7 @@ ConfigValue HttpConfig::getDirectives(Directives method) const {
 			methods.push_back(PUT);
 			return ConfigValue(methods);
 		} else {
-			throw std::runtime_error("Invalid directive");
+			throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid directive");
 		}
 	}
 	return it->second;
