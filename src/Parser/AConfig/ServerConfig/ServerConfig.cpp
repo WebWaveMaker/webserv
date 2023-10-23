@@ -40,7 +40,7 @@ ServerConfig& ServerConfig::operator=(const ServerConfig& other) {
 
 void ServerConfig::setDirectives(const std::string& directive, const std::vector<std::string>& values) {
 	if (values.empty())
-		throw std::runtime_error("Invalid number of parameters for " + directive + " directive");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid number of parameters for " + directive);
 
 	if (directive == "sendfile") {
 		_directives.insert(std::make_pair(SENDFILE, addBooleanValue(values[0])));
@@ -67,7 +67,7 @@ void ServerConfig::setDirectives(const std::string& directive, const std::vector
 	} else if (directive == "index") {
 		_directives.insert(std::make_pair(INDEX, addStrVecValue(values)));
 	} else if (directive == "limit_except") {
-		std::vector<HttpMethod> methods;
+		std::vector<HttpMethods> methods;
 		for (std::vector<std::string>::const_iterator it = values.begin(); it != values.end(); ++it) {
 			if (*it == "GET") {
 				methods.push_back(GET);

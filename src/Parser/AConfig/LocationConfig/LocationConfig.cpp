@@ -32,7 +32,7 @@ void LocationConfig::setDirectives(const std::string& directive, const std::vect
 	} else if (directive == "index") {
 		_directives.insert(std::make_pair(INDEX, addStrVecValue(values)));
 	} else if (directive == "limit_except") {
-		std::vector<HttpMethod> methods;
+		std::vector<HttpMethods> methods;
 		for (std::vector<std::string>::const_iterator it = values.begin(); it != values.end(); ++it) {
 			if (*it == "GET") {
 				methods.push_back(GET);

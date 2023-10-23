@@ -67,21 +67,21 @@ ConfigValue::~ConfigValue() {
 // Assignment operators for each type
 ConfigValue& ConfigValue::operator=(bool b) {
 	if (type != BOOL)
-		throw std::runtime_error("operator Invalid type");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "operator Invalid type");
 	data.boolean = b;
 	return *this;
 }
 
 ConfigValue& ConfigValue::operator=(unsigned int i) {
 	if (type != UINT)
-		throw std::runtime_error("operator Invalid type");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "operator Invalid type");
 	data.integer = i;
 	return *this;
 }
 
 ConfigValue& ConfigValue::operator=(const std::string& s) {
 	if (type != STRING)
-		throw std::runtime_error("operator Invalid type");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "operator Invalid type");
 	reinterpret_cast<std::string*>(data.str)->~basic_string();
 	new (data.str) std::string(s);
 	return *this;
@@ -89,7 +89,7 @@ ConfigValue& ConfigValue::operator=(const std::string& s) {
 
 ConfigValue& ConfigValue::operator=(const std::pair<std::string, LogLevels>& l) {
 	if (type != LOG)
-		throw std::runtime_error("operator Invalid type");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "operator Invalid type");
 	reinterpret_cast<std::pair<std::string, LogLevels>*>(data.log)->~pair();
 	new (data.log) std::pair<std::string, LogLevels>(l);
 	return *this;
@@ -97,7 +97,7 @@ ConfigValue& ConfigValue::operator=(const std::pair<std::string, LogLevels>& l) 
 
 ConfigValue& ConfigValue::operator=(const std::vector<HttpMethod>& v) {
 	if (type != MEDVEC)
-		throw std::runtime_error("operator Invalid type");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "operator Invalid type");
 	reinterpret_cast<std::vector<HttpMethod>*>(data.medvec)->~vector();
 	new (data.medvec) std::vector<HttpMethod>(v);
 	return *this;
@@ -105,7 +105,7 @@ ConfigValue& ConfigValue::operator=(const std::vector<HttpMethod>& v) {
 
 ConfigValue& ConfigValue::operator=(const std::vector<std::string>& v) {
 	if (type != STRVEC)
-		throw std::runtime_error("operator Invalid type");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "operator Invalid type");
 	reinterpret_cast<std::vector<std::string>*>(data.strvec)->~vector();
 	new (data.strvec) std::vector<std::string>(v);
 	return *this;
@@ -126,7 +126,7 @@ ConfigValue& ConfigValue::operator=(const ConfigValue& other) {
 		reinterpret_cast<std::vector<std::string>*>(&data.strvec)->~vector();
 	} else if (type == NONE) {
 	} else {
-		throw std::runtime_error("operator Invalid type");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "operator Invalid type");
 	}
 	type = other.type;
 	switch (type) {
@@ -158,14 +158,14 @@ ConfigValue& ConfigValue::operator=(const ConfigValue& other) {
 
 void* ConfigValue::asNULL() const {
 	if (type != NONE) {
-		throw std::runtime_error("Invalid type getNone");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid type asNULL");
 	}
 	return NULL;
 }
 
 bool ConfigValue::asBool() const {
 	if (type != BOOL) {
-		throw std::runtime_error("Invalid type asBool");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid type asBool");
 	}
 	return data.boolean;
 }
@@ -174,35 +174,35 @@ unsigned int ConfigValue::asUint() const {
 	// std::cerr << type << std::endl;
 	// std::cerr << data.integer << std::endl;
 	if (type != UINT) {
-		throw std::runtime_error("Invalid type asUint");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid type asUint");
 	}
 	return data.integer;
 }
 
 std::string ConfigValue::asString() const {
 	if (type != STRING) {
-		throw std::runtime_error("Invalid type asString");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid type asString");
 	}
 	return *reinterpret_cast<const std::string*>(&data.str);
 }
 
 std::pair<std::string, LogLevels> ConfigValue::asLog() const {
 	if (type != LOG) {
-		throw std::runtime_error("Invalid type asLog");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid type asLog");
 	}
 	return *reinterpret_cast<const std::pair<std::string, LogLevels>*>(&data.log);
 }
 
-std::vector<HttpMethod> ConfigValue::asMedVec() const {
+std::vector<HttpMethods> ConfigValue::asMedVec() const {
 	if (type != MEDVEC) {
-		throw std::runtime_error("Invalid type asMedVec");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid type asMedVec");
 	}
 	return *reinterpret_cast<const std::vector<HttpMethod>*>(&data.medvec);
 }
 
 std::vector<std::string> ConfigValue::asStrVec() const {
 	if (type != STRVEC) {
-		throw std::runtime_error("Invalid type asStrVec");
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid type asStrVec");
 	}
 	return *reinterpret_cast<const std::vector<std::string>*>(&data.strvec);
 }
