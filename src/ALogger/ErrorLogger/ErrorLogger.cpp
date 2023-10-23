@@ -73,6 +73,10 @@ void ErrorLogger::systemCallError(const char* file, const int line, const char* 
 	std::cerr << ErrorLogger::makeLogMsg(file, line, func, msg) << std::endl;
 }
 
+void ErrorLogger::log(const char* file, const int line, const char* func, const std::string& msg) {
+	std::cerr << ErrorLogger::makeLogMsg(file, line, func, msg) << std::endl;
+}
+
 std::string ErrorLogger::makeLogMsg(const std::string& msg, const std::string& func, void* arg) {
 	(void)arg;	// for extra value;
 	return ALogger::getCurTime(logTimeFormat::errorTimeFormat) + RED + "[" + this->_logLevelStr + "] " + RESET + func +
