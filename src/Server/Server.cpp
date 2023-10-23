@@ -44,8 +44,21 @@ void Server::registerEvent(EventType type) {
 	}
 }
 
-void Server::execute(int key) {
+void Server::eraseClient(int key) {
 	this->removeClient(key);
+}
+
+Client* Server::createClient(int clientFd, struct sockaddr_in& clientAddr) {
+	try {
+		Client* newClient = new Client(clientFd, clientAddr, this->_serverConfig);
+		return (newClient);
+	} catch (std::exception& e) {
+		throw;
+	}
+}
+
+ICallback* Server::getCallback() {
+	return (this);
 }
 
 void Server::removeClient(int key) {

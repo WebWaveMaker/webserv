@@ -6,7 +6,7 @@
 
 class Server : public ICallback {
    private:
-	const ServerConfig& _serverConfig;
+	ServerConfig& _serverConfig;
 	int _fd;
 	struct sockaddr_in _serverAddr;
 	std::map<int, ClientEventHandler*> _clients;
@@ -22,7 +22,9 @@ class Server : public ICallback {
 
    public:
 	Server(ServerConfig& serverConfig);
-	virtual void execute(int key);
+	virtual void eraseClient(int key);
+	virtual Client* createClient(int clientFd, struct sockaddr_in& clientAddr);
+	virtual ICallback* getCallback();
 
 	int getFd() const;
 	const ServerConfig& getConfig() const;
