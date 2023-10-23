@@ -8,6 +8,7 @@
 #define ACONFIG_HPP
 
 #include "ConfigValue.hpp"	// For ConfigValue class
+#include "ErrorLogger.hpp"	// For ErrorLogger class
 #include "Parser.h"			// For LogLevels enum
 #include "utils.hpp"		// For stringToDecimal() function
 
