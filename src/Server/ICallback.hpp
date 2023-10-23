@@ -11,7 +11,7 @@ class ICallback {
 	ICallback();
 
    public:
-	virtual void execute() = 0;
+	virtual void execute(int key) = 0;
 	virtual ~ICallback();
 };
 
