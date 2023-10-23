@@ -2,7 +2,8 @@
 #ifndef SERVERCONFIG_HPP
 #define SERVERCONFIG_HPP
 
-#include "AConfig.hpp"	   // Include IConfig class
+#include "AConfig.hpp"	// Include IConfig class
+#include "ErrorLogger.hpp"
 #include "HttpConfig.hpp"  // Include CommonConfig class
 #include "LocationConfig.hpp"
 #include "Parser.h"
