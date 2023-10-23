@@ -4,7 +4,9 @@ endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-SRCS := Server.cpp
+SRCS := ICallback.cpp \
+		Server.cpp
+
 
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
