@@ -2,9 +2,9 @@
 #ifndef CLIENTEVENTHANDLER_H
 #define CLIENTEVENTHANDLER_H
 
-// #include "Client.hpp"
 #include <unistd.h>
 #include <iostream>
+#include "Client.hpp"
 #include "ErrorLogger.hpp"
 #include "IEventHandler.hpp"
 
