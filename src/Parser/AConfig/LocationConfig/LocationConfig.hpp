@@ -2,6 +2,7 @@
 #ifndef LOCATIONCONFIG_HPP
 #define LOCATIONCONFIG_HPP
 
+#include "ErrorLogger.hpp"
 #include "Parser.h"
 #include "ServerConfig.hpp"
 #include "utils.hpp"
