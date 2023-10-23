@@ -1,10 +1,11 @@
 #include "ServerEventHandler.hpp"
 
-ServerEventHandler::ServerEventHandler(handle_t handleFd, std::map<int, ClientEventHandler*>* clients,
-									   ServerConfig& serverConfig, AccessLogger* accessLogger, ErrorLogger* errorLogger)
+ServerEventHandler::ServerEventHandler(handle_t handleFd, ICallback* callback,
+									   std::map<int, ClientEventHandler*>* clients, AccessLogger* accessLogger,
+									   ErrorLogger* errorLogger)
 	: _handleFd(handleFd),
+	  _callback(callback),
 	  _clients(clients),
-	  _serverConfig(serverConfig),
 	  _accessLogger(accessLogger),
 	  _errorLogger(errorLogger) {
 	std::cout << this->_handleFd << " | ServerEventHandler constructor called\n";
@@ -29,9 +30,9 @@ void ServerEventHandler::handleRead() {
 	std::map<int, ClientEventHandler*>::iterator it = this->_clients->find(clientFd);
 	try {
 		if (it == _clients->end()) {
-			Client* newClient = new Client(clientFd, clientAddr, this->_serverConfig);
-			this->_clients[clientFd] = new ClientEventHandler();
-			_accessLogger->log("client access to Server", __func__, GET, (*_clients)[clientFd]);
+			Client* newClient = this->_callback->createClient(clientFd, clientAddr);
+			(*this->_clients)[clientFd] = new ClientEventHandler(clientFd, this->_callback, newClient);
+			_accessLogger->log("client access to Server", __func__, GET, (*this->_clients)[clientFd]);
 		} else
 			close(clientFd);
 	} catch (std::exception& e) {
@@ -39,7 +40,10 @@ void ServerEventHandler::handleRead() {
 		throw;
 	}
 	fcntl(clientFd, F_SETFL, O_NONBLOCK);
+	// fcntl 에러처리
 	// client의 read 이벤트 등록
+	reactor::Dispatcher* dispatcher = reactor::Dispatcher::getInstance();
+	dispatcher->registerHander((*this->_clients)[clientFd], EVENT_READ);
 }
 
 void ServerEventHandler::handleWrite() {}
