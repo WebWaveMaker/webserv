@@ -15,7 +15,14 @@
 #include <vector>
 
 #include "AccessLogger.hpp"
+// #include "ClientEventHandler.hpp"
+#include "Client.hpp"
 #include "ErrorLogger.hpp"
 #include "IEventHandler.hpp"
+
+class Client;
+class AccessLogger;
+class ErrorLogger;
+class ClientEventhandler;
 
 #endif

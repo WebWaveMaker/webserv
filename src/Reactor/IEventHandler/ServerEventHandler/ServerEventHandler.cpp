@@ -1,15 +1,12 @@
 #include "ServerEventHandler.hpp"
 
-// ServerEventHandler(std::map<int, Client*>* clients);
-// 	virtual handle_t getHandle() const;
-// 	virtual void handleRead();
-// 	virtual void handleWrite();
-// 	virtual void handleError();
-// 	virtual ~ServerEventHandler();
-
-ServerEventHandler::ServerEventHandler(handle_t handleFd, std::map<int, Client*>* clients, AccessLogger* accessLogger,
-									   ErrorLogger* errorLogger)
-	: _handleFd(handleFd), _clients(clients), _accessLogger(accessLogger), _errorLogger(errorLogger) {
+ServerEventHandler::ServerEventHandler(handle_t handleFd, std::map<int, ClientEventHandler*>* clients,
+									   ServerConfig& serverConfig, AccessLogger* accessLogger, ErrorLogger* errorLogger)
+	: _handleFd(handleFd),
+	  _clients(clients),
+	  _serverConfig(serverConfig),
+	  _accessLogger(accessLogger),
+	  _errorLogger(errorLogger) {
 	std::cout << this->_handleFd << " | ServerEventHandler constructor called\n";
 }
 
@@ -29,10 +26,11 @@ void ServerEventHandler::handleRead() {
 		throw;
 	}
 
-	std::map<int, Client*>::iterator it = _clients->find(clientFd);
+	std::map<int, ClientEventHandler*>::iterator it = this->_clients->find(clientFd);
 	try {
 		if (it == _clients->end()) {
-			// _clients[clientFd] = new Client(clientFd, clientAddr);
+			Client* newClient = new Client(clientFd, clientAddr, this->_serverConfig);
+			this->_clients[clientFd] = new ClientEventHandler();
 			_accessLogger->log("client access to Server", __func__, GET, (*_clients)[clientFd]);
 		} else
 			close(clientFd);
