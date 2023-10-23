@@ -1,5 +1,6 @@
 #include "utils.hpp"
 
+<<<<<<< HEAD
 std::string utils::itos(const int& num) {
 	std::ostringstream os;
 	os << num;
@@ -31,3 +32,13 @@ extern unsigned int utils::stringToDecimal(const std::string& value) {
 
 	return atoi(value.c_str());
 }
+=======
+namespace utils {
+
+	std::string itos(const int& num) {
+		std::ostringstream os;
+		os << num;
+		return os.str();
+	}
+}  // namespace utils
+>>>>>>> feature/WWM-57
