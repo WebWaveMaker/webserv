@@ -11,7 +11,9 @@ class ICallback {
 	ICallback();
 
    public:
-	virtual void execute(int key) = 0;
+	virtual void eraseClient(int key) = 0;
+	virtual Client* createClient(int clientFd, struct sockaddr_in& clientAddr) = 0;
+	virtual ICallback* getCallback() = 0;
 	virtual ~ICallback();
 };
 
