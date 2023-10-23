@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jgo <jgo@student.42seoul.kr>               +#+  +:+       +#+         #
+#    By: sanghwal <sanghwal@student.42seoul.kr>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/23 14:05:59 by jgo               #+#    #+#              #
-#    Updated: 2023/10/09 16:40:22 by jgo              ###   ########.fr        #
+#    Updated: 2023/10/20 17:40:22 by sanghwal         ###   ########seoul.kr   #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,7 +21,8 @@ NAME :=	$(PROJECT_NAME)
 DIRS :=	ALogger \
 		Reactor \
 		ServerManager \
-		utils
+		utils \
+		Server
 
 LIBS :=	$(addsuffix .a, $(addprefix lib/, $(DIRS)))
 SRCS := main.cpp
