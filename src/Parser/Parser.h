@@ -45,8 +45,6 @@ struct HttpBlock {
 	std::vector<ServerBlock> servers;
 };
 
-enum ValueType { BOOL, UINT, STRING, LOG };
-
 enum Directives {
 	SENDFILE,			   // http, server, location	on : true, off : false default : true
 	ERROR_PAGE,			   // http, server, location	int, string default : specific to error codes
