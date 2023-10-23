@@ -8,8 +8,6 @@ Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
 		throw std::runtime_error("socket faild\n");
 	}
-
-	// this->_eventHandler = ServerEventHandler();
 	this->_accessLogger = new AccessLogger(this->_fd);
 	this->_errorLogger = new ErrorLogger(this->_fd, LOG_ERROR);
 
@@ -30,15 +28,21 @@ Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 		}
 
 		// ReadEvent 등록
-		// this->registerEvent(READ);
+		this->_eventHandler =
+			new ServerEventHandler(this->_fd, this->_clients, this->_accessLogger, this->_errorLogger);
+		this->registerEvent(EVENT_READ);
 	} catch (std::exception& e) {
 		close(this->_fd);
 		throw;
 	}
 }
 
-// void Server::registerEvent(EventType type) {
-// }
+void Server::registerEvent(EventType type) {
+	if (type == EVENT_READ) {
+		reactor::Dispatcher* dispatcher = reactor::Dispatcher::getInstance();
+		dispatcher->registerHander(this->_eventHandler, EVENT_READ);
+	}
+}
 
 void Server::execute(int key) {
 	this->removeClient(key);
@@ -82,11 +86,12 @@ ErrorLogger& Server::getErrorLogger() const {
 
 Server::~Server() {
 	std::cout << "Server destructor called\n";
-	// delete
+
 	for (std::map<int, ClientEventHandler*>::iterator it = this->_clients.begin(); it != this->_clients.end(); ++it)
 		delete it->second;
 	this->_clients.clear();
-	// delete _eventHandler;
+	// removeHandler() 고려
+	delete _eventHandler;
 	delete this->_accessLogger;
 	delete this->_errorLogger;
 }

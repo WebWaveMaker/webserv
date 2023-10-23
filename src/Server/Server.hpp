@@ -17,11 +17,12 @@ class Server : public ICallback {
 	Server(const Server& obj);
 	Server& operator=(const Server& obj);
 
+	void registerEvent(EventType type);
+	void removeClient(int key);
+
    public:
 	Server(ServerConfig& serverConfig);
-	void registerEvent(EventType type);
 	virtual void execute(int key);
-	void removeClient(int key);
 
 	int getFd() const;
 	const ServerConfig& getConfig() const;

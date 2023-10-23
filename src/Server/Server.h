@@ -17,9 +17,12 @@
 
 #include "AccessLogger.hpp"
 #include "Client.hpp"
+#include "Dispatcher.hpp"
 #include "ErrorLogger.hpp"
 #include "ICallback.hpp"
 #include "ServerConfig.hpp"
+#include "ServerEventHandler.hpp"
+#include "TSingleton.hpp"
 
 class ServerConfig;
 class Client;
