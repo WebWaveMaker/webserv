@@ -32,7 +32,7 @@ void ClientEventHandler::handleWrite() {}
 
 void ClientEventHandler::handleError() {
 	// Client Error 발생시 callback함수를 호출해서 disconnect한다.
-	// this->_callback->execute(this->_handleFd);
+	this->_callback->eraseClient(this->_handleFd);
 }
 
 ClientEventHandler::~ClientEventHandler() {

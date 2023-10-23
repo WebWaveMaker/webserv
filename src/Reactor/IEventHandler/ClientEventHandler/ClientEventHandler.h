@@ -6,6 +6,7 @@
 #include <iostream>
 #include "Client.hpp"
 #include "ErrorLogger.hpp"
+#include "ICallback.hpp"
 #include "IEventHandler.hpp"
 
 #define BUFFER_SIZE 1024
