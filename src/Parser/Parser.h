@@ -64,6 +64,4 @@ enum LogLevels { LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG };
 
 enum HttpMethod { GET, POST, DELETE, PUT };
 
-extern unsigned int stringToDecimal(const std::string& value);
-
 #endif	// _PARSER_H

@@ -6,6 +6,7 @@
 
 namespace utils {
 	std::string itos(const int& num);
-}
+	unsigned int stringToDecimal(const std::string& value);
+}  // namespace utils
 
 #endif
