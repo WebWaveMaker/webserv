@@ -9,7 +9,7 @@ ConfigParser::~ConfigParser() {}
 std::string ConfigParser::parser(const std::string& filename) {
 	std::ifstream infile(filename.c_str());
 	if (infile.is_open() == false) {
-		throw std::runtime_error("Could not open file: " + filename);
+		throw ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "Could not open file: " + filename);
 	}
 
 	const std::string content((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
@@ -18,12 +18,7 @@ std::string ConfigParser::parser(const std::string& filename) {
 
 bool ConfigParser::httpConfigParser(const HttpBlock& http, HttpConfig* httpConfig) {
 	for (std::vector<Directive>::const_iterator it = http.directives.begin(); it != http.directives.end(); ++it) {
-		try {
-			httpConfig->setDirectives(it->name, it->parameters);
-		} catch (const std::runtime_error& e) {
-			std::cerr << "Exception while setting value in commonConfig: " << e.what() << std::endl;
-			return false;
-		}
+		httpConfig->setDirectives(it->name, it->parameters);
 	}
 	return true;
 }
@@ -31,18 +26,13 @@ bool ConfigParser::httpConfigParser(const HttpBlock& http, HttpConfig* httpConfi
 bool ConfigParser::serverConfigParser(const ServerBlock& serverBlock, ServerConfig* serverConfig) {
 	for (std::vector<Directive>::const_iterator it = serverBlock.directives.begin(); it != serverBlock.directives.end();
 		 ++it) {
-		try {
-			serverConfig->setDirectives(it->name, it->parameters);
-		} catch (const std::runtime_error& e) {
-			std::cerr << "Exception while setting value in serverConfig: " << e.what() << std::endl;
-			return false;
-		}
+		serverConfig->setDirectives(it->name, it->parameters);
 	}
 
 	for (std::vector<LocationBlock>::const_iterator lit = serverBlock.locations.begin();
 		 lit != serverBlock.locations.end(); ++lit) {
 		LocationConfig* locationConfig = new LocationConfig(serverConfig);
-		if (!locationConfigParser(*lit, locationConfig)) {
+		if (locationConfigParser(*lit, locationConfig) == false) {
 			delete locationConfig;	// Ensure memory cleanup if an error occurs.
 			return false;
 		}
@@ -55,14 +45,8 @@ bool ConfigParser::serverConfigParser(const ServerBlock& serverBlock, ServerConf
 bool ConfigParser::locationConfigParser(const LocationBlock& locationBlock, LocationConfig* locationConfig) {
 	for (std::vector<Directive>::const_iterator it = locationBlock.directives.begin();
 		 it != locationBlock.directives.end(); ++it) {
-		try {
-			locationConfig->setDirectives(it->name, it->parameters);
-		} catch (const std::runtime_error& e) {
-			std::cerr << "Exception while setting value in locationConfig: " << e.what() << std::endl;
-			return false;
-		}
+		locationConfig->setDirectives(it->name, it->parameters);
 	}
-
 	return true;
 }
 
@@ -204,10 +188,11 @@ bool ConfigParser::serverBlockTokenizer(const std::string& content, size_t& posi
 
 bool ConfigParser::httpBlockTokenizer(const std::string& content, size_t& position, HttpBlock& httpBlock) {
 	if (this->match(content, position, "http") == false) {
-		throw "Expected 'http' keyword at position: " + std::to_string(position);
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__,
+							   "Expected 'http' at position: " + std::to_string(position));
 	}
 	if (this->match(content, position, "{") == false) {
-		throw "Expected '{' at position: " + std::to_string(position);
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Expected '{' at position: " + std::to_string(position));
 	}
 	while (position < content.size()) {
 		if (this->match(content, position, "}") == true) {
@@ -216,16 +201,18 @@ bool ConfigParser::httpBlockTokenizer(const std::string& content, size_t& positi
 		if (this->match(content, position, "server")) {
 			ServerBlock serverBlock;
 			if (this->serverBlockTokenizer(content, position, serverBlock) == false) {
-				throw "Failed to parse server block inside http block at position: " + std::to_string(position);
+				throw ErrorLogger::log(__FILE__, __LINE__, __func__,
+									   "Failed to parse server block at position: " + std::to_string(position));
 			}
 			httpBlock.servers.push_back(serverBlock);
 		} else {
 			Directive directive;
 			if (this->directiveTokenizer(content, position, directive) == false) {
-				throw "Failed to parse directive inside http block at position: " + std::to_string(position);
+				throw ErrorLogger::log(__FILE__, __LINE__, __func__,
+									   "Failed to parse directive at position: " + std::to_string(position));
 			}
 			httpBlock.directives.push_back(directive);
 		}
 	}
-	throw "Unexpected end of content without closing '}' for http block.";
+	throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Expected '}' at position: " + std::to_string(position));
 }
