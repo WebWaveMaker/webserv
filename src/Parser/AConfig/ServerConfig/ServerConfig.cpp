@@ -1,14 +1,13 @@
 #include "ServerConfig.hpp"
 
-ServerConfig::ServerConfig() : _parent(NULL) {}
+ServerConfig::ServerConfig() {}
 
-ServerConfig::ServerConfig(HttpConfig* parent) : _parent(parent) {}
+ServerConfig::ServerConfig(utils::shared_ptr<HttpConfig> parent) : _parent(parent) {}
 
-ServerConfig::ServerConfig(const ServerConfig& other)
-	: AConfig(other), _parent(other._parent) {	// Include AConfig's copy constructor here.
+ServerConfig::ServerConfig(const ServerConfig& other) : AConfig(other), _parent(other._parent) {
 	for (std::map<std::string, LocationConfig*>::const_iterator it = other._locations.begin();
 		 it != other._locations.end(); ++it) {
-		_locations[it->first] = new LocationConfig(*(it->second));	// Deep copy
+		_locations[it->first] = new LocationConfig(*(it->second));
 	}
 }
 
@@ -21,7 +20,6 @@ ServerConfig::~ServerConfig() {
 ServerConfig& ServerConfig::operator=(const ServerConfig& other) {
 	if (this != &other) {
 		AConfig::operator=(other);
-		// 기존의 동적 할당된 메모리 해제
 		for (std::map<std::string, LocationConfig*>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
 			delete it->second;
 		}
@@ -31,10 +29,9 @@ ServerConfig& ServerConfig::operator=(const ServerConfig& other) {
 
 		for (std::map<std::string, LocationConfig*>::const_iterator it = other._locations.begin();
 			 it != other._locations.end(); ++it) {
-			_locations[it->first] = new LocationConfig(*(it->second));	// 깊은 복사
+			_locations[it->first] = new LocationConfig(*(it->second));
 		}
 	}
-
 	return *this;
 }
 
@@ -104,6 +101,8 @@ void ServerConfig::setErrorPage(const std::vector<std::string>& values) {
 std::string ServerConfig::getErrorPage(unsigned int error_code) const {
 	std::map<unsigned int, std::string>::const_iterator it = _errorPages.find(error_code);
 	if (it == _errorPages.end()) {
+		if (_parent.get() == u::nullptr_t)
+			throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid error code");
 		return _parent->getErrorPage(error_code);
 	}
 	return it->second;
@@ -112,6 +111,8 @@ std::string ServerConfig::getErrorPage(unsigned int error_code) const {
 ConfigValue ServerConfig::getDirectives(Directives method) const {
 	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(method);
 	if (it == _directives.end()) {
+		if (_parent.get() == u::nullptr_t)
+			throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid error code");
 		if (method == SENDFILE) {
 			return _parent->getDirectives(SENDFILE);
 		} else if (method == KEEPALIVE_TIMEOUT) {

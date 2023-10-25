@@ -56,12 +56,10 @@ bool ConfigParser::parse(const std::string& filename, std::vector<ServerConfig*>
 	size_t position = 0;
 	HttpBlock http;
 	this->httpBlockTokenizer(content, position, http);
-	HttpConfig* httpConfig = new HttpConfig();
+	utils::shared_ptr<HttpConfig> httpConfig(new HttpConfig());
 	if (this->httpConfigParser(http, httpConfig) == false) {
-		delete httpConfig;	// Cleanup memory if an error occurs
 		return false;
 	}
-
 	for (std::vector<ServerBlock>::const_iterator it = http.servers.begin(); it != http.servers.end(); ++it) {
 		ServerConfig* serverConfig = new ServerConfig(httpConfig);
 		if (this->serverConfigParser(*it, serverConfig) == false) {
