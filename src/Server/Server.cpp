@@ -3,6 +3,8 @@
 Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 	std::cout << "server constructor called\n";
 
+	this->_clients = new std::map<int, ClientEventHandler*>;
+
 	this->_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->_fd < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
@@ -29,7 +31,7 @@ Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 
 		// ReadEvent 등록
 		this->_eventHandler =
-			new ServerEventHandler(this->_fd, this->_clients, this->_accessLogger, this->_errorLogger);
+			new ServerEventHandler(this->_fd, this, this->_clients, this->_accessLogger, this->_errorLogger);
 		this->registerEvent(EVENT_READ);
 	} catch (std::exception& e) {
 		close(this->_fd);
@@ -62,11 +64,11 @@ ICallback* Server::getCallback() {
 }
 
 void Server::removeClient(int key) {
-	std::map<int, ClientEventHandler*>::iterator it = this->_clients.find(key);
+	std::map<int, ClientEventHandler*>::iterator it = this->_clients->find(key);
 
-	if (it != this->_clients.end()) {
+	if (it != this->_clients->end()) {
 		delete it->second;
-		this->_clients.erase(key);
+		this->_clients->erase(key);
 	} else {
 		this->_errorLogger->log("Not Found client\n", __func__, LOG_ERROR, NULL);
 		throw std::runtime_error("removeClient Error\n");
@@ -100,9 +102,9 @@ ErrorLogger& Server::getErrorLogger() const {
 Server::~Server() {
 	std::cout << "Server destructor called\n";
 
-	for (std::map<int, ClientEventHandler*>::iterator it = this->_clients.begin(); it != this->_clients.end(); ++it)
+	for (std::map<int, ClientEventHandler*>::iterator it = this->_clients->begin(); it != this->_clients->end(); ++it)
 		delete it->second;
-	this->_clients.clear();
+	this->_clients->clear();
 	// removeHandler() 고려
 	delete _eventHandler;
 	delete this->_accessLogger;

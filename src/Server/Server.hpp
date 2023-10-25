@@ -9,7 +9,7 @@ class Server : public ICallback {
 	ServerConfig& _serverConfig;
 	int _fd;
 	struct sockaddr_in _serverAddr;
-	std::map<int, ClientEventHandler*> _clients;
+	std::map<int, ClientEventHandler*>* _clients;
 	ServerEventHandler* _eventHandler;
 	AccessLogger* _accessLogger;
 	ErrorLogger* _errorLogger;
