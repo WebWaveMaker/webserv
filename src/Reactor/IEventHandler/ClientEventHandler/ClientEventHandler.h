@@ -2,11 +2,12 @@
 #ifndef CLIENTEVENTHANDLER_H
 #define CLIENTEVENTHANDLER_H
 
-#include <unistd.h>
-#include <iostream>
+#include <unistd.h>	 // For read()
+#include <iostream>	 // For std::cout
+#include <vector>	 // For std::vector
+
 #include "Client.hpp"
 #include "Dispatcher.hpp"
-#include "ErrorLogger.hpp"
 #include "ICallback.hpp"
 #include "IEventHandler.hpp"
 
