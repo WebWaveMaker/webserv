@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <iostream>
 #include "Client.hpp"
+#include "Dispatcher.hpp"
 #include "ErrorLogger.hpp"
 #include "ICallback.hpp"
 #include "IEventHandler.hpp"

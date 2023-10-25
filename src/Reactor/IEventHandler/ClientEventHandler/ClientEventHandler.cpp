@@ -15,23 +15,25 @@ Client* ClientEventHandler::getClient() const {
 
 void ClientEventHandler::handleRead() {
 	std::vector<char> buffer(BUFFER_SIZE);
-	int readByte = read(this->_handleFd, buffer.data(), buffer.size());
 
-	if (readByte < 0) {
-		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
-	} else {
-		std::string content(buffer.begin(), buffer.end());
-		// RequestParser(content);
-		// 실행처리
-		// Response 처리
+	while (this->_client->getReqParser()->getState() == != DONE) {
+		int readByte = read(this->_handleFd, buffer.data(), buffer.size() - 1);
+
+		if (readByte > 0) {
+			reque_t request = this->_client->getReqParser->parse(std::string(buffer.data()));
+			if (request.first == Done)
+				this->_client->executeRequest();
+		} else if (this->_client->getReqParser()->getState() != DONE)
+			break;
 	}
-	// partial read 발생시 read 루프 및 req 완료 확인 로직 필요
+	int readByte = read(this->_handleFd, buffer.data(), buffer.size());
 }
 
 void ClientEventHandler::handleWrite() {}
 
 void ClientEventHandler::handleError() {
-	// Client Error 발생시 callback함수를 호출해서 disconnect한다.
+	reactor::Dispatcher::getInstance()->removeHander(this, EVENT_READ);
+	reactor::Dispatcher::getInstance()->removeHander(this, EVENT_WRITE);
 	this->_callback->eraseClient(this->_handleFd);
 }
 
