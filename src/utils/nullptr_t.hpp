@@ -20,4 +20,6 @@ namespace utils {
 
 	} nullptr_t = {};
 }  // namespace utils
+
+namespace u = utils;
 #endif

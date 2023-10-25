@@ -16,5 +16,6 @@ namespace logTimeFormat {
 
 #include "TSingleton.hpp"
 #include "nullptr_t.hpp"
+#include <algorithm>
 
 #endif

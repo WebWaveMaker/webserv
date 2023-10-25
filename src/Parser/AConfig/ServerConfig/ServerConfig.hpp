@@ -2,22 +2,24 @@
 #ifndef SERVERCONFIG_HPP
 #define SERVERCONFIG_HPP
 
-#include "AConfig.hpp"	   // Include IConfig class
+#include "AConfig.hpp"	// Include IConfig class
+#include "ErrorLogger.hpp"
 #include "HttpConfig.hpp"  // Include CommonConfig class
 #include "LocationConfig.hpp"
 #include "Parser.h"
+#include "utils.hpp"
 
 class HttpConfig;
 class LocationConfig;
 
 class ServerConfig : public AConfig {
    private:
-	HttpConfig* _parent;
+	utils::shared_ptr<HttpConfig> _parent;
 	std::map<std::string, LocationConfig*> _locations;
 
    public:
 	ServerConfig();
-	ServerConfig(HttpConfig* parent);  // Moved initialization to constructor initializer list
+	ServerConfig(utils::shared_ptr<HttpConfig> parent);	 // Moved initialization to constructor initializer list
 	ServerConfig(const ServerConfig& other);
 	~ServerConfig();
 	ServerConfig& operator=(const ServerConfig& other);

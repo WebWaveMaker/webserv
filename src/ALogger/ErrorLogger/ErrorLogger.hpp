@@ -12,11 +12,11 @@
  */
 class ErrorLogger : public ALogger {
    private:
-	const enum LogLevel _logLevel;
+	const enum LogLevels _logLevel;
 	const std::string _logLevelStr;
 
 	// method
-	std::string convertLogLevelToString(const enum LogLevel& logLevel);
+	std::string convertLogLevelToString(const enum LogLevels& logLevel);
 
 	// static method
 	static std::string makeLogMsg(const char* file, const int line, const char* func, const std::string& msg);
@@ -26,7 +26,7 @@ class ErrorLogger : public ALogger {
 
    public:
 	// OCF
-	ErrorLogger(const int fd, enum LogLevel logLevel);
+	ErrorLogger(const int fd, enum LogLevels logLevel);
 	ErrorLogger(const ErrorLogger& obj);
 	virtual ~ErrorLogger();
 	ErrorLogger& operator=(const ErrorLogger& obj);
@@ -35,12 +35,13 @@ class ErrorLogger : public ALogger {
 	virtual void log(const std::string& msg, const char* func, const int enum__, void* arg);
 
 	// getter
-	enum LogLevel getLogLevel(void) const;
+	enum LogLevels getLogLevel(void) const;
 	std::string getLogLevelStr(void) const;
 
 	// static method
 	static void systemCallError(const char* file, const int line, const char* func, const std::string& msg);
 	static void systemCallError(const char* file, const int line, const char* func);
+	static errno_t log(const char* file, const int line, const char* func, const std::string& msg);
 };
 
 #endif

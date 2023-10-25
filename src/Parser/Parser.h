@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "enum.h"
 
 #define DEF_SENDFILE bool(true)
 #define DEF_KEEPALIVE_TIMEOUT static_cast<unsigned int>(75)
@@ -44,28 +45,5 @@ struct HttpBlock {
 	std::vector<Directive> directives;
 	std::vector<ServerBlock> servers;
 };
-
-enum ValueType { BOOL, UINT, STRING, LOG };
-
-enum Directives {
-	SENDFILE,			   // http, server, location	on : true, off : false default : true
-	ERROR_PAGE,			   // http, server, location	int, string default : specific to error codes
-	KEEPALIVE_TIMEOUT,	   // http, server	int default : 75
-	DEFAULT_TYPE,		   // http, server	string default : application/octet-stream
-	ERROR_LOG,			   // http, server	string, enum LogLevels default : logs/error.log error
-	CLIENT_MAX_BODY_SIZE,  // http, server	int default : 1m
-	LISTEN,				   // server, 	int default : 80
-	SERVER_NAME,		   // server, 	string default : empty
-	ROOT,				   // server, location 	string default : specific to directory
-	AUTOINDEX,			   // server, location 	on : true, off : false default : false
-	INDEX,				   // server, location 	string default : index.html
-	LIMIT_EXCEPT		   // server, location 	std::vector<enum HttpMethod> default : {GET, POST, DELETE, PUT}
-};
-
-enum LogLevels { LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG };
-
-enum HttpMethod { GET, POST, DELETE, PUT };
-
-extern unsigned int stringToDecimal(const std::string& value);
 
 #endif	// _PARSER_H
