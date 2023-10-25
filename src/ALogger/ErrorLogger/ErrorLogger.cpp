@@ -45,7 +45,7 @@ std::string ErrorLogger::getLogLevelStr(void) const {
 }
 
 std::string ErrorLogger::makeLogMsg(const char* file, const int line, const char* func, const std::string& msg) {
-	return ALogger::getCurTime(logTimeFormat::systemTimeFormat) + " " + static_cast<std::string>(file) + ":" +
+	return utils::getCurTime(logTimeFormat::systemTimeFormat) + " " + static_cast<std::string>(file) + ":" +
 		   utils::itos(line) + ": " + RED + "error: " RESET + msg + " reported by " GREEN +
 		   static_cast<std::string>(func) + RESET + " function ";
 }
@@ -80,7 +80,7 @@ errno_t ErrorLogger::log(const char* file, const int line, const char* func, con
 
 std::string ErrorLogger::makeLogMsg(const std::string& msg, const std::string& func, void* arg) {
 	(void)arg;	// for extra value;
-	return ALogger::getCurTime(logTimeFormat::errorTimeFormat) + RED + "[" + this->_logLevelStr + "] " + RESET + func +
+	return utils::getCurTime(logTimeFormat::errorTimeFormat) + RED + "[" + this->_logLevelStr + "] " + RESET + func +
 		   "() failed " + "(" + msg + ")\n";
 }
 

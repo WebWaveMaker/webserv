@@ -2,8 +2,6 @@
 #ifndef NULLPTR_T_HPP
 #define NULLPTR_T_HPP
 
-#include "utils.h"
-
 namespace utils {
 
 	const class nullptr_t {

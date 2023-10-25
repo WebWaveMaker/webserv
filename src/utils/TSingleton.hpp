@@ -3,6 +3,7 @@
 #define TSINGLETON_HPP
 
 #include "utils.h"
+#include "nullptr_t.hpp"
 
 namespace utils {
 
@@ -11,7 +12,7 @@ namespace utils {
 
 	   public:
 		static T* getInstance() {
-			if (_instance == nullptr_t) {
+			if (_instance == u::nullptr_t) {
 				_instance = new T;
 				std::atexit(deleteInstance);
 			}
@@ -23,9 +24,9 @@ namespace utils {
 		virtual ~TSingleton() {}
 
 		static void deleteInstance() {
-			if (_instance != nullptr_t)
+			if (_instance != u::nullptr_t)
 				delete _instance;
-			_instance = nullptr_t;
+			_instance = u::nullptr_t;
 		}
 
 	   private:
@@ -33,7 +34,7 @@ namespace utils {
 	};
 
 	template <class T>
-	T* TSingleton<T>::_instance = nullptr_t;
+	T* TSingleton<T>::_instance = u::nullptr_t;
 
 }  // namespace utils
 
