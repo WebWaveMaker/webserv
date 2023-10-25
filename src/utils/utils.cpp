@@ -8,7 +8,7 @@ namespace utils {
 		return os.str();
 	}
 
-	extern unsigned int utils::stringToDecimal(const std::string& value) {
+	extern unsigned int stringToDecimal(const std::string& value) {
 		if (value.empty()) {
 			throw std::runtime_error("error: empty string");
 		}
@@ -30,7 +30,6 @@ namespace utils {
 					throw std::runtime_error("error: invalid unit");
 			}
 		}
-
 		return atoi(value.c_str());
 	}
 
