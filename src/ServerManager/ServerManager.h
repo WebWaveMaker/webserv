@@ -2,6 +2,7 @@
 #ifndef SERVERMANAGER_H
 #define SERVERMANAGER_H
 
-#include "Server.cpp"
+#include "Server.hpp"
+#include "ServerConfig.hpp"
 
 #endif

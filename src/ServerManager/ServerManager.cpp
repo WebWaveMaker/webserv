@@ -1,8 +1,8 @@
 #include "ServerManager.hpp"
 
-ServerManager::ServerManager(ConfigStore& configStore) : _config(configStore) {
+ServerManager::ServerManager(std::vector<ServerConfig*>* serverConfig) : _serverConfigs(serverConfig) {
 	try {
-		// this->CreateServer(configStore.getServerConfig(););
+		this->CreateServer(*(this->_serverConfigs));
 	} catch (std::exception& e) {
 		throw;
 	}
@@ -34,12 +34,15 @@ Server* ServerManager::getServer(int serverFD) const {
 	return NULL;
 }
 
+std::vector<ServerConfig*>* ServerManager::getServerConfigs() const {
+	return (this->_serverConfigs);
+}
+
 ServerManager::~ServerManager() {
 	std::cout << "ServerManager Destructor called\n";
 
 	for (std::map<int, Server*>::iterator it = this->_servers.begin(); it != this->_servers.end(); ++it)
 		delete it->second;
 	this->_servers.clear();
-
-	delete &this->_config;	// 힙영역에 할당된 경우 사용
+	delete _serverConfigs;
 }
