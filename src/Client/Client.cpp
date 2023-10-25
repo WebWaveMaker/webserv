@@ -5,8 +5,8 @@ Client::Client(int clientFd, const sockaddr_in& clientAddr, ServerConfig& server
 	std::cout << clientFd + " | client constructor called\n";
 
 	// _clientAddrStr 초기화
-	// request 생성
-	// response 생성
+	// this->_req = new RequestParser;
+	// this->_res = new ResponseParser;
 }
 
 int Client::getFd() const {
@@ -34,3 +34,5 @@ ResponseParser* Client::getResParser() const {
 }
 
 bool Client::executeRequest() {}
+
+Client::~Client() {}

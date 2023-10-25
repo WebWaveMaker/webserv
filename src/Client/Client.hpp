@@ -3,12 +3,6 @@
 #define CLIENT_HPP
 
 #include "Client.h"
-
-class ServerConfig;
-class RequestParser;
-class ResponseParser;
-class ClientEventHandler;
-
 class Client {
    private:
 	int _clientFd;
