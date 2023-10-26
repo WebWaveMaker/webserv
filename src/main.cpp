@@ -29,6 +29,10 @@ int main(int ac, char** av) {
 	try {
 		serverManager = new ServerManager(serverConfigs);
 		bool parse = configParser.parse(configFile, *serverConfigs);
+		ServerConfig *temp = (*serverConfigs)[0];
+		std::cout << temp->getDirectives(SENDFILE).asBool() << std::endl;
+		if (parse == false)
+			return EXIT_FAILURE;
 		reactor::Dispatcher::getInstance()->handleEvent();
 	} catch (std::exception& e) {
 		std::cerr << e.what() << "\n";

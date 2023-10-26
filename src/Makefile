@@ -18,11 +18,15 @@ include $(TOPDIR)/config/makefile/common.mk
 
 NAME :=	$(PROJECT_NAME)
 
-DIRS :=	ALogger \
+DIRS :=	AConfig \
+		ALogger \
+		Client \
+		HttpMessage \
+		Parser \
 		Reactor \
+		Server \
 		ServerManager \
-		utils \
-		Server
+		utils
 
 LIBS :=	$(addsuffix .a, $(addprefix lib/, $(DIRS)))
 SRCS := main.cpp

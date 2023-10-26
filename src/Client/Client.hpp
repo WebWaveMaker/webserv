@@ -6,8 +6,8 @@
 class Client {
    private:
 	int _clientFd;
-	const std::string _clientAddrStr;
-	struct sockaddr_in _clientAddr;
+	std::string _clientAddrStr;
+	struct sockaddr_in _clientAddr;	 // 127.0.0.1
 	ServerConfig& _serverConfig;
 	RequestParser* _req;
 	ResponseParser* _res;

@@ -10,6 +10,7 @@
 #include "Dispatcher.hpp"
 #include "ICallback.hpp"
 #include "IEventHandler.hpp"
+#include "RequestParser.hpp"
 
 #define BUFFER_SIZE 1024
 

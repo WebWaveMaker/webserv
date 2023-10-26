@@ -16,17 +16,18 @@ Client* ClientEventHandler::getClient() const {
 void ClientEventHandler::handleRead() {
 	std::vector<char> buffer(BUFFER_SIZE);
 
-	while (this->_client->getReqParser()->getState() == != DONE) {
+	while (this->_client->getReqParser()->getState() != RESOLVE) {
 		int readByte = read(this->_handleFd, buffer.data(), buffer.size() - 1);
 
 		if (readByte > 0) {
-			reque_t request = this->_client->getReqParser->parse(std::string(buffer.data()));
-			if (request.first == Done)
+			request_t request = this->_client->getReqParser()->parse(std::string(buffer.data()));
+			if (request.get()->first == DONE)
 				this->_client->executeRequest();
-		} else if (this->_client->getReqParser()->getState() != DONE)
+		} else if (this->_client->getReqParser()->getState() != RESOLVE)
 			break;
 	}
 	int readByte = read(this->_handleFd, buffer.data(), buffer.size());
+	(void)readByte;
 }
 
 void ClientEventHandler::handleWrite() {}

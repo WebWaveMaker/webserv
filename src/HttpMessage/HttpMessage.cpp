@@ -1,9 +1,13 @@
 #include "HttpMessage.hpp"
 
 HttpMessage::HttpMessage() : _startLine(), _headers(), _body() {}
-HttpMessage::HttpMessage(const HttpMessage& obj) {}
+HttpMessage::HttpMessage(const HttpMessage& obj) {
+	(void)obj;
+}
 HttpMessage::~HttpMessage() {}
 HttpMessage& HttpMessage::operator=(const HttpMessage& obj) {
+	if (this != &obj)
+		return *this;
 	return *this;
 }
 

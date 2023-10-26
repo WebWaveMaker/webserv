@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <sstream>
+#include <vector>
 #include "TSingleton.hpp"
 #include "color.h"
 #include "nullptr_t.hpp"

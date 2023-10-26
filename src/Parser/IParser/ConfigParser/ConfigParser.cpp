@@ -9,7 +9,7 @@ ConfigParser::~ConfigParser() {}
 std::string ConfigParser::parser(const std::string& filename) {
 	std::ifstream infile(filename.c_str());
 	if (infile.is_open() == false) {
-		throw ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "Could not open file: " + filename);
+		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Could not open file: " + filename);
 	}
 
 	const std::string content((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
@@ -57,7 +57,7 @@ bool ConfigParser::parse(const std::string& filename, std::vector<ServerConfig*>
 	HttpBlock http;
 	this->httpBlockTokenizer(content, position, http);
 	utils::shared_ptr<HttpConfig> httpConfig(new HttpConfig());
-	if (this->httpConfigParser(http, httpConfig) == false) {
+	if (this->httpConfigParser(http, httpConfig.get()) == false) {
 		return false;
 	}
 	for (std::vector<ServerBlock>::const_iterator it = http.servers.begin(); it != http.servers.end(); ++it) {

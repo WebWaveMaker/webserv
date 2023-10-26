@@ -16,10 +16,11 @@ endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-DIRS := ErrorLogger \
-		AccessLogger
+DIRS := HttpConfig \
+		LocationConfig \
+		ServerConfig
 
-SRCS := ALogger.cpp
+SRCS := AConfig.cpp
 
 LIBS :=	$(wildcard objs/*.o)
 OBJS := $(SRCS:.cpp=.o)

@@ -4,14 +4,6 @@
 
 #include "RequestParser.h"
 
-class ServerConfig {
-	public:
-		unsigned int getDirectives(enum Directives dir) {
-			if (dir == CLIENT_MAX_BODY_SIZE)
-				return 4800;
-		};
-};
-
 class RequestParser : public IParser<request_t> {
    private:
 	std::queue<request_t> _msgs;

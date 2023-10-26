@@ -2,8 +2,8 @@
 
 Client::Client(int clientFd, const sockaddr_in& clientAddr, ServerConfig& serverConfig)
 	: _clientFd(clientFd), _clientAddr(clientAddr), _serverConfig(serverConfig) {
-	std::cout << clientFd + " | client constructor called\n";
-
+	std::cout << utils::itos(clientFd) + " | client constructor called\n";
+	this->_clientAddrStr = "any";
 	// _clientAddrStr 초기화
 	// this->_req = new RequestParser;
 	// this->_res = new ResponseParser;
@@ -33,6 +33,8 @@ ResponseParser* Client::getResParser() const {
 	return (this->_res);
 }
 
-bool Client::executeRequest() {}
+bool Client::executeRequest() {
+	return true;
+}
 
 Client::~Client() {}

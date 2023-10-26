@@ -10,7 +10,8 @@ namespace reactor {
 	   private:
 	   protected:
 	   public:
-		virtual ~IEventHandler();
+		IEventHandler(){};
+		virtual ~IEventHandler(){};
 		virtual handle_t getHandle() const = 0;
 		virtual void handleRead() = 0;
 		virtual void handleWrite() = 0;

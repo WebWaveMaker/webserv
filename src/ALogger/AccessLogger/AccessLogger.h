@@ -3,12 +3,8 @@
 #define ACCESSLOGGER_H
 
 #include "ALogger.hpp"
+#include "Client.hpp"
 #include "ErrorLogger.hpp"
-
-/**
- * @brief 
- * 
- */
-enum HttpMethod { GET, POST, PUT, DELETE };
+#include "enum.h"
 
 #endif

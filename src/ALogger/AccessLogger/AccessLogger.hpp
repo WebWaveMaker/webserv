@@ -6,7 +6,7 @@
 
 class AccessLogger : public ALogger {
    private:
-	std::string getHttpMethodStr(const enum HttpMethod& method);
+	std::string getHttpMethodStr(const enum HttpMethods& method);
 
 	// override
 	virtual std::string makeLogMsg(const std::string& msg, const std::string& func, void* arg);

@@ -2,8 +2,8 @@
 #ifndef TSINGLETON_HPP
 #define TSINGLETON_HPP
 
-#include "utils.h"
 #include "nullptr_t.hpp"
+#include "utils.h"
 
 namespace utils {
 

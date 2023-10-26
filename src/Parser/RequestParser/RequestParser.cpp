@@ -97,7 +97,7 @@ bool RequestParser::parserBody(std::string& buf) {
 	if (headers.count("Content-Length") == 0)
 		return true;
 	const unsigned int contentLength = utils::stoui(headers.at("Content-Length"));
-	const unsigned int bodyLimit = _serverConfig.getDirectives(CLIENT_MAX_BODY_SIZE);
+	const unsigned int bodyLimit = _serverConfig.getDirectives(CLIENT_MAX_BODY_SIZE).asUint();
 
 	if (contentLength > bodyLimit) {
 		_curMsg->get()->first = ERROR;
