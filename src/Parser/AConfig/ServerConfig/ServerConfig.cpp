@@ -90,7 +90,7 @@ void ServerConfig::setErrorPage(const std::vector<std::string>& values) {
 		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid number of parameters for error_page");
 	}
 	for (unsigned int i = 0; i < size - 1; i++) {
-		unsigned int error_code = static_cast<unsigned int>(stringToDecimal(values[i]));
+		unsigned int error_code = static_cast<unsigned int>(utils::stringToDecimal(values[i]));
 		if (error_code == 0 || error_code > 599) {
 			throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid error code");
 		}
