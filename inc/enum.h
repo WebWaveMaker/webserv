@@ -14,7 +14,7 @@ enum Directives {
 	ROOT,				   // server, location 	string default : specific to directory
 	AUTOINDEX,			   // server, location 	on : true, off : false default : false
 	INDEX,				   // server, location 	string default : index.html
-	LIMIT_EXCEPT		   // server, location 	std::vector<enum HttpMethod> default : {GET, POST, DELETE, PUT}
+	LIMIT_EXCEPT		   // server, location 	std::vector<enum HttpMethods> default : {GET, POST, DELETE, PUT}
 };
 
 enum LogLevels { LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG };

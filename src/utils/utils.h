@@ -2,9 +2,12 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <algorithm>
 #include <iostream>
 #include <sstream>
+#include "TSingleton.hpp"
 #include "color.h"
+#include "nullptr_t.hpp"
 
 namespace logTimeFormat {
 	static const char* accessTimeFormat = " [%d/%b/%Y:%H:%M:%S] ";
@@ -13,9 +16,5 @@ namespace logTimeFormat {
 	static const char* GMTtimeFormat = "%a, %d %b %Y %H:%M:%S GMT";
 	static const char* UTCtimeFormat = "%Y-%m-%dT%H:%M:%SZ";
 };	// namespace logTimeFormat
-
-#include "TSingleton.hpp"
-#include "nullptr_t.hpp"
-#include <algorithm>
 
 #endif

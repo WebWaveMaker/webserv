@@ -18,8 +18,8 @@ ConfigValue::ConfigValue(const std::pair<std::string, LogLevels>& l) : type(LOG)
 	new (&data.log) std::pair<std::string, LogLevels>(l);
 }
 
-ConfigValue::ConfigValue(const std::vector<HttpMethod>& v) : type(MEDVEC) {
-	new (&data.medvec) std::vector<HttpMethod>(v);
+ConfigValue::ConfigValue(const std::vector<HttpMethods>& v) : type(MEDVEC) {
+	new (&data.medvec) std::vector<HttpMethods>(v);
 }
 
 ConfigValue::ConfigValue(const std::vector<std::string>& v) : type(STRVEC) {
@@ -43,7 +43,7 @@ ConfigValue::ConfigValue(const ConfigValue& other) : type(other.type) {
 			new (&data.log) std::pair<std::string, LogLevels>(other.asLog());
 			break;
 		case MEDVEC:
-			new (&data.medvec) std::vector<HttpMethod>(other.asMedVec());
+			new (&data.medvec) std::vector<HttpMethods>(other.asMedVec());
 			break;
 		case STRVEC:
 			new (&data.strvec) std::vector<std::string>(other.asStrVec());
@@ -58,7 +58,7 @@ ConfigValue::~ConfigValue() {
 	} else if (type == LOG) {
 		reinterpret_cast<std::pair<std::string, LogLevels>*>(&data.log)->~pair();
 	} else if (type == MEDVEC) {
-		reinterpret_cast<std::vector<HttpMethod>*>(&data.medvec)->~vector();
+		reinterpret_cast<std::vector<HttpMethods>*>(&data.medvec)->~vector();
 	} else if (type == STRVEC) {
 		reinterpret_cast<std::vector<std::string>*>(&data.strvec)->~vector();
 	}
@@ -95,11 +95,11 @@ ConfigValue& ConfigValue::operator=(const std::pair<std::string, LogLevels>& l) 
 	return *this;
 }
 
-ConfigValue& ConfigValue::operator=(const std::vector<HttpMethod>& v) {
+ConfigValue& ConfigValue::operator=(const std::vector<HttpMethods>& v) {
 	if (type != MEDVEC)
 		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "operator Invalid type");
-	reinterpret_cast<std::vector<HttpMethod>*>(data.medvec)->~vector();
-	new (data.medvec) std::vector<HttpMethod>(v);
+	reinterpret_cast<std::vector<HttpMethods>*>(data.medvec)->~vector();
+	new (data.medvec) std::vector<HttpMethods>(v);
 	return *this;
 }
 
@@ -117,7 +117,7 @@ ConfigValue& ConfigValue::operator=(const ConfigValue& other) {
 	} else if (type == LOG) {
 		reinterpret_cast<std::pair<std::string, LogLevels>*>(&data.log)->~pair();
 	} else if (type == MEDVEC) {
-		reinterpret_cast<std::vector<HttpMethod>*>(&data.medvec)->~vector();
+		reinterpret_cast<std::vector<HttpMethods>*>(&data.medvec)->~vector();
 	} else if (type == UINT) {
 		data.integer = other.data.integer;
 	} else if (type == BOOL) {
@@ -145,7 +145,7 @@ ConfigValue& ConfigValue::operator=(const ConfigValue& other) {
 			new (&data.log) std::pair<std::string, LogLevels>(other.asLog());
 			break;
 		case MEDVEC:
-			new (&data.medvec) std::vector<HttpMethod>(other.asMedVec());
+			new (&data.medvec) std::vector<HttpMethods>(other.asMedVec());
 			break;
 		case STRVEC:
 			new (&data.strvec) std::vector<std::string>(other.asStrVec());
@@ -197,7 +197,7 @@ std::vector<HttpMethods> ConfigValue::asMedVec() const {
 	if (type != MEDVEC) {
 		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid type asMedVec");
 	}
-	return *reinterpret_cast<const std::vector<HttpMethod>*>(&data.medvec);
+	return *reinterpret_cast<const std::vector<HttpMethods>*>(&data.medvec);
 }
 
 std::vector<std::string> ConfigValue::asStrVec() const {

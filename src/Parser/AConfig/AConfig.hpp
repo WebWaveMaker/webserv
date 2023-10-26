@@ -10,7 +10,7 @@
 #include "ConfigValue.hpp"	// For ConfigValue class
 #include "ErrorLogger.hpp"	// For ErrorLogger class
 #include "Parser.h"			// For LogLevels enum
-#include "utils.hpp"		// For stringToDecimal() function
+#include "utils.hpp"		// For utils::stringToDecimal() function
 
 #include <map>	   // For std::map
 #include <string>  // For std::string
@@ -37,7 +37,7 @@ class AConfig {
 	ConfigValue addUnsignedIntValue(const std::string& value);
 	ConfigValue addStringValue(const std::string& value);
 	ConfigValue addLogValue(const std::vector<std::string>& value);
-	ConfigValue addMedVecValue(const std::vector<HttpMethod>& value);
+	ConfigValue addMedVecValue(const std::vector<HttpMethods>& value);
 	ConfigValue addStrVecValue(const std::vector<std::string>& value);
 
    public:

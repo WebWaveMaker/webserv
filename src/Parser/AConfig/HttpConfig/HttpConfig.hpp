@@ -18,7 +18,7 @@
  * 
  * This class is responsible for setting, retrieving, and managing HTTP configurations. It inherits
  * from the AConfig interface and implements all its pure virtual methods.
- */
+*/
 class HttpConfig : public AConfig {
    public:
 	/**

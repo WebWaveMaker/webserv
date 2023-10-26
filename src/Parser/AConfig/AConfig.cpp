@@ -57,7 +57,7 @@ ConfigValue AConfig::addBooleanValue(const std::string& value) {
  * @throw std::runtime_error if the value is invalid.
  */
 ConfigValue AConfig::addUnsignedIntValue(const std::string& value) {
-	unsigned int unsignedValue = static_cast<unsigned int>(stringToDecimal(value));
+	unsigned int unsignedValue = static_cast<unsigned int>(utils::stringToDecimal(value));
 	if (unsignedValue == 0) {
 		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid unsigned integer value");
 	}
@@ -99,7 +99,7 @@ ConfigValue AConfig::addLogValue(const std::vector<std::string>& value) {
  * @param value A vector containing HTTP methods.
  * @return ConfigValue object containing the added value.
  */
-ConfigValue AConfig::addMedVecValue(const std::vector<HttpMethod>& value) {
+ConfigValue AConfig::addMedVecValue(const std::vector<HttpMethods>& value) {
 	return ConfigValue(value);
 }
 

@@ -7,6 +7,7 @@
 #include "HttpConfig.hpp"  // Include CommonConfig class
 #include "LocationConfig.hpp"
 #include "Parser.h"
+#include "shared_ptr.hpp"
 #include "utils.hpp"
 
 class HttpConfig;

@@ -32,7 +32,6 @@ namespace utils {
 		}
 		return atoi(value.c_str());
 	}
-
 	std::string getCurTime(const char* format) {
 		const std::time_t t = std::time(NULL);
 		const std::tm* localTime = std::localtime(&t);
@@ -42,4 +41,5 @@ namespace utils {
 
 		return DARK_BLUE + std::string(buf) + RESET;
 	}
+
 }  // namespace utils
