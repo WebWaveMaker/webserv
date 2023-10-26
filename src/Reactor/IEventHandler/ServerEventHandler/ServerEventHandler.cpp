@@ -39,9 +39,10 @@ void ServerEventHandler::handleRead() {
 		_errorLogger->log("error in accept", __func__, LOG_ERROR, 0);
 		throw;
 	}
-	fcntl(clientFd, F_SETFL, O_NONBLOCK);
-	// fcntl 에러처리
-	// client의 read 이벤트 등록
+	if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0) {
+		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
+		throw std::runtime_error("");
+	}
 	reactor::Dispatcher* dispatcher = reactor::Dispatcher::getInstance();
 	dispatcher->registerHander((*this->_clients)[clientFd], EVENT_READ);
 }

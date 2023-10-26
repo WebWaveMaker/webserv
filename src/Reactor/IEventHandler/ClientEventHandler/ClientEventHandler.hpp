@@ -4,11 +4,6 @@
 
 #include "ClientEventHandler.h"
 
-class Client;
-class ICallback;
-class AccessLogger;
-class ErrorLogger;
-
 class ClientEventHandler : public reactor::IEventHandler {
    private:
 	handle_t _handleFd;
