@@ -10,14 +10,34 @@
  */
 
 #include <cerrno>
+#include "ConfigParser.hpp"
+#include "Dispatcher.hpp"
+#include "ServerConfig.hpp"
 #include "ServerManager.hpp"
 
 int main(int ac, char** av) {
-	try {
-		ServerManager serverManager(ac, av);
-	} catch (const std::exception& e) {
-		std::cerr << e.what() << '\n';
-		return errno;
+	if (ac != 2) {
+		std::cerr << "Too Many Arguments\n";
+		return (EXIT_FAILURE);
 	}
-	return EXIT_SUCCESS;
+
+	std::string configFile = av[1];
+	std::vector<ServerConfig*>* serverConfigs = new std::vector<ServerConfig*>;
+	ConfigParser configParser;
+	ServerManager* serverManager = utils::nullptr_t;
+
+	try {
+		serverManager = new ServerManager(serverConfigs);
+		bool parse = configParser.parse(configFile, *serverConfigs);
+		reactor::Dispatcher::getInstance()->handleEvent();
+	} catch (std::exception& e) {
+		std::cerr << e.what() << "\n";
+		if (serverManager)
+			delete serverManager;
+		return (EXIT_FAILURE);
+	}
+
+	if (serverManager)
+		delete serverManager;
+	return (EXIT_SUCCESS);
 }
