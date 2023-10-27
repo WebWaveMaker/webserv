@@ -16,5 +16,6 @@
 // #include "ClientEventHandler.hpp"  // For ClientEventHandler
 #include "ErrorLogger.hpp"		   // For ErrorLogger
 #include "ICallback.hpp"		   // For ICallback
+#include "Dispatcher.hpp"
 
 #endif
