@@ -11,10 +11,10 @@
 #include <map>			 // For std::map
 #include <stdexcept>	 // For std::runtime_error
 
+#include "AEventHandler.hpp"	   // Assuming the path for AEventHandler
 #include "AccessLogger.hpp"		   // For AccessLogger
 #include "ClientEventHandler.hpp"  // For ClientEventHandler
 #include "ErrorLogger.hpp"		   // For ErrorLogger
 #include "ICallback.hpp"		   // For ICallback
-#include "AEventHandler.hpp"	   // Assuming the path for AEventHandler
 
 #endif

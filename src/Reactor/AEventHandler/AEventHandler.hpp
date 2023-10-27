@@ -9,9 +9,9 @@ namespace reactor {
 	class AEventHandler {
 	   private:
 	   protected:
+		const handle_t _fd;
 		const utils::shared_ptr<AccessLogger> _accessLogger;
 		const utils::shared_ptr<ErrorLogger> _errorLogger;
-		const handle_t _fd;
 		utils::shared_ptr<std::vector<char> > _buf;
 
 	   public:
@@ -22,7 +22,7 @@ namespace reactor {
 					  utils::shared_ptr<ErrorLogger>& errorLogger, utils::shared_ptr<std::vector<char> > buf)
 			: _fd(fd), _accessLogger(accessLogger), _errorLogger(errorLogger), _buf(buf){};
 		virtual ~AEventHandler(){};
-		virtual handle_t getHandle() const = 0;
+		virtual handle_t getHandle() const { return this->_fd; };
 		virtual void handleEvent() = 0;
 	};
 

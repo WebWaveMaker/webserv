@@ -32,7 +32,8 @@ int main(int ac, char** av) {
 		if (parse == false)
 			return EXIT_FAILURE;
 		std::cout << "here\n";
-		reactor::Dispatcher::getInstance()->handleEvent();
+		while (true)
+			reactor::Dispatcher::getInstance()->handleEvent();
 	} catch (std::exception& e) {
 		std::cerr << e.what() << "\n";
 		if (serverManager)

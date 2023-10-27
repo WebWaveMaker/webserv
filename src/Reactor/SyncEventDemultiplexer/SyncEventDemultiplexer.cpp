@@ -43,16 +43,7 @@ namespace reactor {
 		if (eventNum == -1)
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		_kq->getChangeList().clear();
-		for (int i = 0; i < eventNum; ++i) {
-			const struct kevent event = _kq->getkEventList()[i];
-			AEventHandler* handler = static_cast<AEventHandler*>(event.udata);
-			if (event.flags & EV_EOF) {};
-			if (event.flags & EV_ERROR)
-				handler->handleError();
-			if (event.filter == EVFILT_READ)
-				handler->handleRead();
-			if (event.filter == EVFILT_WRITE)
-				handler->handleWrite();
-		}
+		for (int i = 0; i < eventNum; ++i)
+			static_cast<AEventHandler*>(_kq->getkEventList()[i].udata)->handleEvent();
 	};
 }  // namespace reactor

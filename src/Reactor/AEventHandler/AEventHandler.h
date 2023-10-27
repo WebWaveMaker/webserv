@@ -2,6 +2,7 @@
 #ifndef AEVENTHANDLER_H
 #define AEVENTHANDLER_H
 
+#include <sys/socket.h>
 #include "AccessLogger.hpp"
 #include "ErrorLogger.hpp"
 #include "utils.hpp"

@@ -20,7 +20,6 @@ endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-DIRS := ServerEventHandler \
-		ClientEventHandler
+DIRS := ClientWriteHandler
 
 include $(TOPDIR)/config/makefile/objRecipes.mk
