@@ -8,7 +8,7 @@ class Client {
 	int _clientFd;
 	std::string _clientAddrStr;
 	struct sockaddr_in _clientAddr;	 // 127.0.0.1
-	ServerConfig& _serverConfig;
+	utils::shared_ptr<ServerConfig> _serverConfig;
 	RequestParser* _req;
 	ResponseParser* _res;
 
@@ -16,7 +16,7 @@ class Client {
 	Client& operator=(const Client& obj);
 
    public:
-	Client(int clientFd, const sockaddr_in& clientAddr, ServerConfig& serverConfig);
+	Client(int clientFd, const sockaddr_in& clientAddr, utils::shared_ptr<ServerConfig>& serverConfig);
 	bool executeRequest();
 
 	int getFd() const;
