@@ -18,8 +18,8 @@ LocationConfig& LocationConfig::operator=(const LocationConfig& other) {
 
 void LocationConfig::setDirectives(const std::string& directive, const std::vector<std::string>& values) {
 	if (values.empty())
-		throw ErrorLogger::log(__FILE__, __LINE__, __func__,
-							   "LocationConfig :Invalid number of parameters for " + directive);
+		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+									  "LocationConfig :Invalid number of parameters for " + directive);
 
 	if (directive == "sendfile") {
 		_directives.insert(std::make_pair(SENDFILE, addBooleanValue(values[0])));
@@ -43,25 +43,27 @@ void LocationConfig::setDirectives(const std::string& directive, const std::vect
 			} else if (*it == "PUT") {
 				methods.push_back(PUT);
 			} else {
-				throw ErrorLogger::log(__FILE__, __LINE__, __func__, "LocationConfig :Invalid method for limit_except");
+				throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+											  "LocationConfig :Invalid method for limit_except");
 			}
 		}
 		_directives.insert(std::make_pair(LIMIT_EXCEPT, ConfigValue(methods)));
 	} else {
-		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "LocationConfig :Invalid directive " + directive);
+		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "LocationConfig :Invalid directive " + directive);
 	}
 }
 
 void LocationConfig::setErrorPage(const std::vector<std::string>& values) {
 	const unsigned int size = values.size();
 	if (size < 2) {
-		throw ErrorLogger::log(__FILE__, __LINE__, __func__,
-							   "LocationConfig :Invalid number of parameters for error_page");
+		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+									  "LocationConfig :Invalid number of parameters for error_page");
 	}
 	for (unsigned int i = 0; i < size - 1; i++) {
 		unsigned int error_code = static_cast<unsigned int>(utils::stringToDecimal(values[i]));
 		if (error_code == 0 || error_code > 599) {
-			throw ErrorLogger::log(__FILE__, __LINE__, __func__, "LocationConfig :Invalid error code for error_page");
+			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+										  "LocationConfig :Invalid error code for error_page");
 		}
 		_errorPages.insert(std::make_pair(error_code, values[size - 1]));
 	}
@@ -101,7 +103,7 @@ ConfigValue LocationConfig::getDirectives(Directives method) const {
 		} else if (method == INDEX) {
 			return _parent->getDirectives(INDEX);
 		}
-		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "LocationConfig :Invalid directive");
+		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "LocationConfig :Invalid directive");
 	}
 	return it->second;
 }

@@ -108,7 +108,7 @@ bool RequestParser::parserBody(std::string& buf) {
 		buf = buf.substr(contentLength);
 		_curMsg->get()->second.setBody(str);
 	} catch (const std::out_of_range& ex) {
-		ErrorLogger::log(__FILE__, __LINE__, __func__, "content-length too large compared of body");
+		ErrorLogger::parseError(__FILE__, __LINE__, __func__, "content-length too large compared of body");
 		_curMsg->get()->first = ERROR;
 		return false;
 	}

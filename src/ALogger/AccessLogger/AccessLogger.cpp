@@ -24,6 +24,7 @@ std::string AccessLogger::getHttpMethodStr(const enum HttpMethods& method) {
 		default:
 			break;
 	}
+	return "";
 }
 
 std::string AccessLogger::makeLogMsg(const std::string& msg, const std::string& func, void* arg) {

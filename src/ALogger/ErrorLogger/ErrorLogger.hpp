@@ -41,7 +41,7 @@ class ErrorLogger : public ALogger {
 	// static method
 	static void systemCallError(const char* file, const int line, const char* func, const std::string& msg);
 	static void systemCallError(const char* file, const int line, const char* func);
-	static errno_t log(const char* file, const int line, const char* func, const std::string& msg);
+	static errno_t parseError(const char* file, const int line, const char* func, const std::string& msg);
 };
 
 #endif

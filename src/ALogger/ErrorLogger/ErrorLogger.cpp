@@ -18,6 +18,7 @@ std::string ErrorLogger::convertLogLevelToString(const enum LogLevels& logLevel)
 		default:
 			break;
 	}
+	return "";
 }
 
 ErrorLogger::ErrorLogger(const int fd, enum LogLevels logLevel)
@@ -73,7 +74,7 @@ void ErrorLogger::systemCallError(const char* file, const int line, const char* 
 	std::cerr << ErrorLogger::makeLogMsg(file, line, func, msg) << std::endl;
 }
 
-errno_t ErrorLogger::log(const char* file, const int line, const char* func, const std::string& msg) {
+errno_t ErrorLogger::parseError(const char* file, const int line, const char* func, const std::string& msg) {
 	std::cerr << ErrorLogger::makeLogMsg(file, line, func, msg) << std::endl;
 	return errno;
 }

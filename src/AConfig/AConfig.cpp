@@ -47,7 +47,7 @@ ConfigValue AConfig::addBooleanValue(const std::string& value) {
 	if (value == "off") {
 		return ConfigValue(false);
 	}
-	throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid boolean value");
+	throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid boolean value");
 }
 
 /**
@@ -59,7 +59,7 @@ ConfigValue AConfig::addBooleanValue(const std::string& value) {
 ConfigValue AConfig::addUnsignedIntValue(const std::string& value) {
 	unsigned int unsignedValue = static_cast<unsigned int>(utils::stringToDecimal(value));
 	if (unsignedValue == 0) {
-		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid unsigned integer value");
+		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid unsigned integer value");
 	}
 	return ConfigValue((unsigned int)unsignedValue);
 }
@@ -89,7 +89,7 @@ ConfigValue AConfig::addLogValue(const std::vector<std::string>& value) {
 	} else if (value[1] == "error") {
 		level = LOG_ERROR;
 	} else {
-		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Invalid log level");
+		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid log level");
 	}
 	return ConfigValue(std::make_pair(value[0], level));
 }

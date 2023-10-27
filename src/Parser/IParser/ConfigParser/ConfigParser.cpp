@@ -9,7 +9,7 @@ ConfigParser::~ConfigParser() {}
 std::string ConfigParser::parser(const std::string& filename) {
 	std::ifstream infile(filename.c_str());
 	if (infile.is_open() == false) {
-		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Could not open file: " + filename);
+		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Could not open file: " + filename);
 	}
 
 	const std::string content((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
@@ -186,11 +186,12 @@ bool ConfigParser::serverBlockTokenizer(const std::string& content, size_t& posi
 
 bool ConfigParser::httpBlockTokenizer(const std::string& content, size_t& position, HttpBlock& httpBlock) {
 	if (this->match(content, position, "http") == false) {
-		throw ErrorLogger::log(__FILE__, __LINE__, __func__,
-							   "Expected 'http' at position: " + std::to_string(position));
+		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+									  "Expected 'http' at position: " + utils::itos(position));
 	}
 	if (this->match(content, position, "{") == false) {
-		throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Expected '{' at position: " + std::to_string(position));
+		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+									  "Expected '{' at position: " + utils::itos(position));
 	}
 	while (position < content.size()) {
 		if (this->match(content, position, "}") == true) {
@@ -199,18 +200,18 @@ bool ConfigParser::httpBlockTokenizer(const std::string& content, size_t& positi
 		if (this->match(content, position, "server")) {
 			ServerBlock serverBlock;
 			if (this->serverBlockTokenizer(content, position, serverBlock) == false) {
-				throw ErrorLogger::log(__FILE__, __LINE__, __func__,
-									   "Failed to parse server block at position: " + std::to_string(position));
+				throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+											  "Failed to parse server block at position: " + utils::itos(position));
 			}
 			httpBlock.servers.push_back(serverBlock);
 		} else {
 			Directive directive;
 			if (this->directiveTokenizer(content, position, directive) == false) {
-				throw ErrorLogger::log(__FILE__, __LINE__, __func__,
-									   "Failed to parse directive at position: " + std::to_string(position));
+				throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+											  "Failed to parse directive at position: " + utils::itos(position));
 			}
 			httpBlock.directives.push_back(directive);
 		}
 	}
-	throw ErrorLogger::log(__FILE__, __LINE__, __func__, "Expected '}' at position: " + std::to_string(position));
+	throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Expected '}' at position: " + utils::itos(position));
 }
