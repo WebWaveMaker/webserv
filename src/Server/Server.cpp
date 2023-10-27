@@ -34,6 +34,10 @@ void Server::listenServer() {
 		}
 
 		// ReadEvent 등록
+		reactor::Dispatcher* dispatcher = reactor::Dispatcher::getInstance();
+		dispatcher->registerHander(
+			new ServerAcceptHandler(this->_fd, this, this->_clients, this->_accessLogger, this->_errorLogger),
+			EVENT_READ);
 	} catch (std::exception& e) {
 		close(this->_fd);
 		throw;
