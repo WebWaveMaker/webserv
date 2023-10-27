@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jgo <jgo@student.42seoul.kr>               +#+  +:+       +#+         #
+#    By: sanghwal <sanghwal@student.42seoul.kr>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/07 19:34:14 by jgo               #+#    #+#              #
-#    Updated: 2023/10/11 14:15:24 by jgo              ###   ########.fr        #
+#    Updated: 2023/10/27 20:35:19 by sanghwal         ###   ########seoul.kr   #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,7 +20,6 @@ endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-DIRS := ServerEventHandler \
-		ClientEventHandler
+DIRS := ServerAcceptHandler
 
 include $(TOPDIR)/config/makefile/objRecipes.mk
