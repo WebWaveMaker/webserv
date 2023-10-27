@@ -39,7 +39,7 @@ void ServerAcceptHandler::handleEvent() {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
 		throw std::runtime_error("");
 	}
-	reactor::Dispatcher* dispatcher = reactor::Dispatcher::getInstance();
+	// reactor::Dispatcher* dispatcher = reactor::Dispatcher::getInstance();
 	// dispatcher->registerHander((*this->_clients)[clientFd], EVENT_READ);
 }
 

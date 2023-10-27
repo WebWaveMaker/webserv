@@ -9,9 +9,9 @@ namespace reactor {
 	class AEventHandler {
 	   private:
 	   protected:
+		const handle_t _fd;
 		const utils::shared_ptr<AccessLogger> _accessLogger;
 		const utils::shared_ptr<ErrorLogger> _errorLogger;
-		const handle_t _fd;
 		utils::shared_ptr<std::vector<char> > _buf;
 
 	   public:

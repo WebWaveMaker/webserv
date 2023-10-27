@@ -46,13 +46,14 @@ namespace reactor {
 		for (int i = 0; i < eventNum; ++i) {
 			const struct kevent event = _kq->getkEventList()[i];
 			AEventHandler* handler = static_cast<AEventHandler*>(event.udata);
-			if (event.flags & EV_EOF) {};
-			if (event.flags & EV_ERROR)
-				handler->handleError();
-			if (event.filter == EVFILT_READ)
-				handler->handleRead();
-			if (event.filter == EVFILT_WRITE)
-				handler->handleWrite();
+			(void)handler;
+			// if (event.flags & EV_EOF) {};
+			// if (event.flags & EV_ERROR)
+			// 	handler->handleError();
+			// if (event.filter == EVFILT_READ)
+			// 	handler->handleRead();
+			// if (event.filter == EVFILT_WRITE)
+			// 	handler->handleWrite();
 		}
 	};
 }  // namespace reactor
