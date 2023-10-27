@@ -10,7 +10,6 @@
 
 #include "AccessLogger.hpp"
 #include "Client.hpp"
-#include "ClientEventHandler.hpp"
 #include "Dispatcher.hpp"
 #include "ErrorLogger.hpp"
 #include "ICallback.hpp"

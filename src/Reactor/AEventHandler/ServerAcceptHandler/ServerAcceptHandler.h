@@ -13,7 +13,7 @@
 
 #include "AEventHandler.hpp"	   // Assuming the path for AEventHandler
 #include "AccessLogger.hpp"		   // For AccessLogger
-#include "ClientEventHandler.hpp"  // For ClientEventHandler
+// #include "ClientEventHandler.hpp"  // For ClientEventHandler
 #include "ErrorLogger.hpp"		   // For ErrorLogger
 #include "ICallback.hpp"		   // For ICallback
 
