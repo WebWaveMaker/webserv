@@ -4,7 +4,7 @@
 
 #include "ClientEventHandler.h"
 
-class ClientEventHandler : public reactor::IEventHandler {
+class ClientEventHandler : public reactor::AEventHandler {
    private:
 	handle_t _handleFd;
 	ICallback* _callback;

@@ -1,17 +1,15 @@
-#pragma once
-#ifndef IEVENTHANDLER_HPP
-#define IEVENTHANDLER_HPP
 
-#include "IEventHandler.h"
+
+#include "AEventHandler.h"
 
 namespace reactor {
 
-	class IEventHandler {
+	class AEventHandler {
 	   private:
 	   protected:
 	   public:
-		IEventHandler(){};
-		virtual ~IEventHandler(){};
+		AEventHandler(){};
+		virtual ~AEventHandler(){};
 		virtual handle_t getHandle() const = 0;
 		virtual void handleRead() = 0;
 		virtual void handleWrite() = 0;
@@ -19,4 +17,3 @@ namespace reactor {
 	};
 
 }  // namespace reactor
-#endif

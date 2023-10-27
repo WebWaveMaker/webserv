@@ -27,12 +27,11 @@ int main(int ac, char** av) {
 	ServerManager* serverManager = utils::nullptr_t;
 
 	try {
-		serverManager = new ServerManager(serverConfigs);
 		bool parse = configParser.parse(configFile, *serverConfigs);
-		ServerConfig* temp = (*serverConfigs)[0];
-		std::cout << temp->getDirectives(SENDFILE).asBool() << std::endl;
+		serverManager = new ServerManager(serverConfigs);
 		if (parse == false)
 			return EXIT_FAILURE;
+		std::cout << "here\n";
 		reactor::Dispatcher::getInstance()->handleEvent();
 	} catch (std::exception& e) {
 		std::cerr << e.what() << "\n";

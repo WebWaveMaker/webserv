@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jgo <jgo@student.42seoul.kr>               +#+  +:+       +#+         #
+#    By: sanghwal <sanghwal@student.42seoul.kr>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/07 19:34:14 by jgo               #+#    #+#              #
-#    Updated: 2023/10/09 16:40:31 by jgo              ###   ########.fr        #
+#    Updated: 2023/10/27 15:51:20 by sanghwal         ###   ########seoul.kr   #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ endif
 include $(TOPDIR)/config/makefile/common.mk
 
 DIRS := Dispatcher \
-		IEventHandler \
+		AEventHandler \
 		SyncEventDemultiplexer
 
 LIBS :=	$(wildcard objs/*.o)

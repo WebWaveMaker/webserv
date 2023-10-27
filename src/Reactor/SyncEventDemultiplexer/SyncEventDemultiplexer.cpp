@@ -4,7 +4,7 @@ namespace reactor {
 	SyncEventDemultiplexer::SyncEventDemultiplexer() : _kq(Kqueue::getInstance()) {}
 	SyncEventDemultiplexer::~SyncEventDemultiplexer() {}
 
-	void SyncEventDemultiplexer::requestEvent(IEventHandler* handler, const enum EventType type) {
+	void SyncEventDemultiplexer::requestEvent(AEventHandler* handler, const enum EventType type) {
 		const handle_t handle = handler->getHandle();
 
 		switch (type) {
@@ -20,7 +20,7 @@ namespace reactor {
 				break;
 		}
 	}
-	void SyncEventDemultiplexer::unRequestEvent(IEventHandler* handler, const enum EventType type) {
+	void SyncEventDemultiplexer::unRequestEvent(AEventHandler* handler, const enum EventType type) {
 		const handle_t handle = handler->getHandle();
 
 		switch (type) {
@@ -45,7 +45,7 @@ namespace reactor {
 		_kq->getChangeList().clear();
 		for (int i = 0; i < eventNum; ++i) {
 			const struct kevent event = _kq->getkEventList()[i];
-			IEventHandler* handler = static_cast<IEventHandler*>(event.udata);
+			AEventHandler* handler = static_cast<AEventHandler*>(event.udata);
 			if (event.flags & EV_EOF) {};
 			if (event.flags & EV_ERROR)
 				handler->handleError();

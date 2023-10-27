@@ -32,7 +32,7 @@ Server::Server(ServerConfig& serverConfig) : _serverConfig(serverConfig) {
 		// ReadEvent 등록
 		this->_eventHandler =
 			new ServerEventHandler(this->_fd, this, this->_clients, this->_accessLogger, this->_errorLogger);
-		this->registerEvent(EVENT_READ);
+		reactor::Dispatcher::getInstance()->registerHander(this->_eventHandler, EVENT_READ);
 	} catch (std::exception& e) {
 		close(this->_fd);
 		throw;

@@ -4,9 +4,9 @@ namespace reactor {
 
 	Dispatcher::Dispatcher() : _demultiplexer(SyncEventDemultiplexer::getInstance()) {}
 	Dispatcher::~Dispatcher() {}
-	void Dispatcher::registerHander(IEventHandler* handler, enum EventType type) {
+	void Dispatcher::registerHander(AEventHandler* handler, enum EventType type) {
 		const handle_t handle = handler->getHandle();
-		const std::map<handle_t, IEventHandler*>::iterator cit = _handlers.find(handle);
+		const std::map<handle_t, AEventHandler*>::iterator cit = _handlers.find(handle);
 
 		if (cit == _handlers.end()) {
 			_handlers[handle] = handler;
@@ -14,7 +14,7 @@ namespace reactor {
 		_demultiplexer->requestEvent(handler, type);
 	}
 
-	void Dispatcher::removeHander(IEventHandler* handler, enum EventType type) {
+	void Dispatcher::removeHander(AEventHandler* handler, enum EventType type) {
 		(void)type;
 		const handle_t handle = handler->getHandle();
 		_handlers.erase(handle);

@@ -9,7 +9,7 @@
 #include "Client.hpp"
 #include "Dispatcher.hpp"
 #include "ICallback.hpp"
-#include "IEventHandler.hpp"
+#include "AEventHandler.hpp"
 #include "RequestParser.hpp"
 
 #define BUFFER_SIZE 1024
