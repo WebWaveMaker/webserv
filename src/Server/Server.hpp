@@ -18,6 +18,11 @@ class Server : public ICallback {
 
 	void removeClient(int key);
 	void listenServer();
+	void makeScoket();
+	void mallocParameter();
+	void bindListen();
+	void registerReadEvent();
+	int makeFd(const char* path, const char* option);
 
    public:
 	Server(utils::shared_ptr<ServerConfig>& serverConfig);
