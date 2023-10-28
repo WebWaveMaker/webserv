@@ -6,10 +6,10 @@
 #include <iostream>	 // For std::cout
 #include <vector>	 // For std::vector
 
+#include "AEventHandler.hpp"
 #include "Client.hpp"
 #include "Dispatcher.hpp"
 #include "ICallback.hpp"
-#include "AEventHandler.hpp"
 #include "RequestParser.hpp"
 
 #define BUFFER_SIZE 1024

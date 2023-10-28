@@ -22,17 +22,18 @@ int main(int ac, char** av) {
 	}
 
 	std::string configFile = av[1];
-	std::vector<ServerConfig*>* serverConfigs = new std::vector<ServerConfig*>;
+	std::vector<utils::shared_ptr<ServerConfig> >* serverConfigs = new std::vector<utils::shared_ptr<ServerConfig> >;
 	ConfigParser configParser;
 	ServerManager* serverManager = utils::nullptr_t;
 
 	try {
 		bool parse = configParser.parse(configFile, *serverConfigs);
-		serverManager = new ServerManager(serverConfigs);
+		serverManager = new ServerManager(*serverConfigs);
 		if (parse == false)
 			return EXIT_FAILURE;
 		std::cout << "here\n";
-		reactor::Dispatcher::getInstance()->handleEvent();
+		while (true)
+			reactor::Dispatcher::getInstance()->handleEvent();
 	} catch (std::exception& e) {
 		std::cerr << e.what() << "\n";
 		if (serverManager)

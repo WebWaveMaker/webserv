@@ -11,13 +11,13 @@ class ConfigParser {
    public:
 	ConfigParser();
 	virtual ~ConfigParser();
-	virtual bool parse(const std::string& filename, std::vector<ServerConfig*>& http);
+	virtual bool parse(const std::string& filename, std::vector<utils::shared_ptr<ServerConfig> >& http);
 
    private:
 	std::string parser(const std::string& filename);
 	bool httpConfigParser(const HttpBlock& http, HttpConfig* httpConfig);
-	bool serverConfigParser(const ServerBlock& serverBlock, ServerConfig* serverConfig);
-	bool locationConfigParser(const LocationBlock& locationBlock, LocationConfig* locationConfig);
+	bool serverConfigParser(const ServerBlock& serverBlock, utils::shared_ptr<ServerConfig> serverConfig);
+	bool locationConfigParser(const LocationBlock& locationBlock, utils::shared_ptr<LocationConfig> locationConfig);
 	bool match(const std::string& content, size_t& position, const std::string& expected);
 	void skipWhitespace(const std::string& content, size_t& position);
 	bool httpBlockTokenizer(const std::string& content, size_t& position, HttpBlock& httpBlock);

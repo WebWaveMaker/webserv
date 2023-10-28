@@ -22,7 +22,7 @@ namespace reactor {
 					  utils::shared_ptr<ErrorLogger>& errorLogger, utils::shared_ptr<std::vector<char> > buf)
 			: _fd(fd), _accessLogger(accessLogger), _errorLogger(errorLogger), _buf(buf){};
 		virtual ~AEventHandler(){};
-		virtual handle_t getHandle() const = 0;
+		virtual handle_t getHandle() const { return this->_fd; };
 		virtual void handleEvent() = 0;
 	};
 

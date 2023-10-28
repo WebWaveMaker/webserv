@@ -5,31 +5,22 @@ ServerConfig::ServerConfig() {}
 ServerConfig::ServerConfig(utils::shared_ptr<HttpConfig> parent) : _parent(parent) {}
 
 ServerConfig::ServerConfig(const ServerConfig& other) : AConfig(other), _parent(other._parent) {
-	for (std::map<std::string, LocationConfig*>::const_iterator it = other._locations.begin();
+	for (std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = other._locations.begin();
 		 it != other._locations.end(); ++it) {
-		_locations[it->first] = new LocationConfig(*(it->second));
+		_locations[it->first] = utils::shared_ptr<LocationConfig>(new LocationConfig(*(it->second)));
 	}
 }
 
-ServerConfig::~ServerConfig() {
-	for (std::map<std::string, LocationConfig*>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
-		delete it->second;
-	}
-}
+ServerConfig::~ServerConfig() {}
 
 ServerConfig& ServerConfig::operator=(const ServerConfig& other) {
 	if (this != &other) {
 		AConfig::operator=(other);
-		for (std::map<std::string, LocationConfig*>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
-			delete it->second;
-		}
 		_locations.clear();
-
 		_parent = other._parent;
-
-		for (std::map<std::string, LocationConfig*>::const_iterator it = other._locations.begin();
+		for (std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = other._locations.begin();
 			 it != other._locations.end(); ++it) {
-			_locations[it->first] = new LocationConfig(*(it->second));
+			_locations[it->first] = utils::shared_ptr<LocationConfig>(new LocationConfig(*(it->second)));
 		}
 	}
 	return *this;
@@ -142,15 +133,15 @@ ConfigValue ServerConfig::getDirectives(Directives method) const {
 	return it->second;
 }
 
-void ServerConfig::setLocations(std::string identifier, LocationConfig* location) {
+void ServerConfig::setLocations(std::string identifier, utils::shared_ptr<LocationConfig> location) {
 	// 이미 존재하는 경우 덮어씌우지 않음
-	if (_locations.find(identifier) == _locations.end()) {
-		_locations[identifier] = location;
-	}
+	if (_locations.find(identifier) != _locations.end())
+		return;
+	_locations[identifier] = location;
 }
 
-LocationConfig* ServerConfig::getLocation(const std::string& identifier) const {
-	std::map<std::string, LocationConfig*>::const_iterator it = _locations.find(identifier);
+utils::shared_ptr<LocationConfig> ServerConfig::getLocation(const std::string& identifier) const {
+	std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = _locations.find(identifier);
 	if (it == _locations.end()) {
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid location identifier");
 	}

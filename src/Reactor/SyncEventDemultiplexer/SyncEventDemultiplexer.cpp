@@ -43,8 +43,7 @@ namespace reactor {
 		if (eventNum == -1)
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		_kq->getChangeList().clear();
-		for (int i = 0; i < eventNum; ++i) {
+		for (int i = 0; i < eventNum; ++i)
 			static_cast<AEventHandler*>(_kq->getkEventList()[i].udata)->handleEvent();
-		}
 	};
 }  // namespace reactor
