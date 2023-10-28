@@ -1,7 +1,7 @@
 #include "ClientWriteHandler.hpp"
 
-reactor::ClientWriteHandler::ClientWriteHandler(const handle_t fd, utils::shared_ptr<AccessLogger>& accessLogger,
-												utils::shared_ptr<ErrorLogger>& errorLogger,
+reactor::ClientWriteHandler::ClientWriteHandler(const handle_t fd, const utils::shared_ptr<AccessLogger>& accessLogger,
+												const utils::shared_ptr<ErrorLogger>& errorLogger,
 												utils::shared_ptr<std::vector<char> > buf)
 	: AEventHandler(fd, accessLogger, errorLogger, buf), _idx(0) {}
 reactor::ClientWriteHandler::~ClientWriteHandler() {}

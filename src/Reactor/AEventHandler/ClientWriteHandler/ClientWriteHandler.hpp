@@ -14,8 +14,8 @@ namespace reactor {
 
 	   public:
 		~ClientWriteHandler();
-		ClientWriteHandler(const handle_t fd, utils::shared_ptr<AccessLogger>& accessLogger,
-						   utils::shared_ptr<ErrorLogger>& errorLogger, utils::shared_ptr<std::vector<char> > buf);
+		ClientWriteHandler(const handle_t fd, const utils::shared_ptr<AccessLogger>& accessLogger,
+						   const utils::shared_ptr<ErrorLogger>& errorLogger, utils::shared_ptr<std::vector<char> > buf);
 		virtual void handleEvent();
 	};
 
