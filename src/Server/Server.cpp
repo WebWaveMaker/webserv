@@ -104,11 +104,10 @@ ICallback* Server::getCallback() {
 }
 
 void Server::removeClient(int key) {
-	std::map<int, utils::shared_ptr<Client> >::iterator it = this->_clients.get()->find(key);
+	std::map<int, utils::shared_ptr<Client> >::iterator it = this->_clients->find(key);
 
 	if (it != this->_clients->end()) {
-		it->second.release();
-		this->_clients.get()->erase(key);
+		this->_clients->erase(it);
 	} else {
 		this->_errorLogger->log("Not Found client\n", __func__, LOG_ERROR, NULL);
 		throw std::runtime_error("removeClient Error\n");
@@ -138,8 +137,5 @@ ErrorLogger& Server::getErrorLogger() const {
 Server::~Server() {
 	std::cout << "Server destructor called\n";
 
-	for (std::map<int, utils::shared_ptr<Client> >::iterator it = this->_clients->begin(); it != this->_clients->end();
-		 ++it)
-		it->second.release();
-	this->_clients.get()->clear();
+	this->_clients->clear();
 }
