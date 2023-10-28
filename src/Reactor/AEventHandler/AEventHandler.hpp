@@ -15,11 +15,11 @@ namespace reactor {
 		utils::shared_ptr<std::vector<char> > _buf;
 
 	   public:
-		AEventHandler(const handle_t fd, utils::shared_ptr<AccessLogger>& accessLogger,
-					  utils::shared_ptr<ErrorLogger>& errorLogger)
+		AEventHandler(const handle_t fd, const utils::shared_ptr<AccessLogger>& accessLogger,
+					  const utils::shared_ptr<ErrorLogger>& errorLogger)
 			: _fd(fd), _accessLogger(accessLogger), _errorLogger(errorLogger), _buf(new std::vector<char>){};
-		AEventHandler(const handle_t fd, utils::shared_ptr<AccessLogger>& accessLogger,
-					  utils::shared_ptr<ErrorLogger>& errorLogger, utils::shared_ptr<std::vector<char> > buf)
+		AEventHandler(const handle_t fd, const utils::shared_ptr<AccessLogger>& accessLogger,
+					  const utils::shared_ptr<ErrorLogger>& errorLogger, utils::shared_ptr<std::vector<char> > buf)
 			: _fd(fd), _accessLogger(accessLogger), _errorLogger(errorLogger), _buf(buf){};
 		virtual ~AEventHandler(){};
 		virtual handle_t getHandle() const { return this->_fd; };
