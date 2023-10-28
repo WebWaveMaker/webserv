@@ -4,23 +4,27 @@
 
 #include "ServerAcceptHandler.h"
 
-class ServerAcceptHandler : public reactor::AEventHandler {
-   private:
-	ICallback* _callback;
-	utils::shared_ptr<std::map<int, utils::shared_ptr<Client> > > _clients;
+namespace reactor {
 
-	ServerAcceptHandler(const ServerAcceptHandler& obj);
-	ServerAcceptHandler& operator=(const ServerAcceptHandler& obj);
+	class ServerAcceptHandler : public reactor::AEventHandler {
+	   private:
+		ICallback* _callback;
+		u::shared_ptr<std::map<int, u::shared_ptr<Client> > > _clients;
 
-   public:
-	ServerAcceptHandler(handle_t fd, ICallback* callback,
-						utils::shared_ptr<std::map<int, utils::shared_ptr<Client> > >& clients,
-						utils::shared_ptr<AccessLogger>& accessLogger, utils::shared_ptr<ErrorLogger>& errorLogger);
+		ServerAcceptHandler(const ServerAcceptHandler& obj);
+		ServerAcceptHandler& operator=(const ServerAcceptHandler& obj);
 
-	virtual handle_t getHandle() const;
-	virtual void handleEvent();
+	   public:
+		ServerAcceptHandler(handle_t fd, ICallback* callback,
+							u::shared_ptr<std::map<int, u::shared_ptr<Client> > >& clients,
+							u::shared_ptr<AccessLogger>& accessLogger, u::shared_ptr<ErrorLogger>& errorLogger);
 
-	~ServerAcceptHandler();
-};
+		virtual handle_t getHandle() const;
+		virtual void handleEvent();
+
+		~ServerAcceptHandler();
+	};
+
+}  // namespace reactor
 
 #endif

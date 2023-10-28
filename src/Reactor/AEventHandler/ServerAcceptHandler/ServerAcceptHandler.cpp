@@ -1,6 +1,6 @@
 #include "ServerAcceptHandler.hpp"
 
-ServerAcceptHandler::ServerAcceptHandler(handle_t fd, ICallback* callback,
+reactor::ServerAcceptHandler::ServerAcceptHandler(handle_t fd, ICallback* callback,
 										 u::shared_ptr<std::map<int, u::shared_ptr<Client> > >& clients,
 										 u::shared_ptr<AccessLogger>& accessLogger,
 										 u::shared_ptr<ErrorLogger>& errorLogger)
@@ -8,11 +8,11 @@ ServerAcceptHandler::ServerAcceptHandler(handle_t fd, ICallback* callback,
 	std::cout << "ServerAcceptHandler constructor called\n";
 }
 
-handle_t ServerAcceptHandler::getHandle() const {
+handle_t reactor::ServerAcceptHandler::getHandle() const {
 	return (this->_fd);
 }
 
-void ServerAcceptHandler::handleEvent() {
+void reactor::ServerAcceptHandler::handleEvent() {
 
 	sockaddr_in clientAddr;
 	socklen_t clientAddrLen = sizeof(clientAddr);
@@ -24,6 +24,7 @@ void ServerAcceptHandler::handleEvent() {
 	}
 
 	std::map<int, u::shared_ptr<Client> >::iterator it = this->_clients->find(clientFd);
+
 	try {
 		if (it == this->_clients->end()) {
 			(*this->_clients)[clientFd] = u::shared_ptr<Client>(this->_callback->createClient(clientFd, clientAddr));
@@ -37,10 +38,11 @@ void ServerAcceptHandler::handleEvent() {
 	}
 	if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
-		throw std::runtime_error("");
+		throw;
 	}
+	TestAcceptHandler::printClientInfo((*this->_clients)[clientFd].get());
 }
 
-ServerAcceptHandler::~ServerAcceptHandler() {
+reactor::ServerAcceptHandler::~ServerAcceptHandler() {
 	std::cout << "ServerAcceptHandler Destructor called\n";
 }
