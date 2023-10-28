@@ -26,9 +26,9 @@ void ServerAcceptHandler::handleEvent() {
 	std::map<int, u::shared_ptr<Client> >::iterator it = this->_clients->find(clientFd);
 	try {
 		if (it == this->_clients->end()) {
-			(*this->_clients.get())[clientFd] =
-				u::shared_ptr<Client>(this->_callback->createClient(clientFd, clientAddr));
-			this->_accessLogger->log(u::itos(clientFd) + "client access to Server", __func__, GET, u::nullptr_t);
+			(*this->_clients)[clientFd] = u::shared_ptr<Client>(this->_callback->createClient(clientFd, clientAddr));
+			this->_accessLogger->log(u::itos(clientFd) + "client access to Server", __func__, GET,
+									 (*this->_clients)[clientFd].get());
 		} else
 			close(clientFd);
 	} catch (std::exception& e) {
