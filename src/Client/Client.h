@@ -8,12 +8,10 @@
 
 #include <iostream>
 
+#include "RequestParser.hpp"
 #include "ServerConfig.hpp"
-
-// #include "RequestParser.hpp";
 // #include "ResponseParser.hpp";
 
-class RequestParser;
 class ResponseParser;
 
 #endif

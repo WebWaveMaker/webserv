@@ -26,8 +26,6 @@ void ClientEventHandler::handleRead() {
 		} else if (this->_client->getReqParser()->getState() != RESOLVE)
 			break;
 	}
-	int readByte = read(this->_handleFd, buffer.data(), buffer.size());
-	(void)readByte;
 }
 
 void ClientEventHandler::handleWrite() {}

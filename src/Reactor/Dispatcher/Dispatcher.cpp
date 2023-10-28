@@ -18,7 +18,6 @@ namespace reactor {
 		(void)type;
 		const handle_t handle = handler->getHandle();
 		_handlers.erase(handle);
-		close(handle);
 		delete handler;
 	}
 

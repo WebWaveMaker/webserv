@@ -1,7 +1,8 @@
 #include "Client.hpp"
 
-Client::Client(int clientFd, const sockaddr_in& clientAddr, utils::shared_ptr<ServerConfig>& serverConfig)
-	: _clientFd(clientFd), _clientAddr(clientAddr), _serverConfig(serverConfig) {
+Client::Client(int clientFd, const sockaddr_in& clientAddr, utils::shared_ptr<ServerConfig>& serverConfig,
+			   utils::shared_ptr<RequestParser> req)
+	: _clientFd(clientFd), _clientAddr(clientAddr), _serverConfig(serverConfig), _req(req) {
 	std::cout << utils::itos(clientFd) + " | client constructor called\n";
 	this->_clientAddrStr = "any";
 	// _clientAddrStr 초기화
@@ -25,7 +26,7 @@ ServerConfig& Client::getConfig() const {
 	return (*(this->_serverConfig.get()));
 }
 
-RequestParser* Client::getReqParser() const {
+utils::shared_ptr<RequestParser> Client::getReqParser() const {
 	return (this->_req);
 }
 
@@ -37,4 +38,6 @@ bool Client::executeRequest() {
 	return true;
 }
 
-Client::~Client() {}
+Client::~Client() {
+	close(this->_clientFd);
+}

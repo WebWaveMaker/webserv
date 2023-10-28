@@ -21,6 +21,7 @@ endif
 include $(TOPDIR)/config/makefile/common.mk
 
 DIRS := ServerAcceptHandler \
-		ClientWriteHandler
+		ClientWriteHandler \
+		ClientReadHandler
 
 include $(TOPDIR)/config/makefile/objRecipes.mk

@@ -1,6 +1,6 @@
 #include "RequestParser.hpp"
 
-RequestParser::RequestParser(ServerConfig& serverConfig)
+RequestParser::RequestParser(utils::shared_ptr<ServerConfig> serverConfig)
 	: IParser(), _msgs(), _curMsg(u::nullptr_t), _buf(), _serverConfig(serverConfig) {
 	_msgs.push(utils::shared_ptr<std::pair<enum HttpMessageState, HttpMessage> >(
 		new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
@@ -97,7 +97,7 @@ bool RequestParser::parserBody(std::string& buf) {
 	if (headers.count("Content-Length") == 0)
 		return true;
 	const unsigned int contentLength = utils::stoui(headers.at("Content-Length"));
-	const unsigned int bodyLimit = _serverConfig.getDirectives(CLIENT_MAX_BODY_SIZE).asUint();
+	const unsigned int bodyLimit = _serverConfig.get()->getDirectives(CLIENT_MAX_BODY_SIZE).asUint();
 
 	if (contentLength > bodyLimit) {
 		_curMsg->get()->first = ERROR;
