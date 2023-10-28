@@ -7,15 +7,22 @@ Server::Server(utils::shared_ptr<ServerConfig>& serverConfig) : _serverConfig(se
 
 void Server::listenServer() {
 	this->_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (this->_fd < 0) {
+	int opt = 1;
+	if (setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+		throw std::runtime_error("setsockopt() failed\n");
+	}
+	std::pair<std::string, LogLevels> errorLog = this->_serverConfig.get()->getDirectives(ERROR_LOG).asLog();
+	FILE* errorFILE = fopen(errorLog.first.c_str(), "w");
+	if (this->_fd < 0 || errorFILE == NULL) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
 		throw std::runtime_error("socket faild\n");
 	}
+	const int errorFd = fileno(errorFILE);
 
 	this->_clients =
 		utils::shared_ptr<std::map<int, utils::shared_ptr<Client> > >(new std::map<int, utils::shared_ptr<Client> >);
-	this->_accessLogger = utils::shared_ptr<AccessLogger>(new AccessLogger(this->_fd));
-	this->_errorLogger = utils::shared_ptr<ErrorLogger>(new ErrorLogger(this->_fd, LOG_ERROR));
+	this->_accessLogger = utils::shared_ptr<AccessLogger>(new AccessLogger(STDOUT_FILENO));
+	this->_errorLogger = utils::shared_ptr<ErrorLogger>(new ErrorLogger(errorFd, errorLog.second));
 
 	try {
 		std::memset(&this->_serverAddr, 0, sizeof(this->_serverAddr));

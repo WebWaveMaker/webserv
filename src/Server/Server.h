@@ -3,6 +3,7 @@
 #define SERVER_H
 
 #include <arpa/inet.h>
+#include <cstdio>
 #include <cstring>	// for std::memset
 #include <iostream>
 #include <map>
