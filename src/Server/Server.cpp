@@ -88,7 +88,8 @@ int Server::makeFd(const char* path, const char* option) {
 
 Client* Server::createClient(int clientFd, struct sockaddr_in& clientAddr) {
 	try {
-		Client* newClient = new Client(clientFd, clientAddr, this->_serverConfig);
+		Client* newClient = new Client(clientFd, clientAddr, this->_serverConfig,
+									   utils::shared_ptr<RequestParser>(new RequestParser(this->_serverConfig)));
 		return (newClient);
 	} catch (std::exception& e) {
 		throw;

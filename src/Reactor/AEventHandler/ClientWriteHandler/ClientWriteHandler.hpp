@@ -13,9 +13,10 @@ namespace reactor {
 		ssize_t _idx;
 
 	   public:
-		~ClientWriteHandler();
 		ClientWriteHandler(const handle_t fd, const utils::shared_ptr<AccessLogger>& accessLogger,
-						   const utils::shared_ptr<ErrorLogger>& errorLogger, utils::shared_ptr<std::vector<char> > buf);
+						   const utils::shared_ptr<ErrorLogger>& errorLogger,
+						   utils::shared_ptr<std::vector<char> > buf);
+		~ClientWriteHandler();
 		virtual void handleEvent();
 	};
 

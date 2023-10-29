@@ -7,7 +7,9 @@
 #include "ErrorLogger.hpp"
 #include "utils.hpp"
 
+#ifndef handle_t
 typedef int handle_t;
+#endif
 
 /**
  * @brief 

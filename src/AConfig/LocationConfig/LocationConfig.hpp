@@ -5,8 +5,8 @@
 #include "ErrorLogger.hpp"
 #include "Parser.h"
 #include "ServerConfig.hpp"
-#include "utils.hpp"
 #include "shared_ptr.hpp"
+#include "utils.hpp"
 
 class ServerConfig;
 
@@ -16,7 +16,7 @@ class LocationConfig : public AConfig {
 
    public:
 	LocationConfig();
-	LocationConfig(utils::shared_ptr<ServerConfig> parent);  // Moved initialization to constructor initializer list
+	LocationConfig(utils::shared_ptr<ServerConfig> parent);	 // Moved initialization to constructor initializer list
 	LocationConfig(const LocationConfig& other);
 	~LocationConfig();
 	LocationConfig& operator=(const LocationConfig& other);
