@@ -2,7 +2,7 @@
 
 LocationConfig::LocationConfig() : _parent(NULL) {}
 
-LocationConfig::LocationConfig(ServerConfig* parent) : _parent(parent) {}
+LocationConfig::LocationConfig(utils::shared_ptr<ServerConfig> parent) : _parent(parent) {}
 
 LocationConfig::LocationConfig(const LocationConfig& other) : AConfig(other), _parent(other._parent) {}
 

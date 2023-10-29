@@ -23,29 +23,29 @@ bool ConfigParser::httpConfigParser(const HttpBlock& http, HttpConfig* httpConfi
 	return true;
 }
 
-bool ConfigParser::serverConfigParser(const ServerBlock& serverBlock, ServerConfig* serverConfig) {
+bool ConfigParser::serverConfigParser(const ServerBlock& serverBlock, utils::shared_ptr<ServerConfig> serverConfig) {
 	for (std::vector<Directive>::const_iterator it = serverBlock.directives.begin(); it != serverBlock.directives.end();
 		 ++it) {
-		serverConfig->setDirectives(it->name, it->parameters);
+		serverConfig.get()->setDirectives(it->name, it->parameters);
 	}
 
 	for (std::vector<LocationBlock>::const_iterator lit = serverBlock.locations.begin();
 		 lit != serverBlock.locations.end(); ++lit) {
-		LocationConfig* locationConfig = new LocationConfig(serverConfig);
+		utils::shared_ptr<LocationConfig> locationConfig(new LocationConfig(serverConfig));
 		if (locationConfigParser(*lit, locationConfig) == false) {
-			delete locationConfig;	// Ensure memory cleanup if an error occurs.
 			return false;
 		}
-		serverConfig->setLocations(lit->identifier, locationConfig);
+		serverConfig.get()->setLocations(lit->identifier, locationConfig);
 	}
 
 	return true;
 }
 
-bool ConfigParser::locationConfigParser(const LocationBlock& locationBlock, LocationConfig* locationConfig) {
+bool ConfigParser::locationConfigParser(const LocationBlock& locationBlock,
+										utils::shared_ptr<LocationConfig> locationConfig) {
 	for (std::vector<Directive>::const_iterator it = locationBlock.directives.begin();
 		 it != locationBlock.directives.end(); ++it) {
-		locationConfig->setDirectives(it->name, it->parameters);
+		locationConfig.get()->setDirectives(it->name, it->parameters);
 	}
 	return true;
 }
@@ -62,7 +62,7 @@ config_t ConfigParser::parse(const std::string& filename) {
 		return servers;
 	}
 	for (std::vector<ServerBlock>::const_iterator it = http.servers.begin(); it != http.servers.end(); ++it) {
-		ServerConfig* serverConfig = new ServerConfig(httpConfig);
+		utils::shared_ptr<ServerConfig> serverConfig(new ServerConfig(httpConfig));
 		if (this->serverConfigParser(*it, serverConfig) == false) {
 			return servers;
 		}

@@ -9,7 +9,7 @@ namespace reactor {
 	class Dispatcher : public utils::TSingleton<Dispatcher> {
 	   private:
 		SyncEventDemultiplexer* _demultiplexer;
-		std::map<fd_t, IEventHandler*> _handlers;
+		std::map<fd_t, AEventHandler*> _handlers;
 
 		Dispatcher(const Dispatcher& obj);
 		Dispatcher& operator=(const Dispatcher& obj);
@@ -17,8 +17,8 @@ namespace reactor {
 	   public:
 		Dispatcher();
 		~Dispatcher();
-		void registerHander(IEventHandler* handler, enum EventType type);
-		void removeHander(IEventHandler* handler, enum EventType type);
+		void registerHander(AEventHandler* handler, enum EventType type);
+		void removeHander(AEventHandler* handler, enum EventType type);
 		void handleEvent();
 	};
 }  // namespace reactor

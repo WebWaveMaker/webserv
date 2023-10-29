@@ -3,7 +3,7 @@
 #define SYNCEVENTDEMULTIPLEXER_H
 
 #include <map>
-#include "IEventHandler.hpp"
+#include "AEventHandler.hpp"
 #include "Kqueue.hpp"
 #include "utils.hpp"
 
