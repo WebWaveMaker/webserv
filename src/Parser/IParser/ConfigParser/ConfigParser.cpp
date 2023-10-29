@@ -50,26 +50,25 @@ bool ConfigParser::locationConfigParser(const LocationBlock& locationBlock, Loca
 	return true;
 }
 
-bool ConfigParser::parse(const std::string& filename, std::vector<ServerConfig*>& servers) {
+config_t ConfigParser::parse(const std::string& filename) {
 	const std::string content = this->parser(filename);
+	config_t servers;
 
 	size_t position = 0;
 	HttpBlock http;
 	this->httpBlockTokenizer(content, position, http);
 	utils::shared_ptr<HttpConfig> httpConfig(new HttpConfig());
 	if (this->httpConfigParser(http, httpConfig.get()) == false) {
-		return false;
+		return servers;
 	}
 	for (std::vector<ServerBlock>::const_iterator it = http.servers.begin(); it != http.servers.end(); ++it) {
 		ServerConfig* serverConfig = new ServerConfig(httpConfig);
 		if (this->serverConfigParser(*it, serverConfig) == false) {
-			delete serverConfig;  // Cleanup memory if an error occurs
-			return false;
+			return servers;
 		}
 		servers.push_back(serverConfig);
 	}
-
-	return true;
+	return servers;
 }
 
 void ConfigParser::skipWhitespace(const std::string& content, size_t& position) {

@@ -1,6 +1,7 @@
 #include "ServerManager.hpp"
 
-ServerManager::ServerManager(std::vector<ServerConfig*>* serverConfig) : _serverConfigs(serverConfig) {
+ServerManager::ServerManager(const std::string path)
+	: _configParser(), _serverConfigs(_configParser.parse(path)), _servers() {
 	try {
 		this->CreateServer(*(this->_serverConfigs));
 	} catch (std::exception& e) {
@@ -8,10 +9,10 @@ ServerManager::ServerManager(std::vector<ServerConfig*>* serverConfig) : _server
 	}
 }
 
-void ServerManager::CreateServer(std::vector<ServerConfig*>& ServerConfigs) {
+void ServerManager::CreateServer(config_t& ServerConfigs) {
 	try {
-		for (std::vector<ServerConfig*>::iterator it = ServerConfigs.begin(); it != ServerConfigs.end(); ++it) {
-			Server* server = new Server(**it);
+		for (config_t::iterator it = ServerConfigs.begin(); it != ServerConfigs.end(); ++it) {
+			Server* server = new Server(*it);
 			std::map<int, Server*>::iterator sIt = this->_servers.find(server->getFd());
 
 			if (sIt == this->_servers.end()) {
@@ -34,7 +35,7 @@ Server* ServerManager::getServer(int serverFD) const {
 	return NULL;
 }
 
-std::vector<ServerConfig*>* ServerManager::getServerConfigs() const {
+config_t ServerManager::getServerConfigs() const {
 	return (this->_serverConfigs);
 }
 

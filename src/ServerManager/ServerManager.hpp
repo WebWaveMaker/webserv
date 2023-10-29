@@ -6,17 +6,18 @@
 
 class ServerManager {
    private:
-	std::vector<ServerConfig*>* _serverConfigs;
+	ConfigParser _configParser;
+	config_t _serverConfigs;
 	std::map<int, Server*> _servers;
 
 	ServerManager(const ServerManager& obj);
 	ServerManager& operator=(const ServerManager& obj);
 
    public:
-	ServerManager(std::vector<ServerConfig*>* serverConfigs);
-	void CreateServer(std::vector<ServerConfig*>& serverConfigs);
+	ServerManager(const std::string path);
+	void CreateServer(config_t& serverConfigs);
 	Server* getServer(int serverFd) const;
-	std::vector<ServerConfig*>* getServerConfigs() const;
+	config_t getServerConfigs() const;
 	~ServerManager();
 };
 

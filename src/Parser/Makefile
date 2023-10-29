@@ -17,8 +17,7 @@ endif
 include $(TOPDIR)/config/makefile/common.mk
 
 DIRS := ConfigValue \
-		IParser \
-		RequestParser
+		IParser
 
 LIBS :=	$(wildcard objs/*.o)
 

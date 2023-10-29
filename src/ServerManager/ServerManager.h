@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 
+#include "ConfigParser.hpp"
 #include "Server.hpp"
 #include "ServerConfig.hpp"
 

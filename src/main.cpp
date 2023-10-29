@@ -16,32 +16,15 @@
 #include "ServerManager.hpp"
 
 int main(int ac, char** av) {
-	if (ac != 2) {
-		std::cerr << "Too Many Arguments\n";
-		return (EXIT_FAILURE);
-	}
-
-	std::string configFile = av[1];
-	std::vector<ServerConfig*>* serverConfigs = new std::vector<ServerConfig*>;
-	ConfigParser configParser;
-	ServerManager* serverManager = utils::nullptr_t;
-
+	if (ac != 2)
+		return ErrorLogger::parseError(__FILE__, __LINE__, __func__, "wrong arguments");
 	try {
-		serverManager = new ServerManager(serverConfigs);
-		bool parse = configParser.parse(configFile, *serverConfigs);
-		ServerConfig* temp = (*serverConfigs)[0];
-		std::cout << temp->getDirectives(SENDFILE).asBool() << std::endl;
-		if (parse == false)
-			return EXIT_FAILURE;
-		reactor::Dispatcher::getInstance()->handleEvent();
-	} catch (std::exception& e) {
-		std::cerr << e.what() << "\n";
-		if (serverManager)
-			delete serverManager;
+		utils::shared_ptr<ServerManager> serverManager(new ServerManager(av[1]));
+
+		while (true)
+			reactor::Dispatcher::getInstance()->handleEvent();
+	} catch (...) {
 		return (EXIT_FAILURE);
 	}
-
-	if (serverManager)
-		delete serverManager;
 	return (EXIT_SUCCESS);
 }

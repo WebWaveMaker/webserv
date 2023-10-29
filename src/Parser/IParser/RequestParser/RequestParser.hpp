@@ -9,7 +9,7 @@ class RequestParser : public IParser<request_t> {
 	std::queue<request_t> _msgs;
 	request_t* _curMsg;
 	std::string _buf;
-	ServerConfig& _serverConfig;
+	utils::shared_ptr<ServerConfig> _serverConfig;
 
 	std::string findAndSubstr(std::string& buf, std::string delim);
 	bool parseStartLine(std::string& buf);
@@ -20,7 +20,7 @@ class RequestParser : public IParser<request_t> {
 	request_t pop(void);
 
    public:
-	RequestParser(ServerConfig& serverConfig);
+	RequestParser(utils::shared_ptr<ServerConfig> serverConfig);
 	virtual request_t parse(const std::string& content);
 	request_t get(void);
 	virtual ~RequestParser();

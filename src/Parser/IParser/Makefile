@@ -20,6 +20,7 @@ endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-DIRS := ConfigParser
+DIRS := ConfigParser \
+		RequestParser
 
 include $(TOPDIR)/config/makefile/objRecipes.mk

@@ -3,15 +3,13 @@
 #ifndef CONFIG_PARSER_H
 #define CONFIG_PARSER_H
 
-#include "ErrorLogger.hpp"
-#include "Parser.h"
-#include "ServerConfig.hpp"
+#include "ConfigParser.h"
 
-class ConfigParser {
+class ConfigParser : IParser<config_t> {
    public:
 	ConfigParser();
 	virtual ~ConfigParser();
-	virtual bool parse(const std::string& filename, std::vector<ServerConfig*>& http);
+	virtual config_t parse(const std::string& content);
 
    private:
 	std::string parser(const std::string& filename);
