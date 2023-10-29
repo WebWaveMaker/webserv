@@ -30,7 +30,8 @@ std::string AccessLogger::getHttpMethodStr(const enum HttpMethods& method) {
 std::string AccessLogger::makeLogMsg(const std::string& msg, const std::string& func, void* arg) {
 	const Client* client = static_cast<Client*>(arg);
 
-	return client->getAddrStr() + utils::getCurTime(logTimeFormat::accessTimeFormat) + func + " " + msg + "\n";
+	return inet_ntoa(client->getAddr().sin_addr) + utils::getCurTime(logTimeFormat::accessTimeFormat) + func + " " +
+		   msg + "\n";
 }
 
 /**

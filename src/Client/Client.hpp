@@ -7,7 +7,6 @@
 class Client {
    private:
 	int _clientFd;
-	std::string _clientAddrStr;
 	struct sockaddr_in _clientAddr;	 // 127.0.0.1
 	utils::shared_ptr<ServerConfig> _serverConfig;
 	utils::shared_ptr<RequestParser> _req;
@@ -24,7 +23,6 @@ class Client {
 
 	int getFd() const;
 	std::size_t getCnt() const;
-	const std::string& getAddrStr() const;
 	struct sockaddr_in getAddr() const;
 	ServerConfig& getConfig() const;
 	utils::shared_ptr<RequestParser> getReqParser() const;

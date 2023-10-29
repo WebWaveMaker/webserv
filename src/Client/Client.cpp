@@ -3,8 +3,6 @@
 Client::Client(int clientFd, const sockaddr_in& clientAddr, utils::shared_ptr<ServerConfig>& serverConfig,
 			   utils::shared_ptr<RequestParser> req)
 	: _clientFd(clientFd), _clientAddr(clientAddr), _serverConfig(serverConfig), _req(req), _cnt(0) {
-	std::cout << utils::itos(clientFd) + " | client constructor called\n";
-	this->_clientAddrStr = "any";
 	// _clientAddrStr 초기화
 	// this->_req = new RequestParser;
 	// this->_res = new ResponseParser;
@@ -16,10 +14,6 @@ int Client::getFd() const {
 
 std::size_t Client::getCnt() const {
 	return this->_cnt;
-}
-
-const std::string& Client::getAddrStr() const {
-	return (this->_clientAddrStr);
 }
 
 struct sockaddr_in Client::getAddr() const {
@@ -39,6 +33,7 @@ ResponseParser* Client::getResParser() const {
 }
 
 bool Client::executeRequest(request_t request) {
+	(void)request;
 	return true;
 }
 

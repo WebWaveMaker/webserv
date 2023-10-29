@@ -61,15 +61,13 @@ namespace utils {
 
 	// static cast of shared_ptr
 	template <class T, class U>
-	shared_ptr<T> static_pointer_cast(const shared_ptr<U>& ptr) throw()
-	{
+	shared_ptr<T> static_pointer_cast(const shared_ptr<U>& ptr) throw() {
 		return shared_ptr<T>(ptr, static_cast<typename shared_ptr<T>::element_type*>(ptr.get()));
 	}
 
 	// dynamic cast of shared_ptr
 	template <class T, class U>
-	shared_ptr<T> dynamic_pointer_cast(const shared_ptr<U>& ptr) throw()
-	{
+	shared_ptr<T> dynamic_pointer_cast(const shared_ptr<U>& ptr) throw() {
 		T* p = dynamic_cast<typename shared_ptr<T>::element_type*>(ptr.get());
 		if (NULL != p) {
 			return shared_ptr<T>(ptr, p);

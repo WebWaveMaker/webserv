@@ -1,9 +1,9 @@
 #include "ServerAcceptHandler.hpp"
 
 reactor::ServerAcceptHandler::ServerAcceptHandler(handle_t fd, ICallback* callback,
-										 u::shared_ptr<std::map<int, u::shared_ptr<Client> > >& clients,
-										 u::shared_ptr<AccessLogger>& accessLogger,
-										 u::shared_ptr<ErrorLogger>& errorLogger)
+												  u::shared_ptr<std::map<int, u::shared_ptr<Client> > >& clients,
+												  u::shared_ptr<AccessLogger>& accessLogger,
+												  u::shared_ptr<ErrorLogger>& errorLogger)
 	: AEventHandler(fd, accessLogger, errorLogger), _callback(callback), _clients(clients) {
 	std::cout << "ServerAcceptHandler constructor called\n";
 }

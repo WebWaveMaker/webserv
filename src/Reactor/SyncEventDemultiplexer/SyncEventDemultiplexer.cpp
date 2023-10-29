@@ -43,7 +43,7 @@ namespace reactor {
 		if (eventNum == -1)
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		_kq->getChangeList().clear();
-		std::cout << "ChangeList Size: " <<  _kq->getChangeList().size() << std::endl;
+		std::cout << "ChangeList Size: " << _kq->getChangeList().size() << std::endl;
 		for (int i = 0; i < eventNum; ++i)
 			static_cast<AEventHandler*>(_kq->getkEventList()[i].udata)->handleEvent();
 	};
