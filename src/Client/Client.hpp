@@ -20,9 +20,10 @@ class Client {
    public:
 	Client(int clientFd, const sockaddr_in& clientAddr, utils::shared_ptr<ServerConfig>& serverConfig,
 		   utils::shared_ptr<RequestParser> req);
-	bool executeRequest();
+	bool executeRequest(request_t request);
 
 	int getFd() const;
+	std::size_t getCnt() const;
 	const std::string& getAddrStr() const;
 	struct sockaddr_in getAddr() const;
 	ServerConfig& getConfig() const;
