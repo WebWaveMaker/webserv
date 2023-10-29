@@ -3,7 +3,7 @@
 ServerManager::ServerManager(const std::string path)
 	: _configParser(), _serverConfigs(_configParser.parse(path)), _servers() {
 	try {
-		this->CreateServer(*(this->_serverConfigs));
+		this->CreateServer(this->_serverConfigs);
 	} catch (std::exception& e) {
 		throw;
 	}
@@ -45,5 +45,4 @@ ServerManager::~ServerManager() {
 	for (std::map<int, Server*>::iterator it = this->_servers.begin(); it != this->_servers.end(); ++it)
 		delete it->second;
 	this->_servers.clear();
-	delete _serverConfigs;
 }

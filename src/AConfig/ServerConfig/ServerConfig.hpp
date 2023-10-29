@@ -16,7 +16,7 @@ class LocationConfig;
 class ServerConfig : public AConfig {
    private:
 	utils::shared_ptr<HttpConfig> _parent;
-	std::map<std::string, LocationConfig*> _locations;
+	std::map<std::string, utils::shared_ptr<LocationConfig> > _locations;
 
    public:
 	ServerConfig();
@@ -29,7 +29,7 @@ class ServerConfig : public AConfig {
 	virtual void setErrorPage(const std::vector<std::string>& values);
 	virtual std::string getErrorPage(unsigned int error_code) const;
 	virtual ConfigValue getDirectives(Directives method) const;
-	void setLocations(std::string identifier, LocationConfig* location);
-	LocationConfig* getLocation(const std::string& identifier) const;
+	void setLocations(std::string identifier, utils::shared_ptr<LocationConfig> location);
+	utils::shared_ptr<LocationConfig> getLocation(const std::string& identifier) const;
 };
 #endif	// SERVERCONFIG_HPP

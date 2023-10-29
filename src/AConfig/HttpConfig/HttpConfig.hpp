@@ -7,10 +7,7 @@
 #ifndef HTTPCONFIG_HPP
 #define HTTPCONFIG_HPP
 
-#include "AConfig.hpp"
-#include "ErrorLogger.hpp"
-#include "Parser.h"
-#include "utils.hpp"
+#include "HttpConfig.h"
 
 /**
  * @class HttpConfig

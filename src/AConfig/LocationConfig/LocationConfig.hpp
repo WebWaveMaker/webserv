@@ -6,16 +6,17 @@
 #include "Parser.h"
 #include "ServerConfig.hpp"
 #include "utils.hpp"
+#include "shared_ptr.hpp"
 
 class ServerConfig;
 
 class LocationConfig : public AConfig {
    private:
-	ServerConfig* _parent;
+	utils::shared_ptr<ServerConfig> _parent;
 
    public:
 	LocationConfig();
-	LocationConfig(ServerConfig* parent);  // Moved initialization to constructor initializer list
+	LocationConfig(utils::shared_ptr<ServerConfig> parent);  // Moved initialization to constructor initializer list
 	LocationConfig(const LocationConfig& other);
 	~LocationConfig();
 	LocationConfig& operator=(const LocationConfig& other);
