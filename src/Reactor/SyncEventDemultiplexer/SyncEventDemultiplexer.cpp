@@ -36,10 +36,15 @@ namespace reactor {
 				break;
 		}
 	}
+	void SyncEventDemultiplexer::unRequestAllEvent(fd_t fd) {
+		this->_kq->registerEvent(fd, EVFILT_READ, EV_DELETE, 0, 0, u::nullptr_t);
+		this->_kq->registerEvent(fd, EVFILT_WRITE, EV_DELETE, 0, 0, u::nullptr_t);
+	}
 
 	void SyncEventDemultiplexer::waitEvents(void) {
-		const int eventNum = kevent(this->_kq->getFd(), &this->_kq->getChangeList()[0], this->_kq->getChangeList().size(),
-									&this->_kq->getkEventList()[0], this->_kq->getkEventList().size(), u::nullptr_t);
+		const int eventNum =
+			kevent(this->_kq->getFd(), &this->_kq->getChangeList()[0], this->_kq->getChangeList().size(),
+				   &this->_kq->getkEventList()[0], this->_kq->getkEventList().size(), u::nullptr_t);
 		if (eventNum == -1)
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		this->_kq->getChangeList().clear();

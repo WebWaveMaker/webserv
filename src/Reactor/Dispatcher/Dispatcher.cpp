@@ -30,6 +30,34 @@ namespace reactor {
 		}
 	}
 
+	void Dispatcher::addFdToClose(fd_t fd) {
+		this->_fdsToClose.insert(fd);
+	}
+
+	void Dispatcher::removeFdToClose(fd_t fd) {
+		this->_fdsToClose.erase(fd);
+	}
+
+	bool Dispatcher::isFdMarkedToClose(fd_t fd) const {
+		return (this->_fdsToClose.find(fd) != this->_fdsToClose.end());
+	}
+
+	void Dispatcher::closePendingFds() {
+		for (std::set<fd_t>::iterator fdIt = this->_fdsToClose.begin(); fdIt != this->_fdsToClose.end(); ++fdIt) {
+			fd_t fd = *fdIt;
+
+			if (this->_handlers.find(fd) != this->_handlers.end()) {
+				this->_demultiplexer->unRequestAllEvent(fd);
+				// Server에 Client지울고 해야한다.
+				for (std::vector<u::shared_ptr<AEventHandler> >::iterator handlerIt = this->_handlers[fd].begin();
+					 handlerIt != this->_handlers[fd].end(); ++handlerIt)
+					this->_handlerIndices.erase(*handlerIt);
+				this->_handlers[fd].clear();
+			}
+		}
+		this->_fdsToClose.clear();
+	}
+
 	void Dispatcher::handleEvent(void) {
 		_demultiplexer->waitEvents();
 	}
