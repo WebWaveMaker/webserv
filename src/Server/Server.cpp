@@ -28,7 +28,8 @@ void Server::registerReadEvent() {
 	reactor::Dispatcher* dispatcher = reactor::Dispatcher::getInstance();
 
 	dispatcher->registerHander(
-		new reactor::ServerAcceptHandler(this->_fd, this, this->_clients, this->_accessLogger, this->_errorLogger),
+		u::shared_ptr<reactor::AEventHandler>(static_cast<reactor::AEventHandler*>(new reactor::ServerAcceptHandler(
+			this->_fd, this, this->_clients, this->_accessLogger, this->_errorLogger))),
 		EVENT_READ);
 }
 
