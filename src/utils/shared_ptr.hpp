@@ -11,7 +11,7 @@ namespace utils {
 	class shared_ptr {
 	   private:
 		C* _ptr;
-		std::size_t* _cnt;
+		mutable std::size_t* _cnt;
 
 		void swap(shared_ptr& lhs) throw() {
 			std::swap(_ptr, lhs._ptr);
@@ -51,6 +51,27 @@ namespace utils {
 				_ptr = u::nullptr_t;
 			}
 		};
+
+		template <class U>
+		void acquire(U* p) const {
+			if (p != NULL) {
+				if (_cnt == NULL) {
+					try {
+						_cnt = new std::size_t(1);
+					} catch (std::bad_alloc&) {
+						delete p;
+						throw;	// rethrow the std::bad_alloc
+					}
+				} else {
+					++(*_cnt);
+				}
+			}
+		}
+
+		template <class U>
+		shared_ptr(const shared_ptr<U>& ptr, C* p) : _ptr(p) {
+			ptr.acquire(p);
+		}
 
 		C* get(void) const throw() { return _ptr; }
 		C& operator*() const throw() { return *_ptr; }
