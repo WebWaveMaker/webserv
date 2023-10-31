@@ -97,6 +97,10 @@ Client* Server::createClient(int clientFd, struct sockaddr_in& clientAddr) {
 	}
 }
 
+bool Server::hasClient(int key) {
+	return (this->_clients->find(key) != this->_clients->end());
+}
+
 void Server::eraseClient(int key) {
 	this->removeClient(key);
 }
@@ -112,7 +116,6 @@ void Server::removeClient(int key) {
 		this->_clients->erase(it);
 	} else {
 		this->_errorLogger->log("Not Found client\n", __func__, LOG_ERROR, NULL);
-		throw std::runtime_error("removeClient Error\n");
 	}
 }
 

@@ -28,6 +28,16 @@ void ServerManager::CreateServer(config_t& ServerConfigs) {
 	}
 }
 
+void ServerManager::eraseClient(fd_t fd) {
+	for (std::map<int, Server*>::iterator serverIt = this->_servers.begin(); serverIt != this->_servers.end();
+		 ++serverIt) {
+		if (serverIt->second->hasClient(fd)) {
+			serverIt->second->eraseClient(fd);
+			break;
+		}
+	}
+}
+
 Server* ServerManager::getServer(int serverFD) const {
 	std::map<int, Server*>::const_iterator it = this->_servers.find(serverFD);
 

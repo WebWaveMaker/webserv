@@ -18,6 +18,7 @@ class ServerManager : public u::TSingleton<ServerManager> {
 	ServerManager(const std::string path);
 	void init(const std::string path);
 	void CreateServer(config_t& serverConfigs);
+	void eraseClient(fd_t fd);
 	Server* getServer(int serverFd) const;
 	config_t getServerConfigs() const;
 	~ServerManager();
