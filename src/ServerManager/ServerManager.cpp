@@ -1,7 +1,9 @@
 #include "ServerManager.hpp"
 
-ServerManager::ServerManager(const std::string path)
-	: _configParser(), _serverConfigs(_configParser.parse(path)), _servers() {
+ServerManager::ServerManager() : _configParser(), _servers() {}
+
+void ServerManager::init(const std::string path) {
+	this->_serverConfigs = this->_configParser.parse(path);
 	try {
 		this->CreateServer(this->_serverConfigs);
 	} catch (std::exception& e) {
