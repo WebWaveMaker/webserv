@@ -19,6 +19,8 @@ namespace utils {
 		};
 
 	   public:
+		typedef C element_type;
+
 		shared_ptr() : _ptr(u::nullptr_t), _cnt(u::nullptr_t){};
 
 		explicit shared_ptr(C* ptr) : _ptr(ptr), _cnt(new std::size_t(1)) {
@@ -47,8 +49,9 @@ namespace utils {
 				if (*_cnt == 0) {
 					delete _ptr;
 					delete _cnt;
+					_ptr = u::nullptr_t;
+					_cnt = u::nullptr_t;
 				}
-				_ptr = u::nullptr_t;
 			}
 		};
 
@@ -71,8 +74,10 @@ namespace utils {
 		template <class U>
 		shared_ptr(const shared_ptr<U>& ptr, C* p) : _ptr(p) {
 			ptr.acquire(p);
+			_cnt = ptr.getCnt();
 		}
 
+		std::size_t* getCnt(void) const { return _cnt; }
 		C* get(void) const throw() { return _ptr; }
 		C& operator*() const throw() { return *_ptr; }
 		C* operator->() const throw() { return _ptr; }
@@ -80,22 +85,55 @@ namespace utils {
 
 	// static cast of shared_ptr
 	template <class T, class U>
-	shared_ptr<T> static_pointer_cast(const shared_ptr<U>& ptr) throw()
-	{
-		return shared_ptr<T>(ptr, static_cast<typename shared_ptr<T>::element_type*>(ptr.get()));
+	u::shared_ptr<T> static_pointer_cast(const u::shared_ptr<U>& ptr) throw() {
+		return u::shared_ptr<T>(ptr, static_cast<typename u::shared_ptr<T>::element_type*>(ptr.get()));
 	}
 
 	// dynamic cast of shared_ptr
 	template <class T, class U>
-	shared_ptr<T> dynamic_pointer_cast(const shared_ptr<U>& ptr) throw()
-	{
-		T* p = dynamic_cast<typename shared_ptr<T>::element_type*>(ptr.get());
+	u::shared_ptr<T> dynamic_pointer_cast(const u::shared_ptr<U>& ptr) throw() {
+		T* p = dynamic_cast<typename u::shared_ptr<T>::element_type*>(ptr.get());
 		if (NULL != p) {
-			return shared_ptr<T>(ptr, p);
+			return u::shared_ptr<T>(ptr, p);
 		} else {
-			return shared_ptr<T>();
+			return u::shared_ptr<T>();
 		}
 	}
 
+	// comparaison operators
+	template <class T, class U>
+	bool operator==(const shared_ptr<T>& l, const shared_ptr<U>& r) throw()	 // never throws
+	{
+		return (l.get() == r.get());
+	}
+	template <class T, class U>
+	bool operator!=(const shared_ptr<T>& l, const shared_ptr<U>& r) throw()	 // never throws
+	{
+		return (l.get() != r.get());
+	}
+	template <class T, class U>
+	bool operator<=(const shared_ptr<T>& l, const shared_ptr<U>& r) throw()	 // never throws
+	{
+		return (l.get() <= r.get());
+	}
+	template <class T, class U>
+	bool operator<(const shared_ptr<T>& l, const shared_ptr<U>& r) throw()	// never throws
+	{
+		return (l.get() < r.get());
+	}
+	template <class T, class U>
+	bool operator>=(const shared_ptr<T>& l, const shared_ptr<U>& r) throw()	 // never throws
+	{
+		return (l.get() >= r.get());
+	}
+	template <class T, class U>
+	bool operator>(const shared_ptr<T>& l, const shared_ptr<U>& r) throw()	// never throws
+	{
+		return (l.get() > r.get());
+	}
+
 }  // namespace utils
+
+namespace u = utils;
+
 #endif
