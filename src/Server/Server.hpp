@@ -31,6 +31,7 @@ class Server : public ICallback {
 	virtual void eraseClient(int key);
 	virtual ICallback* getCallback();
 
+	bool hasClient(int key);
 	int getFd() const;
 	const ServerConfig& getConfig() const;
 	const sockaddr_in& getAddr() const;

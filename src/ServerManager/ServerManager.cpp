@@ -1,7 +1,9 @@
 #include "ServerManager.hpp"
 
-ServerManager::ServerManager(const std::string path)
-	: _configParser(), _serverConfigs(_configParser.parse(path)), _servers() {
+ServerManager::ServerManager() : _configParser(), _servers() {}
+
+void ServerManager::init(const std::string path) {
+	this->_serverConfigs = this->_configParser.parse(path);
 	try {
 		this->CreateServer(this->_serverConfigs);
 	} catch (std::exception& e) {
@@ -23,6 +25,17 @@ void ServerManager::CreateServer(config_t& ServerConfigs) {
 		}
 	} catch (std::exception& e) {
 		throw;
+	}
+}
+
+void ServerManager::eraseClient(fd_t fd) {
+	for (std::map<int, Server*>::iterator serverIt = this->_servers.begin(); serverIt != this->_servers.end();
+		 ++serverIt) {
+		if (serverIt->second->hasClient(fd)) {
+			serverIt->second->eraseClient(fd);
+			std::cout << "erase in Server :" << fd << std::endl;
+			break;
+		}
 	}
 }
 

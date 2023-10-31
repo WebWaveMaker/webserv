@@ -19,7 +19,7 @@ int main(int ac, char** av) {
 	if (ac != 2)
 		return ErrorLogger::parseError(__FILE__, __LINE__, __func__, "wrong arguments");
 	try {
-		utils::shared_ptr<ServerManager> serverManager(new ServerManager(av[1]));
+		ServerManager::getInstance()->init(av[1]);
 
 		while (true)
 			reactor::Dispatcher::getInstance()->handleEvent();
