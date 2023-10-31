@@ -4,6 +4,7 @@
 
 #include <set>
 
+#include "ServerManager.hpp"
 #include "SyncEventDemultiplexer.hpp"
 
 #endif

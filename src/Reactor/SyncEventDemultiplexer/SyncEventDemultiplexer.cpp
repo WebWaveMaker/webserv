@@ -37,8 +37,8 @@ namespace reactor {
 		}
 	}
 	void SyncEventDemultiplexer::unRequestAllEvent(fd_t fd) {
-		this->_kq->registerEvent(fd, EVFILT_READ, EV_DELETE, 0, 0, u::nullptr_t);
-		this->_kq->registerEvent(fd, EVFILT_WRITE, EV_DELETE, 0, 0, u::nullptr_t);
+		this->_kq->AddEventOnChangeList(fd, EVFILT_READ, EV_DELETE, 0, 0, u::nullptr_t);
+		this->_kq->AddEventOnChangeList(fd, EVFILT_WRITE, EV_DELETE, 0, 0, u::nullptr_t);
 	}
 
 	void SyncEventDemultiplexer::waitEvents(void) {
@@ -48,8 +48,11 @@ namespace reactor {
 		if (eventNum == -1)
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		this->_kq->getChangeList().clear();
-		std::cout << "ChangeList Size: " << this->_kq->getChangeList().size() << std::endl;
-		for (int i = 0; i < eventNum; ++i)
+		for (int i = 0; i < eventNum; ++i) {
+			std::cout << "\nevent fd: " << this->_kq->getkEventList()[i].ident << std::endl;
+			if (this->_kq->getkEventList()[i].flags & EV_ERROR)
+				continue;
 			static_cast<AEventHandler*>(this->_kq->getkEventList()[i].udata)->handleEvent();
+		}
 	};
 }  // namespace reactor

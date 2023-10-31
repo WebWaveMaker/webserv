@@ -40,6 +40,11 @@ void reactor::ServerAcceptHandler::handleEvent() {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
 		throw;
 	}
+	reactor::Dispatcher::getInstance()->registerHander(
+		u::static_pointer_cast<reactor::AEventHandler, reactor::ClientReadHandler>(
+			u::shared_ptr<reactor::ClientReadHandler>(new reactor::ClientReadHandler(
+				clientFd, this->_accessLogger, this->_errorLogger, (*this->_clients)[clientFd]))),
+		EVENT_READ);
 	TestAcceptHandler::printClientInfo((*this->_clients)[clientFd].get());
 }
 

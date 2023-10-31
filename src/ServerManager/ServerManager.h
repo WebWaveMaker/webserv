@@ -9,4 +9,8 @@
 #include "Server.hpp"
 #include "ServerConfig.hpp"
 
+class Server;
+
+typedef int fd_t;
+
 #endif

@@ -48,17 +48,24 @@ namespace reactor {
 
 			if (this->_handlers.find(fd) != this->_handlers.end()) {
 				this->_demultiplexer->unRequestAllEvent(fd);
-				// Server에 Client지울고 해야한다.
-				for (std::vector<u::shared_ptr<AEventHandler> >::iterator handlerIt = this->_handlers[fd].begin();
-					 handlerIt != this->_handlers[fd].end(); ++handlerIt)
+				ServerManager::getInstance()->eraseClient(fd);
+				std::vector<u::shared_ptr<AEventHandler> > handlersToErase = this->_handlers[fd];
+				// 핸들러 목록 순회하면서 핸들러의 인덱스를 _handlerIndices에서 제거합니다.
+				for (std::vector<u::shared_ptr<AEventHandler> >::iterator handlerIt = handlersToErase.begin();
+					 handlerIt != handlersToErase.end(); ++handlerIt)
 					this->_handlerIndices.erase(*handlerIt);
-				this->_handlers[fd].clear();
+
+				// _handlers에서 해당 fd의 핸들러 목록을 완전히 제거합니다.
+				this->_handlers.erase(fd);
+				std::cout << fd << " : was closed\n";
 			}
 		}
 		this->_fdsToClose.clear();
 	}
 
 	void Dispatcher::handleEvent(void) {
+		if (this->_fdsToClose.size() != 0)
+			this->closePendingFds();
 		_demultiplexer->waitEvents();
 	}
 }  // namespace reactor
