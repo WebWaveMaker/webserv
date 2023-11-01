@@ -5,8 +5,7 @@
 #include <sys/event.h>
 #include <vector>
 #include "ErrorLogger.hpp"
+#include "types.h"
 #include "utils.hpp"
-
-typedef int fd_t;
 
 #endif
