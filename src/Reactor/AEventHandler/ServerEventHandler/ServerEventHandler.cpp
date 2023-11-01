@@ -44,7 +44,7 @@ void ServerEventHandler::handleRead() {
 		throw std::runtime_error("");
 	}
 	reactor::Dispatcher* dispatcher = reactor::Dispatcher::getInstance();
-	dispatcher->registerHander((*this->_clients)[clientFd], EVENT_READ);
+	dispatcher->registerHandler((*this->_clients)[clientFd], EVENT_READ);
 }
 
 void ServerEventHandler::handleWrite() {}

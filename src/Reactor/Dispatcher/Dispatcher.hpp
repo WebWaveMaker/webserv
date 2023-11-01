@@ -19,7 +19,7 @@ namespace reactor {
 	   public:
 		Dispatcher();
 		~Dispatcher();
-		void registerHander(u::shared_ptr<AEventHandler> handler, enum EventType type);
+		void registerHandler(u::shared_ptr<AEventHandler> handler, enum EventType type);
 		void removeHander(u::shared_ptr<AEventHandler> handler, enum EventType type);
 		void addFdToClose(fd_t fd);
 		void removeFdToClose(fd_t fd);

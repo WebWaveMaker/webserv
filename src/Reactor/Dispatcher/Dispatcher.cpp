@@ -6,7 +6,7 @@ namespace reactor {
 
 	Dispatcher::~Dispatcher() {}
 
-	void Dispatcher::registerHander(u::shared_ptr<AEventHandler> handler, enum EventType type) {
+	void Dispatcher::registerHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
 		const fd_t handle = handler->getHandle();
 
 		if (this->_handlers.find(handle) == this->_handlers.end()) {
