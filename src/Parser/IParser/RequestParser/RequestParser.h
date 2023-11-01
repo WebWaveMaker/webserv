@@ -14,6 +14,7 @@
 #include "nullptr_t.hpp"
 #include "shared_ptr.hpp"
 #include "utils.hpp"
+#include "types.h"
 
 typedef utils::shared_ptr<std::pair<enum HttpMessageState, HttpMessage> > request_t;
 

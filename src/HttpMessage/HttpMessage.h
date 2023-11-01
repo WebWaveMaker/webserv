@@ -6,5 +6,6 @@
 #include <string>
 #include "const.h"
 #include "utils.hpp"
+#include "shared_ptr.hpp"
 
 #endif

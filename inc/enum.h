@@ -25,4 +25,6 @@ enum RequestParserState { PENDING, RESOLVE };
 
 enum HttpMessageState { DONE, ERROR, START_LINE, HEADER, BODY };
 
+enum EventType { EVENT_READ, EVENT_WRITE };
+
 #endif
