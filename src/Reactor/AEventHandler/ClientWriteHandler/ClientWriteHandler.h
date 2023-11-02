@@ -4,5 +4,6 @@
 
 #include "AEventHandler.hpp"
 #include "SyncEventDemultiplexer.hpp"
+#include "types.h"
 
 #endif

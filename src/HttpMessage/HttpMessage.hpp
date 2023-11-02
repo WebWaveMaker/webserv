@@ -23,7 +23,9 @@ class HttpMessage {
 	std::map<std::string, std::string>& getHeaders(void);
 	// void setBuf(const std::string& buf);
 	// void setRemain(const std::string& remain);
-	std::string getRawStr(void) const;
+	std::string getRawStr(void) const;	
 };
+
+typedef utils::shared_ptr<HttpMessage> msg_t;
 
 #endif

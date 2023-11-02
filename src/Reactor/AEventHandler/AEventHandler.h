@@ -5,16 +5,10 @@
 #include <sys/socket.h>
 #include "AccessLogger.hpp"
 #include "ErrorLogger.hpp"
+#include "shared_ptr.hpp"
 #include "utils.hpp"
+#include "types.h"
+#include "enum.h"
 
-#ifndef handle_t
-typedef int handle_t;
-#endif
-
-/**
- * @brief 
- * 
- */
-enum EventType { EVENT_READ, EVENT_WRITE };
 
 #endif

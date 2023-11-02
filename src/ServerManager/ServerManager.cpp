@@ -5,13 +5,13 @@ ServerManager::ServerManager() : _configParser(), _servers() {}
 void ServerManager::init(const std::string path) {
 	this->_serverConfigs = this->_configParser.parse(path);
 	try {
-		this->CreateServer(this->_serverConfigs);
+		this->createServer(this->_serverConfigs);
 	} catch (std::exception& e) {
 		throw;
 	}
 }
 
-void ServerManager::CreateServer(config_t& ServerConfigs) {
+void ServerManager::createServer(config_t& ServerConfigs) {
 	try {
 		for (config_t::iterator it = ServerConfigs.begin(); it != ServerConfigs.end(); ++it) {
 			Server* server = new Server(*it);
@@ -26,6 +26,10 @@ void ServerManager::CreateServer(config_t& ServerConfigs) {
 	} catch (std::exception& e) {
 		throw;
 	}
+}
+
+Client* ServerManager::createClient(int serverFd, int clientFd, struct sockaddr_in& clientAddr) {
+	return (this->getServer(serverFd)->createClient(clientFd, clientAddr));
 }
 
 void ServerManager::eraseClient(fd_t fd) {

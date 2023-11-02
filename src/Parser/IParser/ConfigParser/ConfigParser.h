@@ -6,6 +6,7 @@
 #include "IParser.hpp"
 #include "Parser.h"
 #include "ServerConfig.hpp"
+#include "types.h"
 
 typedef std::vector<utils::shared_ptr<ServerConfig> > config_t;
 

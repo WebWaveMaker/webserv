@@ -4,7 +4,7 @@
 
 #include "Server.h"
 
-class Server : public ICallback {
+class Server {
    private:
 	utils::shared_ptr<ServerConfig> _serverConfig;
 	int _fd;
@@ -27,9 +27,8 @@ class Server : public ICallback {
    public:
 	Server(utils::shared_ptr<ServerConfig>& serverConfig);
 
-	virtual Client* createClient(int clientFd, struct sockaddr_in& clientAddr);
-	virtual void eraseClient(int key);
-	virtual ICallback* getCallback();
+	Client* createClient(int clientFd, struct sockaddr_in& clientAddr);
+	void eraseClient(int key);
 
 	bool hasClient(int key);
 	int getFd() const;

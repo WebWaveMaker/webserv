@@ -13,8 +13,9 @@
 #include "Client.hpp"
 #include "Dispatcher.hpp"
 #include "ErrorLogger.hpp"
-#include "ICallback.hpp"
 #include "ServerAcceptHandler.hpp"
 #include "ServerConfig.hpp"
+
+class Client;
 
 #endif

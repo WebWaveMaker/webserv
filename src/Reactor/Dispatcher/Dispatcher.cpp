@@ -6,17 +6,15 @@ namespace reactor {
 
 	Dispatcher::~Dispatcher() {}
 
-	void Dispatcher::registerHander(u::shared_ptr<AEventHandler> handler, enum EventType type) {
+	void Dispatcher::registerHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
 		const fd_t handle = handler->getHandle();
 
-		if (this->_handlers.find(handle) == this->_handlers.end()) {
-			this->_handlers[handle].push_back(handler);
-			this->_handlerIndices[handler] = this->_handlers[handle].size() - 1;
-		}
+		this->_handlers[handle].push_back(handler);
+		this->_handlerIndices[handler] = this->_handlers[handle].size() - 1;
 		this->_demultiplexer->requestEvent(handler.get(), type);
 	}
 
-	void Dispatcher::removeHander(u::shared_ptr<AEventHandler> handler, enum EventType type) {
+	void Dispatcher::removeHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
 		const handle_t handle = handler->getHandle();
 		if (this->_handlers.find(handle) != this->_handlers.end()) {
 			const size_t index = this->_handlerIndices[handler];
