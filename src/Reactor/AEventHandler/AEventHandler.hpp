@@ -17,7 +17,7 @@ namespace reactor {
 		virtual sharedData_t getData() const { return this->_sharedData; };
 		virtual handle_t getHandle() const { return this->_sharedData.get()->fd; };
 		virtual std::vector<char> getBuffer() const { return this->_sharedData.get()->buffer; };
-		virtual enum ASyncState getState() const { return this->_sharedData.get()->state; };
+		virtual enum AsyncState getState() const { return this->_sharedData.get()->state; };
 		virtual void setState(const enum AsyncState state) { this->_sharedData.get()->state = state; };
 		virtual void handleEvent() = 0;
 	};

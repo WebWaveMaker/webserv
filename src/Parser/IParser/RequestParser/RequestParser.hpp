@@ -24,7 +24,7 @@ class RequestParser : public IParser<request_t> {
 	virtual request_t parse(const std::string& content);
 	request_t get(void);
 	virtual ~RequestParser();
-	enum ASyncState getState(void) const;
+	enum AsyncState getState(void) const;
 };
 
 #endif
