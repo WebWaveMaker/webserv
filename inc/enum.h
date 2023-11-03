@@ -21,10 +21,24 @@ enum LogLevels { LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG };
 
 enum HttpMethods { GET, POST, DELETE, PUT };
 
-enum RequestParserState { PENDING, RESOLVE };
+enum ASyncState { PENDING, RESOLVE, TERMINATE, ACCEPT };
 
 enum HttpMessageState { DONE, ERROR, START_LINE, HEADER, BODY };
 
-enum EventType { EVENT_READ, EVENT_WRITE };
+enum EventType {
+	EVFILT_READ = -1,
+	EVFILT_WRITE = -2,
+	EVFILT_AIO = -3,
+	// EVFILT_VNODE = -4,
+	// EVFILT_PROC = -5,
+	// EVFILT_SIGNAL = -6,
+	EVFILT_TIMER = -7,
+	EVFILT_EXE = -11
+	// EVFILT_MACHPORT = -8,
+	// EVFILT_FS = -9,
+	// EVFILT_USER = -10,
+	// EVFILT_VM = -12,
+	// EVFILT_EXCEPT = -15
+};
 
 #endif

@@ -13,8 +13,8 @@
 #include "enum.h"
 #include "nullptr_t.hpp"
 #include "shared_ptr.hpp"
-#include "utils.hpp"
 #include "types.h"
+#include "utils.hpp"
 
 typedef utils::shared_ptr<std::pair<enum HttpMessageState, HttpMessage> > request_t;
 
