@@ -8,14 +8,12 @@ namespace reactor {
 
 	class ClientReadHandler : public AEventHandler {
 	   private:
-		utils::shared_ptr<RequestParser> _req;
-
 		ClientReadHandler(const ClientReadHandler& obj);
 		ClientReadHandler& operator=(const ClientReadHandler& obj);
 
 	   public:
 		~ClientReadHandler();
-		ClientReadHandler(sharedData_t sharedData, utils::shared_ptr<RequestParser> req);
+		ClientReadHandler(sharedData_t sharedData);
 		virtual void handleEvent();
 	};
 }  // namespace reactor

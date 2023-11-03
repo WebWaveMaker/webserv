@@ -21,7 +21,7 @@ enum LogLevels { LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG };
 
 enum HttpMethods { GET, POST, DELETE, PUT };
 
-enum RequestParserState { PENDING, RESOLVE };
+enum ASyncState { PENDING, RESOLVE, TERMINATE, ACCEPT };
 
 enum HttpMessageState { DONE, ERROR, START_LINE, HEADER, BODY };
 
@@ -39,15 +39,6 @@ enum EventType {
 	// EVFILT_USER = -10,
 	// EVFILT_VM = -12,
 	// EVFILT_EXCEPT = -15
-};
-
-enum HandlerType {
-	HANDLE_SERVER,
-	HANDLE_CLIENT,
-	HANDLE_PIPE,
-	HANDLE_CGI,
-	HANDLE_REQ,
-	HANDLE_RES,
 };
 
 #endif

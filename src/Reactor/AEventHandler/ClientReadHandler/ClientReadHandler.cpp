@@ -1,12 +1,11 @@
 #include "ClientReadHandler.hpp"
 
-reactor::ClientReadHandler::ClientReadHandler(sharedData_t sharedData, utils::shared_ptr<RequestParser> req)
-	: AEventHandler(sharedData), _req(req) {}
+reactor::ClientReadHandler::ClientReadHandler(sharedData_t sharedData) : AEventHandler(sharedData) {}
 
 reactor::ClientReadHandler::~ClientReadHandler() {}
 
 void reactor::ClientReadHandler::handleEvent() {
-	if (reactor::Dispatcher::getInstance()->isFdMarkedToClose(this->getHandle())) { // ? Dispatcher에 접근하면 안되는데...
+	if (this->getState() == TERMINATE) {
 		std::cout << "return\n";
 		return;
 	}
@@ -19,12 +18,12 @@ void reactor::ClientReadHandler::handleEvent() {
 	}
 	if (readByte == 0) {
 		std::cout << this->getHandle() << "addFdToClose\n";
-		reactor::Dispatcher::getInstance()->addFdToClose(this->getHandle());
+		this->setState(TERMINATE);
+		return;
 	}
 	std::cout << "readByte: " << readByte << std::endl;
 	std::cout << buffer.data() << std::endl;
 
-	if (readByte > 0 && readByte < BUFFER_SIZE) {
-		request_t request = this->_req.get()->parse(std::string(buffer.data()));
-	}
+	if (readByte > 0 && readByte < BUFFER_SIZE)
+		this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
 }
