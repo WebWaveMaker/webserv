@@ -6,12 +6,32 @@ namespace reactor {
 
 	Dispatcher::~Dispatcher() {}
 
-	void Dispatcher::registerHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
-		const fd_t handle = handler->getHandle();
+	template <class Factory>
+	void Dispatcher::registerIOHandler(sharedData_t sharedData, enum EventType type) {
+		const handle_t handle = sharedData.get().fd;
+		Factory factory;
+		AEventHandler* handler = factory.createHandler(sharedData);
 
-		this->_handlers[handle].push_back(handler);
+		this->_ioHandlers[handle].push_back(handler);
 		this->_handlerIndices[handler] = this->_handlers[handle].size() - 1;
 		this->_demultiplexer->requestEvent(handler.get(), type);
+	}
+
+	template <class Factory>
+	void Dispatcher::registerExeHandler(sharedData_t sharedData, ...) {
+		const handle_t handle = sharedData.get().fd;
+		Factory factory;
+		va_list args;
+		va_start(args, sharedData);
+		AEventHandler* handler = factory.createHandler(sharedData, args);
+		va_end(args);
+
+		this->_exeHandlers[handle].push_back(handler);
+		this->_handlerIndices[handler] = this->_handlers[handle].size() - 1;
+	}
+
+	void Dispatcher::registerHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
+		const fd_t handle = handler->getHandle();
 	}
 
 	void Dispatcher::removeHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
@@ -65,5 +85,6 @@ namespace reactor {
 		if (this->_fdsToClose.size() != 0)
 			this->closePendingFds();
 		_demultiplexer->waitEvents();
+		// 벡터 순회하면서 executeHandler-> handleEvent실행.
 	}
 }  // namespace reactor

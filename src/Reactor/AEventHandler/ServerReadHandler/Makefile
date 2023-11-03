@@ -8,7 +8,7 @@ endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-SRCS := $(addprefix $(DSTDIR)/objs/, ClientEventHandler.cpp)
+SRCS := $(addprefix $(DSTDIR)/objs/, ServerReadHandler.cpp)
 
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)

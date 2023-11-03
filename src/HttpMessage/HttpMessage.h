@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 #include "const.h"
-#include "utils.hpp"
 #include "shared_ptr.hpp"
+#include "utils.hpp"
 
 #endif
