@@ -9,7 +9,7 @@ RequestParser::RequestParser(utils::shared_ptr<ServerConfig> serverConfig)
 
 RequestParser::~RequestParser() {}
 
-enum ASyncState RequestParser::getState(void) const {
+enum AsyncState RequestParser::getState(void) const {
 	return this->_msgs.empty() ? RESOLVE : PENDING;
 }
 

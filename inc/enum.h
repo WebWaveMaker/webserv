@@ -21,7 +21,7 @@ enum LogLevels { LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG };
 
 enum HttpMethods { GET, POST, DELETE, PUT };
 
-enum ASyncState { PENDING, RESOLVE, TERMINATE, ACCEPT };
+enum AsyncState { PENDING, RESOLVE, TERMINATE, ACCEPT };
 
 enum HttpMessageState { DONE, ERROR, START_LINE, HEADER, BODY };
 
