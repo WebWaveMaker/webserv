@@ -10,10 +10,10 @@ void reactor::ClientReadHandler::handleEvent() {
 		return;
 	}
 	std::vector<char> buffer(BUFFER_SIZE);
-	int readByte = recv(this->_fd, buffer.data(), buffer.size() - 1, 0);
+	int readByte = recv(this->getHandle(), buffer.data(), buffer.size() - 1, 0);
 
 	if (readByte == -1) {
-		this->_errorLogger.get()->log("recv fail", __func__, LOG_ERROR, u::nullptr_t);
+		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "recv fail");
 		return;
 	}
 	if (readByte == 0) {

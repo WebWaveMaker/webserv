@@ -85,5 +85,6 @@ namespace reactor {
 		if (this->_fdsToClose.size() != 0)
 			this->closePendingFds();
 		_demultiplexer->waitEvents();
+		// 벡터 순회하면서 executeHandler-> handleEvent실행.
 	}
 }  // namespace reactor
