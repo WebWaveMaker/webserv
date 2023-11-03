@@ -22,7 +22,11 @@ namespace reactor {
 					  const utils::shared_ptr<ErrorLogger>& errorLogger, utils::shared_ptr<std::vector<char> > buf)
 			: _fd(fd), _accessLogger(accessLogger), _errorLogger(errorLogger), _buf(buf){};
 		virtual ~AEventHandler(){};
-		virtual handle_t getHandle() const { return this->_fd; };
+		virtual sharedData_t getData() const { return this->_sharedData; };
+		virtual handle_t getHandle() const { return this->_sharedData.get()->fd; };
+		virtual std::vector<char> getBuffer() const { return this->_sharedData.get()->buffer; };
+		virtual enum ASyncState getState() const { return this->_sharedData.get()->state; };
+		virtual void setState(const enum AsyncState state) { this->_sharedData.get()->state = state; };
 		virtual void handleEvent() = 0;
 	};
 
