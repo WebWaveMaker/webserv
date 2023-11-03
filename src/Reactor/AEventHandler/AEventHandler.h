@@ -3,12 +3,17 @@
 #define AEVENTHANDLER_H
 
 #include <sys/socket.h>
-#include "AccessLogger.hpp"
-#include "ErrorLogger.hpp"
-#include "shared_ptr.hpp"
-#include "utils.hpp"
-#include "types.h"
 #include "enum.h"
+#include "shared_ptr.hpp"
+#include "types.h"
 
+struct sharedData {
+	int fd;
+	std::vector<char> buffer;
+
+	sharedData(const int fd, std::vector<char> buffer) : fd(fd), buffer(buffer){};
+};
+
+typedef utils::shared_ptr<struct sharedData> sharedData_t;
 
 #endif

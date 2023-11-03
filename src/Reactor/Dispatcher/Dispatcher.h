@@ -6,5 +6,8 @@
 
 #include "ServerManager.hpp"
 #include "SyncEventDemultiplexer.hpp"
+#include "ClientReadHandler.hpp"
+#include "FileReadHandler.hpp"
+#include "PipeReadHandler.hpp"
 
 #endif

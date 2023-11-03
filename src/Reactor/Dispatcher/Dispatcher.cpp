@@ -6,6 +6,64 @@ namespace reactor {
 
 	Dispatcher::~Dispatcher() {}
 
+	void registerIOHandler(const enum HandlerType hType, const enum EventType eType, sharedData_t sharedData,
+						   void* extra) {
+		u::shared_ptr<AEventHandler>* handler;
+
+		switch (eType) {
+			case EVFILT_READ:
+				switch (hType) {
+					case HANDLE_SERVER:
+						handler = &ServerReadHandler(sharedData);
+						break;
+					case HANDLE_CLIENT:
+						handler = &ClientReadHandler(sharedData,
+													 utils::shared_ptr<RequestParser>(new RequestParser(
+														 reinterpret_cast<utils::shared_ptr<ServerConfig> >(*extra)))); // 이런식으로 추가 인자를 넘겨줄 수 있습니다.
+						break;
+					case HANDLE_PIPE:
+						handler = &PipeReadHandler(sharedData);
+						break;
+					default:
+						break;
+				}
+				break;
+			case EVFILT_WRITE:
+				switch (hType) {
+					case HANDLE_SERVER:
+						handler = &ServerWriteHandler(sharedData);
+						break;
+					case HANDLE_CLIENT:
+						handler = &ClientWriteHandler(sharedData);
+						break;
+					case HANDLE_PIPE:
+						handler = &PipeWriteHandler(sharedData);
+						break;
+					default:
+						break;
+				}
+			case EVFILT_EXE:
+				switch (hType) {
+					case HANDLE_CGI:
+						handler = &CgiHandler(sharedData);
+						break;
+					case HANDLE_REQ:
+						handler = &ClientRequestHandler(sharedData);
+						break;
+					case HANDLE_RES:
+						handler = &ClientResponseHandler(sharedData);
+						break;
+					default:
+						break;
+				}
+		}
+
+		this->registerHandler(*handler, eType);
+	}
+
+	template <typename T>
+	void registerExeHandler(const enum HandlerType, const enum EventType type, T data) {}
+
 	void Dispatcher::registerHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
 		const fd_t handle = handler->getHandle();
 
@@ -65,5 +123,6 @@ namespace reactor {
 		if (this->_fdsToClose.size() != 0)
 			this->closePendingFds();
 		_demultiplexer->waitEvents();
+		// 벡터 순회하면서 executeHandler-> handleEvent실행.
 	}
 }  // namespace reactor

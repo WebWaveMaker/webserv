@@ -25,6 +25,29 @@ enum RequestParserState { PENDING, RESOLVE };
 
 enum HttpMessageState { DONE, ERROR, START_LINE, HEADER, BODY };
 
-enum EventType { EVENT_READ, EVENT_WRITE };
+enum EventType {
+	EVFILT_READ = -1,
+	EVFILT_WRITE = -2,
+	EVFILT_AIO = -3,
+	// EVFILT_VNODE = -4,
+	// EVFILT_PROC = -5,
+	// EVFILT_SIGNAL = -6,
+	EVFILT_TIMER = -7,
+	EVFILT_EXE = -11
+	// EVFILT_MACHPORT = -8,
+	// EVFILT_FS = -9,
+	// EVFILT_USER = -10,
+	// EVFILT_VM = -12,
+	// EVFILT_EXCEPT = -15
+};
+
+enum HandlerType {
+	HANDLE_SERVER,
+	HANDLE_CLIENT,
+	HANDLE_PIPE,
+	HANDLE_CGI,
+	HANDLE_REQ,
+	HANDLE_RES,
+};
 
 #endif

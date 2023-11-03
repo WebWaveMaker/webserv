@@ -7,9 +7,6 @@
 #include <vector>	 // For std::vector
 
 #include "AEventHandler.hpp"
-#include "Client.hpp"
-#include "Dispatcher.hpp"
-#include "ICallback.hpp"
 #include "RequestParser.hpp"
 
 #define BUFFER_SIZE 1024
