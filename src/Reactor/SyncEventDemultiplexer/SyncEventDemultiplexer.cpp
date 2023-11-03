@@ -5,36 +5,10 @@ namespace reactor {
 	SyncEventDemultiplexer::~SyncEventDemultiplexer() {}
 
 	void SyncEventDemultiplexer::requestEvent(AEventHandler* handler, const enum EventType type) {
-		const handle_t handle = handler->getHandle();
-
-		switch (type) {
-			case EVENT_READ:
-				this->_kq->AddEventOnChangeList(handle, EVFILT_READ, EV_ADD, 0, 0, handler);
-				break;
-
-			case EVENT_WRITE:
-				this->_kq->AddEventOnChangeList(handle, EVFILT_WRITE, EV_ADD, 0, 0, handler);
-				break;
-
-			default:
-				break;
-		}
+		this->_kq->AddEventOnChangeList(handler->getHandle(), type, EV_ADD, 0, 0, handler);
 	}
 	void SyncEventDemultiplexer::unRequestEvent(AEventHandler* handler, const enum EventType type) {
-		const handle_t handle = handler->getHandle();
-
-		switch (type) {
-			case EVENT_READ:
-				this->_kq->registerEvent(handle, EVFILT_READ, EV_DELETE, 0, 0, u::nullptr_t);
-				break;
-
-			case EVENT_WRITE:
-				this->_kq->registerEvent(handle, EVFILT_WRITE, EV_DELETE, 0, 0, u::nullptr_t);
-				break;
-
-			default:
-				break;
-		}
+		this->_kq->registerEvent(handler->getHandle(), type, EV_DELETE, 0, 0, u::nullptr_t);
 	}
 	void SyncEventDemultiplexer::unRequestAllEvent(fd_t fd) {
 		this->_kq->AddEventOnChangeList(fd, EVFILT_READ, EV_DELETE, 0, 0, u::nullptr_t);

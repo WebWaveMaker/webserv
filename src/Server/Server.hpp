@@ -32,7 +32,7 @@ class Server {
 
 	bool hasClient(int key);
 	int getFd() const;
-	const ServerConfig& getConfig() const;
+	utils::shared_ptr<ServerConfig> getConfig() const;
 	const sockaddr_in& getAddr() const;
 	AccessLogger& getAccessLogger() const;
 	ErrorLogger& getErrorLogger() const;

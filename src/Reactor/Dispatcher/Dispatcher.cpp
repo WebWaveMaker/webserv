@@ -34,6 +34,23 @@ namespace reactor {
 		const fd_t handle = handler->getHandle();
 	}
 
+	template <class Factory>
+	void Dispatcher::registerExeHandler(sharedData_t sharedData, ...) {
+		const handle_t handle = sharedData.get().fd;
+		Factory factory;
+		va_list args;
+		va_start(args, sharedData);
+		AEventHandler* handler = factory.createHandler(sharedData, args);
+		va_end(args);
+
+		this->_exeHandlers[handle].push_back(handler);
+		this->_handlerIndices[handler] = this->_handlers[handle].size() - 1;
+	}
+
+	void Dispatcher::registerHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
+		const fd_t handle = handler->getHandle();
+	}
+
 	void Dispatcher::removeHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
 		const handle_t handle = handler->getHandle();
 		if (this->_handlers.find(handle) != this->_handlers.end()) {
@@ -85,5 +102,6 @@ namespace reactor {
 		if (this->_fdsToClose.size() != 0)
 			this->closePendingFds();
 		_demultiplexer->waitEvents();
+		// 벡터 순회하면서 executeHandler-> handleEvent실행.
 	}
 }  // namespace reactor
