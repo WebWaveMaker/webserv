@@ -26,7 +26,8 @@ namespace reactor {
 		template <class Factory>
 		void registerExeHandler(sharedData_t sharedData, ...);
 		void Dispatcher::registerHandler(u::shared_ptr<AEventHandler> handler, enum EventType type);
-		void removeHandler(u::shared_ptr<AEventHandler> handler, enum EventType type);
+		void removeIOHandler(u::shared_ptr<AEventHandler> handler, enum EventType type);
+		void removeExeHandler(u::shared_ptr<AEventHandler> handler);
 		void addFdToClose(fd_t fd);
 		void removeFdToClose(fd_t fd);
 		bool isFdMarkedToClose(fd_t fd) const;

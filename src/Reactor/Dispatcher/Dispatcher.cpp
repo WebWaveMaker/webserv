@@ -13,7 +13,7 @@ namespace reactor {
 		AEventHandler* handler = factory.createHandler(sharedData);
 
 		this->_ioHandlers[handle].push_back(handler);
-		this->_handlerIndices[handler] = this->_handlers[handle].size() - 1;
+		this->_handlerIndices[handler] = this->_ioHandlers[handle].size() - 1;
 		this->_demultiplexer->requestEvent(handler.get(), type);
 	}
 
@@ -27,23 +27,36 @@ namespace reactor {
 		va_end(args);
 
 		this->_exeHandlers[handle].push_back(handler);
-		this->_handlerIndices[handler] = this->_handlers[handle].size() - 1;
+		this->_handlerIndices[handler] = this->_exeHandlers[handle].size() - 1;
 	}
 
 	void Dispatcher::registerHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
 		const fd_t handle = handler->getHandle();
 	}
-
-	void Dispatcher::removeHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
+	/*IOhandler 하나만 Dispatcher, kevent에서 삭제합니다.*/
+	void Dispatcher::removeIOHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
 		const handle_t handle = handler->getHandle();
-		if (this->_handlers.find(handle) != this->_handlers.end()) {
+		if (this->_ioHandlers.find(handle) != this->_ioHandlers.end()) {
 			const size_t index = this->_handlerIndices[handler];
-			if (index != this->_handlers[handle].size() - 1) {
-				std::swap(this->_handlers[handle][index], this->_handlers[handle].back());
-				this->_handlerIndices[this->_handlers[handle][index]] = index;
+			if (index != this->_ioHandlers[handle].size() - 1) {
+				std::swap(this->_ioHandlers[handle][index], this->_ioHandlers[handle].back());
+				this->_handlerIndices[this->_ioHandlers[handle][index]] = index;
 			}
-			this->_demultiplexer->unRequestEvent(this->_handlers[handle].back().get(), type);
-			this->_handlers[handle].pop_back();
+			this->_demultiplexer->unRequestEvent(this->_ioHandlers[handle].back().get(), type);
+			this->_ioHandlers[handle].pop_back();
+			this->_handlerIndices.erase(handler);
+		}
+	}
+	/*Exehandler 하나만 Dispatcher에서 삭제합니다.*/
+	void Dispatcher::removeExeHandler(u::shared_ptr<AEventHandler> handler) {
+		const handle_t handle = handler->getHandle();
+		if (this->_exeHandlers.find(handle) != this->_exeHandlers.end()) {
+			const size_t index = this->_handlerIndices[handler];
+			if (index != this->_exeHandlers[handle].size() - 1) {
+				std::swap(this->_exeHandlers[handle][index], this->_exeHandlers[handle].back());
+				this->_handlerIndices[this->_exeHandlers[handle][index]] = index;
+			}
+			this->_exeHandlers[handle].pop_back();
 			this->_handlerIndices.erase(handler);
 		}
 	}
@@ -59,22 +72,28 @@ namespace reactor {
 	bool Dispatcher::isFdMarkedToClose(fd_t fd) const {
 		return (this->_fdsToClose.find(fd) != this->_fdsToClose.end());
 	}
-
+	/*연결이 종료 되어야할 clientFd들을 연결 종료합니다.(IOhandler만 모두 삭제합니다.)*/
 	void Dispatcher::closePendingFds() {
-		for (std::set<fd_t>::iterator fdIt = this->_fdsToClose.begin(); fdIt != this->_fdsToClose.end(); ++fdIt) {
-			fd_t fd = *fdIt;
+		for (std::map<fd_t, std::vector<u::shared_ptr<AEventHandler> > >::iterator IOIt = this->_ioHandlers.begin();
+			 IOIt != this->_ioHandlers.end(); ++IOIt) {
+			std::vector<u::shared_ptr<AEventHandler> >& handlers = IOIt->second;
 
-			if (this->_handlers.find(fd) != this->_handlers.end()) {
+			for (ssize_t i = 0; i < handlers.size(); ++i) {
+				if (handlers[i]->getState() == TERMINATE) {
+					this->
+				}
+			}
+
+			if (!= this->_ioHandlers.end()) {
 				this->_demultiplexer->unRequestAllEvent(fd);
 				ServerManager::getInstance()->eraseClient(fd);
-				std::vector<u::shared_ptr<AEventHandler> > handlersToErase = this->_handlers[fd];
-				// 핸들러 목록 순회하면서 핸들러의 인덱스를 _handlerIndices에서 제거합니다.
+				std::vector<u::shared_ptr<AEventHandler> > handlersToErase = this->_ioHandlers[fd];
+
 				for (std::vector<u::shared_ptr<AEventHandler> >::iterator handlerIt = handlersToErase.begin();
 					 handlerIt != handlersToErase.end(); ++handlerIt)
 					this->_handlerIndices.erase(*handlerIt);
 
-				// _handlers에서 해당 fd의 핸들러 목록을 완전히 제거합니다.
-				this->_handlers.erase(fd);
+				this->_ioHandlers.erase(fd);
 				std::cout << fd << " : was closed\n";
 			}
 		}
