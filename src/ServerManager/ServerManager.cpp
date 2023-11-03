@@ -56,6 +56,15 @@ config_t ServerManager::getServerConfigs() const {
 	return (this->_serverConfigs);
 }
 
+utils::shared_ptr<ServerConfig> ServerManager::getServerConfig(const int clientFd) const {
+	for (std::map<int, Server*>::iterator serverIt = this->_servers.begin(); serverIt != this->_servers.end();
+		 ++serverIt) {
+		if (serverIt->second->hasClient(fd)) {
+			return (serverIt->second->getConfig());
+		}
+	}
+}
+
 ServerManager::~ServerManager() {
 	std::cout << "ServerManager Destructor called\n";
 

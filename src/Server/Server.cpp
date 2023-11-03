@@ -119,8 +119,8 @@ int Server::getFd() const {
 	return (this->_fd);
 }
 
-const ServerConfig& Server::getConfig() const {
-	return (*(this->_serverConfig.get()));
+utils::shared_ptr<ServerConfig> Server::getConfig() const {
+	return this->_serverConfig;
 }
 
 const sockaddr_in& Server::getAddr() const {
