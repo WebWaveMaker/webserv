@@ -4,6 +4,8 @@
 
 #include "ServerManager.h"
 
+class Server;
+
 class ServerManager : public u::TSingleton<ServerManager> {
    private:
 	ConfigParser _configParser;

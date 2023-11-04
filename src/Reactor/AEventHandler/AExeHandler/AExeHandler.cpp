@@ -1,4 +1,5 @@
 #include "AExeHandler.hpp"
+#include "Dispatcher.hpp"
 
 bool AExeHandler::removeHandlerIfNecessary() {
 	reactor::Dispatcher* dispatcher = reactor::Dispatcher::getInstance();

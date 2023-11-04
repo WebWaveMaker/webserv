@@ -1,4 +1,6 @@
 #include "ServerManager.hpp"
+#include "Dispatcher.hpp"
+#include "Server.hpp"
 
 ServerManager::ServerManager() : _configParser(), _servers() {}
 

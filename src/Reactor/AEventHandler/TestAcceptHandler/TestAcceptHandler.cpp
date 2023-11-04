@@ -1,4 +1,5 @@
 #include "TestAcceptHandler.hpp"
+#include "Client.hpp"
 
 void TestAcceptHandler::printClientInfo(const Client* client) {
 	if (client == u::nullptr_t) {

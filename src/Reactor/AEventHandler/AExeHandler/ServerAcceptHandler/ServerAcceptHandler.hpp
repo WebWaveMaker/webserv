@@ -5,6 +5,7 @@
 #include "ServerAcceptHandler.h"
 
 namespace reactor {
+	class AExeHandler;
 
 	class ServerAcceptHandler : public AExeHandler {
 	   private:
