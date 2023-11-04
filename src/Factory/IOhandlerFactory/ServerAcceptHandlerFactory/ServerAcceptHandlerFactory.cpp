@@ -1,10 +1,12 @@
 #include "ServerAcceptHandlerFactory.hpp"
 
-ServerAcceptHandlerFactory::ServerAcceptHandlerFactory() {}
-ServerAcceptHandlerFactory::~ServerAcceptHandlerFactory() {}
+namespace reactor {
+	ServerAcceptHandlerFactory::ServerAcceptHandlerFactory() {}
+	ServerAcceptHandlerFactory::~ServerAcceptHandlerFactory() {}
 
-virtual utils::shared_ptr<AeventHandler> ServerAcceptHandlerFactory::createHandler(
-	utils::shared_ptr<ServerData> sharedData) {
-	return utils::static_pointer_cast<AeventHandler, ServerAcceptHandler>(
-		utils::shared_ptr<ServerAcceptHandler>(new ServerAcceptHandler(sharedData)));
-}
+	utils::shared_ptr<AEventHandler> ServerAcceptHandlerFactory::createHandler(
+		utils::shared_ptr<sharedData> sharedData) {
+		return utils::static_pointer_cast<AEventHandler, ServerAcceptHandler>(
+			utils::shared_ptr<ServerAcceptHandler>(new ServerAcceptHandler(sharedData)));
+	}
+}  // namespace reactor
