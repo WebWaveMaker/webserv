@@ -4,12 +4,13 @@
 
 #include "ServerAcceptHandlerFactory.h"
 
-class ServerAcceptHandlerFactory : public IOhandlerFactory {
-   private:
-   public:
-	ServerAcceptHandlerFactory();
-	~ServerAcceptHandlerFactory();
-	virtual utils::shared_ptr<AeventHandler> createHandler(utils::shared_ptr<ServerData> sharedData);
-};
-
+namespace reactor {
+	class ServerAcceptHandlerFactory : public IOhandlerFactory {
+	   private:
+	   public:
+		ServerAcceptHandlerFactory();
+		~ServerAcceptHandlerFactory();
+		virtual utils::shared_ptr<AEventHandler> createHandler(utils::shared_ptr<sharedData> sharedData);
+	};
+}  // namespace reactor
 #endif
