@@ -5,7 +5,7 @@
 #include "ClientResponseHandler.h"
 
 namespace reactor {
-	class ClientResponseHandler : public AEventHandler {
+	class ClientResponseHandler : public AExeHandler {
 	   private:
 		request_t _request;
 

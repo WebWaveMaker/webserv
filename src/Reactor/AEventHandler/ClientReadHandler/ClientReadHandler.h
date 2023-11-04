@@ -3,8 +3,7 @@
 #define CLIENTREADHANDLER_H
 
 #include "AEventHandler.hpp"
-#include "ClientResponseHandlerFactory.hpp"
-#include "RequestParser.hpp"
+#include "ErrorLogger.hpp"
 #include "const.h"
 
 #endif

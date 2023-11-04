@@ -2,7 +2,7 @@
 
 namespace reactor {
 
-	ServerAcceptHandler::ServerAcceptHandler(sharedData_t sharedData) : AEventHandler(sharedData) {
+	ServerAcceptHandler::ServerAcceptHandler(sharedData_t sharedData) : AExeHandler(sharedData) {
 		Dispatcher::getInstance()->registerIOHandler<ServerReadHandlerFactory>(sharedData);
 		std::cout << "ServerAcceptHandler constructor called\n";
 	}

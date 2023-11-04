@@ -73,3 +73,8 @@ ServerManager::~ServerManager() {
 		delete it->second;
 	this->_servers.clear();
 }
+
+void ServerManager::registerReadEvent(fd_t fd) {
+	reactor::Dispatcher::getInstance()->registerExeHandler<reactor::ServerAcceptHandlerFactory>(
+		sharedData_t(new sharedData(fd, EVENT_READ, std::vector<char>())), NULL);
+}
