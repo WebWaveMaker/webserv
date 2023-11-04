@@ -24,13 +24,13 @@ namespace reactor {
 		void registerIOHandler(sharedData_t sharedData);
 		template <class Factory>
 		void registerExeHandler(sharedData_t sharedData, ...);
-		void Dispatcher::registerHandler(u::shared_ptr<AEventHandler> handler, enum EventType type);
-		void removeIOHandler(u::shared_ptr<AEventHandler> handler, enum EventType type);
+		void removeIOHandler(fd_t fd, enum EventType type);
 		void removeExeHandler(u::shared_ptr<AEventHandler> handler);
 		void addFdToClose(fd_t fd);
 		void removeFdToClose(fd_t fd);
 		bool isFdMarkedToClose(fd_t fd) const;
 		void closePendingFds();
+		void exeHandlerexe();
 		void handleEvent();
 	};
 }  // namespace reactor
