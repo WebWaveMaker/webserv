@@ -32,6 +32,8 @@ namespace reactor {
 		}
 		Dispatcher::getInstance()->registerExeHandler<ClientRequestHandlerFactory>(
 			sharedData_t(new sharedData(clientFd, EVENT_READ, std::vector<char>())));
+		this->setState(PENDING);
+		Dispatcher::getInstance()->removeExeHandler(u::shared_ptr<AEventHandler>(this));
 	}
 
 	ServerAcceptHandler::~ServerAcceptHandler() {

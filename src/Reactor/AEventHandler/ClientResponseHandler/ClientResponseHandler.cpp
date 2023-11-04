@@ -8,4 +8,6 @@ namespace reactor {
 	}
 	ClientResponseHandler::~ClientResponseHandler() {}
 
+	void ClientResponseHandler::handleEvent() {}
+
 }  // namespace reactor

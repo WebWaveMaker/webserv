@@ -25,7 +25,7 @@ void Server::listenServer() {
 
 void Server::registerReadEvent() {
 	reactor::Dispatcher::getInstance()->registerExeHandler<reactor::ServerAcceptHandlerFactory>(
-		sharedData_t(new sharedData(this->_fd, EVENT_READ, std::vector<char>())));
+		sharedData_t(new sharedData(this->_fd, EVENT_READ, std::vector<char>())), NULL);
 }
 
 void Server::bindListen() {

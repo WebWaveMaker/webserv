@@ -16,6 +16,4 @@
 #include "ServerAcceptHandlerFactory.hpp"
 #include "ServerConfig.hpp"
 
-class Client;
-
 #endif

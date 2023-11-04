@@ -1,8 +1,9 @@
 #include "HttpMessage.hpp"
 
 HttpMessage::HttpMessage() : _startLine(), _headers(), _body() {}
-HttpMessage::HttpMessage(const HttpMessage& obj)
-	: _startLine(obj._startLine), _headers(obj._headers), _body(obj._body) {}
+HttpMessage::HttpMessage(const HttpMessage& obj) {
+	*this = obj;
+}
 
 HttpMessage::~HttpMessage() {}
 
