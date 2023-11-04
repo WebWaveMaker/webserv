@@ -63,6 +63,7 @@ utils::shared_ptr<ServerConfig> ServerManager::getServerConfig(const int clientF
 			return (serverIt->second->getConfig());
 		}
 	}
+	return u::shared_ptr<ServerConfig>();
 }
 
 ServerManager::~ServerManager() {
