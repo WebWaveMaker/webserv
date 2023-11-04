@@ -4,13 +4,15 @@
 
 #include "IOhandlerFactory.h"
 
-class IOhandlerFactory {
-   protected:
-	virtual ~IOhandlerFactory();
+namespace reactor {
+	class IOhandlerFactory {
+	   protected:
+		virtual ~IOhandlerFactory(){};
 
-   public:
-	IOhandlerFactory();
-	virtual utils::shared_ptr<AEventHandler> createHandler(sharedData_t sharedData) = 0;
-};
+	   public:
+		IOhandlerFactory(){};
+		virtual utils::shared_ptr<AEventHandler> createHandler(sharedData_t sharedData) = 0;
+	};
 
+}  // namespace reactor
 #endif

@@ -18,7 +18,7 @@ class Server {
 
 	void removeClient(int key);
 	void listenServer();
-	void makeScoket();
+	void makeSocket();
 	void mallocParameter();
 	void bindListen();
 	void registerReadEvent();
@@ -27,7 +27,7 @@ class Server {
    public:
 	Server(utils::shared_ptr<ServerConfig>& serverConfig);
 
-	Client* createClient(int clientFd, struct sockaddr_in& clientAddr);
+	void createClient(int clientFd, struct sockaddr_in& clientAddr);
 	void eraseClient(int key);
 
 	bool hasClient(int key);

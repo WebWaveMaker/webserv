@@ -8,12 +8,12 @@ namespace reactor {
 
 	class ClientRequestHandler : public AEventHandler {
 	   private:
-		request_t _request;
+		RequestParser _request;
 
 	   public:
 		ClientRequestHandler(sharedData_t sharedData, va_list args);
 		~ClientRequestHandler();
-		request_t getRequest() const;
+		RequestParser& getRequest();
 		virtual void handleEvent();
 	};
 }  // namespace reactor

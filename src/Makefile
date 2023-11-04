@@ -21,6 +21,7 @@ NAME :=	$(PROJECT_NAME)
 DIRS :=	AConfig \
 		ALogger \
 		Client \
+		Factory \
 		HttpMessage \
 		Parser \
 		Reactor \

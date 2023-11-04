@@ -3,10 +3,8 @@
 #define CLIENTREADHANDLER_H
 
 #include "AEventHandler.hpp"
+#include "ClientResponseHandlerFactory.hpp"
 #include "RequestParser.hpp"
-
-#ifndef BUFFER_SIZE
-#define BUFFER_SIZE 4096
-#endif
+#include "const.h"
 
 #endif

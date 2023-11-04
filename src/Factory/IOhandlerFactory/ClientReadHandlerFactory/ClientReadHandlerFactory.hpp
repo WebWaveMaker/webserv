@@ -4,12 +4,16 @@
 
 #include "ClientReadHandlerFactory.h"
 
-class ClientReadHandlerFactory : public IOhandlerFactory {
-   private:
-   public:
-	ClientReadHandlerFactory();
-	virtual ~ClientReadHandlerFactory();
-	virutal utils::shared_ptr<AEventHandler> createHandler(sharedData_t sharedData);
-};
+namespace reactor {
+
+	class ClientReadHandlerFactory : public IOhandlerFactory {
+	   private:
+	   public:
+		ClientReadHandlerFactory();
+		virtual ~ClientReadHandlerFactory();
+		virtual utils::shared_ptr<AEventHandler> createHandler(sharedData_t sharedData);
+	};
+
+}  // namespace reactor
 
 #endif
