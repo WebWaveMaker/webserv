@@ -4,12 +4,13 @@
 
 #include "ClientRequestHandlerFactory.h"
 
-class ClientRequestHandlerFactory : public ExeHandlerFactory {
-   private:
-   public:
-	ClientRequestHandlerFactory();
-	~ClientRequestHandlerFactory();
-	virtual utils::shared_ptr<AEventHandler> createHandler(sharedData_t sharedData, va_list args);
-};
-
+namespace reactor {
+	class ClientRequestHandlerFactory : public ExeHandlerFactory {
+	   private:
+	   public:
+		ClientRequestHandlerFactory();
+		~ClientRequestHandlerFactory();
+		virtual utils::shared_ptr<AEventHandler> createHandler(sharedData_t sharedData, va_list args);
+	};
+}  // namespace reactor
 #endif

@@ -5,62 +5,44 @@ namespace reactor {
 	Dispatcher::Dispatcher() : _demultiplexer(SyncEventDemultiplexer::getInstance()) {}
 
 	Dispatcher::~Dispatcher() {}
+	/*IOhandler 하나만 Dispatcher, kevent에서 삭제합니다.*/
+	void Dispatcher::removeIOHandler(fd_t fd, enum EventType type) {
 
-	template <class Factory>
-	void Dispatcher::registerIOHandler(sharedData_t sharedData, enum EventType type) {
-		const handle_t handle = sharedData.get().fd;
-		Factory factory;
-		AEventHandler* handler = factory.createHandler(sharedData);
+		if (this->_ioHandlers.find(fd) != this->_ioHandlers.end()) {
+			std::vector<u::shared_ptr<AEventHandler> > handlers = this->_ioHandlers.find(fd)->second;
+			u::shared_ptr<AEventHandler> handler;
 
-		this->_ioHandlers[handle].push_back(handler);
-		this->_handlerIndices[handler] = this->_handlers[handle].size() - 1;
-		this->_demultiplexer->requestEvent(handler.get(), type);
-	}
-
-	template <class Factory>
-	void Dispatcher::registerExeHandler(sharedData_t sharedData, ...) {
-		const handle_t handle = sharedData.get().fd;
-		Factory factory;
-		va_list args;
-		va_start(args, sharedData);
-		AEventHandler* handler = factory.createHandler(sharedData, args);
-		va_end(args);
-
-		this->_exeHandlers[handle].push_back(handler);
-		this->_handlerIndices[handler] = this->_handlers[handle].size() - 1;
-	}
-
-	void Dispatcher::registerHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
-		const fd_t handle = handler->getHandle();
-	}
-
-	template <class Factory>
-	void Dispatcher::registerExeHandler(sharedData_t sharedData, ...) {
-		const handle_t handle = sharedData.get().fd;
-		Factory factory;
-		va_list args;
-		va_start(args, sharedData);
-		AEventHandler* handler = factory.createHandler(sharedData, args);
-		va_end(args);
-
-		this->_exeHandlers[handle].push_back(handler);
-		this->_handlerIndices[handler] = this->_handlers[handle].size() - 1;
-	}
-
-	void Dispatcher::registerHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
-		const fd_t handle = handler->getHandle();
-	}
-
-	void Dispatcher::removeHandler(u::shared_ptr<AEventHandler> handler, enum EventType type) {
-		const handle_t handle = handler->getHandle();
-		if (this->_handlers.find(handle) != this->_handlers.end()) {
-			const size_t index = this->_handlerIndices[handler];
-			if (index != this->_handlers[handle].size() - 1) {
-				std::swap(this->_handlers[handle][index], this->_handlers[handle].back());
-				this->_handlerIndices[this->_handlers[handle][index]] = index;
+			for (std::vector<u::shared_ptr<AEventHandler> >::iterator it = handlers.begin(); it != handlers.end();
+				 ++it) {
+				if (it->get()->getType() == type)
+					handler = *it;
 			}
-			this->_demultiplexer->unRequestEvent(this->_handlers[handle].back().get(), type);
-			this->_handlers[handle].pop_back();
+
+			size_t index = this->_handlerIndices[handler];
+
+			if (index != this->_ioHandlers[fd].size() - 1) {
+				std::swap(this->_ioHandlers[fd][index], this->_ioHandlers[fd].back());
+				this->_handlerIndices[this->_ioHandlers[fd][index]] = index;
+			}
+
+			this->_demultiplexer->unRequestEvent(this->_ioHandlers[fd].back().get(), type);
+			this->_ioHandlers[fd].pop_back();
+			this->_handlerIndices.erase(handler);
+		}
+	}
+	/*Exehandler 하나만 Dispatcher에서 삭제합니다.*/
+	void Dispatcher::removeExeHandler(u::shared_ptr<AEventHandler> handler) {
+		const handle_t handle = handler->getHandle();
+
+		if (this->_exeHandlers.find(handle) != this->_exeHandlers.end()) {
+			const size_t index = this->_handlerIndices[handler];
+
+			if (index != this->_exeHandlers[handle].size() - 1) {
+				std::swap(this->_exeHandlers[handle][index], this->_exeHandlers[handle].back());
+				this->_handlerIndices[this->_exeHandlers[handle][index]] = index;
+			}
+
+			this->_exeHandlers[handle].pop_back();
 			this->_handlerIndices.erase(handler);
 		}
 	}
@@ -76,32 +58,40 @@ namespace reactor {
 	bool Dispatcher::isFdMarkedToClose(fd_t fd) const {
 		return (this->_fdsToClose.find(fd) != this->_fdsToClose.end());
 	}
-
+	/*연결이 종료 되어야할 clientFd들을 연결 종료합니다.(IOhandler만 모두 삭제합니다.)*/
 	void Dispatcher::closePendingFds() {
-		for (std::set<fd_t>::iterator fdIt = this->_fdsToClose.begin(); fdIt != this->_fdsToClose.end(); ++fdIt) {
-			fd_t fd = *fdIt;
+		for (std::set<fd_t>::iterator it = this->_fdsToClose.begin(); it != this->_fdsToClose.end(); ++it) {
+			if (this->_ioHandlers.find(*it) != this->_ioHandlers.end()) {
+				this->_demultiplexer->unRequestAllEvent(*it);
+				ServerManager::getInstance()->eraseClient(*it);
 
-			if (this->_handlers.find(fd) != this->_handlers.end()) {
-				this->_demultiplexer->unRequestAllEvent(fd);
-				ServerManager::getInstance()->eraseClient(fd);
-				std::vector<u::shared_ptr<AEventHandler> > handlersToErase = this->_handlers[fd];
-				// 핸들러 목록 순회하면서 핸들러의 인덱스를 _handlerIndices에서 제거합니다.
+				std::vector<u::shared_ptr<AEventHandler> > handlersToErase = this->_ioHandlers[*it];
 				for (std::vector<u::shared_ptr<AEventHandler> >::iterator handlerIt = handlersToErase.begin();
 					 handlerIt != handlersToErase.end(); ++handlerIt)
 					this->_handlerIndices.erase(*handlerIt);
 
-				// _handlers에서 해당 fd의 핸들러 목록을 완전히 제거합니다.
-				this->_handlers.erase(fd);
-				std::cout << fd << " : was closed\n";
+				this->_ioHandlers.erase(*it);
+				std::cout << *it << " : was closed\n";
 			}
 		}
 		this->_fdsToClose.clear();
+	}
+
+	void Dispatcher::exeHandlerexe() {
+		for (std::map<fd_t, std::vector<u::shared_ptr<AEventHandler> > >::iterator it = this->_exeHandlers.begin();
+			 it != this->_exeHandlers.end(); ++it) {
+			for (std::vector<u::shared_ptr<AEventHandler> >::iterator evnetIt = it->second.begin();
+				 evnetIt != it->second.end(); ++evnetIt) {
+				evnetIt->get()->handleEvent();
+			}
+		}
 	}
 
 	void Dispatcher::handleEvent(void) {
 		if (this->_fdsToClose.size() != 0)
 			this->closePendingFds();
 		_demultiplexer->waitEvents();
+		this->exeHandlerexe();
 		// 벡터 순회하면서 executeHandler-> handleEvent실행.
 	}
 }  // namespace reactor

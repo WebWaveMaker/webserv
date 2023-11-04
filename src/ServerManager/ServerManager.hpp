@@ -18,7 +18,7 @@ class ServerManager : public u::TSingleton<ServerManager> {
 	ServerManager(const std::string path);
 	void init(const std::string path);
 	void createServer(config_t& serverConfigs);
-	Client* createClient(int serverFd, int clientFd, struct sockaddr_in& clientAddr);
+	void createClient(int serverFd, int clientFd, struct sockaddr_in& clientAddr);
 	void eraseClient(fd_t fd);
 	Server* getServer(int serverFd) const;
 	utils::shared_ptr<ServerConfig> getServerConfig(const int clientFd) const;

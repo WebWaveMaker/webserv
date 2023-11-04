@@ -28,8 +28,8 @@ void ServerManager::createServer(config_t& ServerConfigs) {
 	}
 }
 
-Client* ServerManager::createClient(int serverFd, int clientFd, struct sockaddr_in& clientAddr) {
-	return (this->getServer(serverFd)->createClient(clientFd, clientAddr));
+void ServerManager::createClient(int serverFd, int clientFd, struct sockaddr_in& clientAddr) {
+	this->getServer(serverFd)->createClient(clientFd, clientAddr);
 }
 
 void ServerManager::eraseClient(fd_t fd) {
@@ -57,12 +57,13 @@ config_t ServerManager::getServerConfigs() const {
 }
 
 utils::shared_ptr<ServerConfig> ServerManager::getServerConfig(const int clientFd) const {
-	for (std::map<int, Server*>::iterator serverIt = this->_servers.begin(); serverIt != this->_servers.end();
+	for (std::map<int, Server*>::const_iterator serverIt = this->_servers.begin(); serverIt != this->_servers.end();
 		 ++serverIt) {
-		if (serverIt->second->hasClient(fd)) {
+		if (serverIt->second->hasClient(clientFd)) {
 			return (serverIt->second->getConfig());
 		}
 	}
+	return u::shared_ptr<ServerConfig>();
 }
 
 ServerManager::~ServerManager() {

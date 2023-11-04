@@ -2,24 +2,23 @@
 
 namespace reactor {
 	ClientRequestHandler::ClientRequestHandler(sharedData_t sharedData, va_list args)
-		: AEventHandler(sharedData),
-		  _request(utils::shared_ptr<RequestParser>(
-			  new RequestParser((ServerManager::getInstance()->getServerConfig(sharedData.get()->fd))))) {
-		Dispatcher::getInstance()->registerIOHandler<ClientReadHandlerFactory>(sharedData, EVFILT_READ);
+		: AEventHandler(sharedData), _request(ServerManager::getInstance()->getServerConfig(sharedData.get()->fd)) {
+		Dispatcher::getInstance()->registerIOHandler<ClientReadHandlerFactory>(sharedData);
 		va_end(args);
 	}
 
 	ClientRequestHandler::~ClientRequestHandler() {}
 
-	request_t ClientRequestHandler::getRequest() const {
+	RequestParser& ClientRequestHandler::getRequest() {
 		return this->_request;
 	}
 
 	void ClientRequestHandler::handleEvent() {
-		request_t request = this->_req.get()->parse(this->getBuffer().data());
+		if (this->getBuffer().empty())
+			return;
+		request_t request = this->_request.parse(this->getBuffer().data());
 		this->getBuffer().clear();
 		if (request.get())
-			Dispatcher::getInstance()->registerExeHandler<ClientResponseHandlerFactory>(sharedData, request);
-		// ClientResponseHandler Registe
+			Dispatcher::getInstance()->registerExeHandler<ClientResponseHandlerFactory>(this->_sharedData, &request);
 	}
 }  // namespace reactor

@@ -13,9 +13,7 @@
 #include "Client.hpp"
 #include "Dispatcher.hpp"
 #include "ErrorLogger.hpp"
-#include "ServerAcceptHandler.hpp"
+#include "ServerAcceptHandlerFactory.hpp"
 #include "ServerConfig.hpp"
-
-class Client;
 
 #endif

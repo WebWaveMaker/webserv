@@ -11,7 +11,7 @@ Server::Server(utils::shared_ptr<ServerConfig>& serverConfig) : _serverConfig(se
 
 void Server::listenServer() {
 
-	this->makeScoket();
+	this->makeSocket();
 
 	try {
 		this->mallocParameter();
@@ -24,13 +24,8 @@ void Server::listenServer() {
 }
 
 void Server::registerReadEvent() {
-
-	reactor::Dispatcher* dispatcher = reactor::Dispatcher::getInstance();
-
-	dispatcher->registerHandler(
-		u::shared_ptr<reactor::AEventHandler>(static_cast<reactor::AEventHandler*>(
-			new reactor::ServerAcceptHandler(this->_fd, this->_clients, this->_accessLogger, this->_errorLogger))),
-		EVENT_READ);
+	reactor::Dispatcher::getInstance()->registerExeHandler<reactor::ServerAcceptHandlerFactory>(
+		sharedData_t(new sharedData(this->_fd, EVENT_READ, std::vector<char>())), NULL);
 }
 
 void Server::bindListen() {
@@ -51,7 +46,7 @@ void Server::bindListen() {
 	}
 }
 
-void Server::makeScoket() {
+void Server::makeSocket() {
 
 	this->_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -87,11 +82,11 @@ int Server::makeFd(const char* path, const char* option) {
 	return (fileFd);
 }
 
-Client* Server::createClient(int clientFd, struct sockaddr_in& clientAddr) {
+void Server::createClient(int clientFd, struct sockaddr_in& clientAddr) {
 	try {
-		Client* newClient = new Client(clientFd, clientAddr, this->_serverConfig,
-									   utils::shared_ptr<RequestParser>(new RequestParser(this->_serverConfig)));
-		return (newClient);
+		utils::shared_ptr<Client> newClient(new Client(clientFd, clientAddr));
+		(*this->_clients.get())[clientFd] = newClient;
+		this->_accessLogger->log("New client connected\n", __func__, LOG_INFO, newClient.get());
 	} catch (std::exception& e) {
 		throw;
 	}
