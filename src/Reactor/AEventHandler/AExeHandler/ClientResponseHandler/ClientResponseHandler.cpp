@@ -8,6 +8,9 @@ namespace reactor {
 	}
 	ClientResponseHandler::~ClientResponseHandler() {}
 
-	void ClientResponseHandler::handleEvent() {}
+	void ClientResponseHandler::handleEvent() {
+		if (this->removeHandlerIfNecessary())
+			return;
+	}
 
 }  // namespace reactor

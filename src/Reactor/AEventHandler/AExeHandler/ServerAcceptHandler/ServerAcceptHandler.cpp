@@ -10,7 +10,7 @@ namespace reactor {
 	}
 
 	void ServerAcceptHandler::handleEvent() {
-		if (this->getState() != ACCEPT)
+		if (this->getState() != ACCEPT || this->removeHandlerIfNecessary())
 			return;
 		sockaddr_in clientAddr;
 		socklen_t clientAddrLen = sizeof(clientAddr);
