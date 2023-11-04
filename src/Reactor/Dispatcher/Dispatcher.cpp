@@ -7,14 +7,14 @@ namespace reactor {
 	Dispatcher::~Dispatcher() {}
 
 	template <class Factory>
-	void Dispatcher::registerIOHandler(sharedData_t sharedData, enum EventType type) {
+	void Dispatcher::registerIOHandler(sharedData_t sharedData) {
 		const handle_t handle = sharedData.get().fd;
 		Factory factory;
 		AEventHandler* handler = factory.createHandler(sharedData);
 
 		this->_ioHandlers[handle].push_back(handler);
-		this->_handlerIndices[handler] = this->_ioHandlers[handle].size() - 1;
-		this->_demultiplexer->requestEvent(handler.get(), type);
+		this->_handlerIndices[handler] = this->_handlers[handle].size() - 1;
+		this->_demultiplexer->requestEvent(handler.get(), sharedData.get().eventType);
 	}
 
 	template <class Factory>

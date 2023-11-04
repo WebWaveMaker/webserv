@@ -21,8 +21,7 @@ namespace reactor {
 		Dispatcher();
 		~Dispatcher();
 		template <class Factory>
-		void registerIOHandler(sharedData_t sharedData, enum EventType type);
-
+		void registerIOHandler(sharedData_t sharedData);
 		template <class Factory>
 		void registerExeHandler(sharedData_t sharedData, ...);
 		void Dispatcher::registerHandler(u::shared_ptr<AEventHandler> handler, enum EventType type);

@@ -20,9 +20,12 @@ endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-DIRS := ServerAcceptHandler \
-		ClientReadHandler \
+DIRS := ClientReadHandler \
+		ClientRequestHandler \
 		ClientWriteHandler \
+		FileReadHandler \
+		ServerAcceptHandler \
+		ServerReadHandler \
 		TestAcceptHandler
 
 include $(TOPDIR)/config/makefile/objRecipes.mk

@@ -8,11 +8,13 @@
 #include "types.h"
 
 struct sharedData {
-	int fd;
+	const fd_t fd;
+	const enum EventType type;
 	std::vector<char> buffer;
 	enum AsyncState state;
 
-	sharedData(const int fd, std::vector<char> buffer) : fd(fd), buffer(buffer), state(PENDING){};
+	sharedData(const fd_t fd, const enum EventType type, std::vector<char> buffer)
+		: fd(fd), type(type), buffer(buffer), state(PENDING){};
 };
 
 typedef utils::shared_ptr<struct sharedData> sharedData_t;

@@ -15,8 +15,10 @@
 #include "AccessLogger.hpp"	  // For AccessLogger
 #include "Client.hpp"
 #include "ClientReadHandler.hpp"
+#include "ClientRequestHandlerFactory.hpp"
 #include "Dispatcher.hpp"
 #include "ErrorLogger.hpp"	// For ErrorLogger
+#include "ServerReadHandlerFactory.hpp"
 #include "TestAcceptHandler.hpp"
 
 class Client;
