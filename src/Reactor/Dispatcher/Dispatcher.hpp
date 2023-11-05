@@ -24,7 +24,7 @@ namespace reactor {
 		void registerIOHandler(sharedData_t sharedData) {
 			const handle_t handle = sharedData.get()->fd;
 			Factory factory;
-			u::shared_ptr<AEventHandler> handler = factory.createHandler(sharedData);
+			u::shared_ptr<AEventHandler> handler = factory.createIOHandler(sharedData);
 
 			this->_ioHandlers[handle].push_back(handler);
 			this->_handlerIndices[handler] = this->_ioHandlers[handle].size() - 1;
@@ -37,7 +37,7 @@ namespace reactor {
 			Factory factory;
 			va_list args;
 			va_start(args, sharedData);
-			u::shared_ptr<AEventHandler> handler = factory.createHandler(sharedData, args);
+			u::shared_ptr<AEventHandler> handler = factory.createExeHandler(sharedData, args);
 			va_end(args);
 
 			this->_exeHandlers[handle].push_back(handler);

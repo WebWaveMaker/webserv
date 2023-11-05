@@ -10,7 +10,7 @@ namespace reactor {
 	   public:
 		ClientWriteHandlerFactory();
 		virtual ~ClientWriteHandlerFactory();
-		virtual utils::shared_ptr<AEventHandler> createHandler(sharedData_t sharedData);
+		virtual utils::shared_ptr<AEventHandler> createIOHandler(sharedData_t& sharedData);
 	};
 }  // namespace reactor
 #endif
