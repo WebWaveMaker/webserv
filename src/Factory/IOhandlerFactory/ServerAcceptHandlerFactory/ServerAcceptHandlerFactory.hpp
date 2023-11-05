@@ -10,7 +10,7 @@ namespace reactor {
 	   public:
 		ServerAcceptHandlerFactory();
 		~ServerAcceptHandlerFactory();
-		virtual utils::shared_ptr<AEventHandler> createHandler(utils::shared_ptr<sharedData> sharedData);
+		virtual utils::shared_ptr<AEventHandler> createHandler(sharedData_t& sharedData);
 	};
 }  // namespace reactor
 #endif
