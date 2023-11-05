@@ -14,6 +14,7 @@ class Director {
 	~Director() {}
 	bool buildProduct() { this->_builder.get()->build(); };
 	void setBuilder(utils::shared_ptr<IBuilder<T> > builder) { this->_builder = builder; };
+	utils::shared_ptr<IBuilder<T> > getBuilder(void) const { return this->_builder; }
 };
 
 #endif
