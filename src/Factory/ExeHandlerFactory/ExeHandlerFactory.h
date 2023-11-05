@@ -2,7 +2,7 @@
 #ifndef EXEHANDLERFACTORY_H
 #define EXEHANDLERFACTORY_H
 
-#include "AEventHandler.hpp"
 #include <cstdarg>
+#include "AEventHandler.hpp"
 
 #endif

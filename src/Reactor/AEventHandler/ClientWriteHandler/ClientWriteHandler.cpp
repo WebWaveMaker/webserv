@@ -1,22 +1,27 @@
 #include "ClientWriteHandler.hpp"
 
-reactor::ClientWriteHandler::ClientWriteHandler(sharedData_t sharedData) : AEventHandler(sharedData), _idx(0) {}
-reactor::ClientWriteHandler::~ClientWriteHandler() {}
+namespace reactor {
+	ClientWriteHandler::ClientWriteHandler(sharedData_t& sharedData) : AEventHandler(sharedData) {}
+	ClientWriteHandler::~ClientWriteHandler() {}
 
-void reactor::ClientWriteHandler::handleEvent() {
-	if (this->getBuffer().empty())
-		return;
-	const std::vector<char>& buffer = this->getBuffer();
-	const char* buf = buffer.data() + this->_idx;
-	ssize_t numberOfBytes = send(this->getHandle(), buf, this->getBuffer().size() - this->_idx, 0);
-	if (numberOfBytes == -1) {
-		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "send failed");
-		return;
+	void ClientWriteHandler::handleEvent() {
+		if (this->getState() == TERMINATE)
+			return;
+		std::vector<char>& buffer = this->getBuffer();
+		ssize_t numberOfBytes = send(this->getHandle(), buffer.data(), this->getBuffer().size(), 0);
+		if (numberOfBytes == -1) {
+			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "send failed");
+			return;
+		}
+		if (numberOfBytes == 0) {  // 이 조건문이 맞는지 모르겠음.
+			this->setState(TERMINATE);
+			return;
+		}
+		if (numberOfBytes <= static_cast<ssize_t>(this->getBuffer().size()))
+			buffer.erase(buffer.begin(), buffer.begin() + numberOfBytes);
+		// if (numberOfBytes == static_cast<ssize_t>(this->getBuffer().size())) {
+		// 	this->getBuffer().clear();
+		// 	// SyncEventDemultiplexer::getInstance()->unRequestEvent(this, this->getType()); ??
+		// }
 	}
-	if (numberOfBytes < static_cast<ssize_t>(this->getBuffer().size()))
-		this->_idx = numberOfBytes;
-	if (numberOfBytes == static_cast<ssize_t>(this->getBuffer().size())) {
-		this->getBuffer().clear();
-		reactor::SyncEventDemultiplexer::getInstance()->unRequestEvent(this, this->getType());
-	}
-}
+}  // namespace reactor

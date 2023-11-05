@@ -5,11 +5,10 @@
 #include "FileReadHandler.h"
 
 namespace reactor {
-
 	class FileReadHandler : public AEventHandler {
 	   private:
 	   public:
-		FileReadHandler(sharedData_t sharedData);
+		FileReadHandler(sharedData_t& sharedData);
 		virtual ~FileReadHandler();
 		virtual void handleEvent();
 	};

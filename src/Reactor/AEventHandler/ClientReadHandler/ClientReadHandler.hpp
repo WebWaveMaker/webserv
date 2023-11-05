@@ -13,7 +13,7 @@ namespace reactor {
 
 	   public:
 		~ClientReadHandler();
-		ClientReadHandler(sharedData_t sharedData);
+		ClientReadHandler(sharedData_t& sharedData);
 		virtual void handleEvent();
 	};
 }  // namespace reactor

@@ -10,7 +10,7 @@ namespace reactor {
 		request_t _request;
 
 	   public:
-		ClientResponseHandler(sharedData_t sharedData, va_list args);
+		ClientResponseHandler(sharedData_t& sharedData, va_list args);
 		virtual ~ClientResponseHandler();
 		virtual void handleEvent();
 	};

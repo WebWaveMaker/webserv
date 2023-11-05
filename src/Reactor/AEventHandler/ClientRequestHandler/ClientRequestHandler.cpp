@@ -1,7 +1,7 @@
 #include "ClientRequestHandler.hpp"
 
 namespace reactor {
-	ClientRequestHandler::ClientRequestHandler(sharedData_t sharedData, va_list args)
+	ClientRequestHandler::ClientRequestHandler(sharedData_t& sharedData, va_list args)
 		: AEventHandler(sharedData), _request(ServerManager::getInstance()->getServerConfig(sharedData.get()->fd)) {
 		Dispatcher::getInstance()->registerIOHandler<ClientReadHandlerFactory>(sharedData);
 		va_end(args);

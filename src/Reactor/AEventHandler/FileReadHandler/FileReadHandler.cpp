@@ -1,8 +1,7 @@
 #include "FileReadHandler.hpp"
 
 namespace reactor {
-
-	FileReadHandler::FileReadHandler(sharedData_t sharedData) : AEventHandler(sharedData) {}
+	FileReadHandler::FileReadHandler(sharedData_t& sharedData) : AEventHandler(sharedData) {}
 	FileReadHandler::~FileReadHandler() {}
 
 	void FileReadHandler::handleEvent() {

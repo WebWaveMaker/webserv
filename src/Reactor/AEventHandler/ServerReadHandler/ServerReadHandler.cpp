@@ -1,7 +1,7 @@
 #include "ServerReadHandler.hpp"
 
 namespace reactor {
-	ServerReadHandler::ServerReadHandler(sharedData_t sharedData) : AEventHandler(sharedData) {}
+	ServerReadHandler::ServerReadHandler(sharedData_t& sharedData) : AEventHandler(sharedData) {}
 	ServerReadHandler::~ServerReadHandler() {
 		std::cout << "ServerReadHandler Destructor called\n";
 	}

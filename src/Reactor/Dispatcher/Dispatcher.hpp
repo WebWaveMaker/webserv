@@ -21,7 +21,7 @@ namespace reactor {
 		Dispatcher();
 		~Dispatcher();
 		template <class Factory>
-		void registerIOHandler(sharedData_t sharedData) {
+		void registerIOHandler(sharedData_t& sharedData) {
 			const handle_t handle = sharedData.get()->fd;
 			Factory factory;
 			u::shared_ptr<AEventHandler> handler = factory.createHandler(sharedData);
