@@ -3,5 +3,6 @@
 #define SERVERREADHANDLERFACTORY_H
 
 #include "IOhandlerFactory.hpp"
+#include "ServerReadHandler.hpp"
 
 #endif

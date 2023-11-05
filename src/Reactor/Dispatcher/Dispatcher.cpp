@@ -5,31 +5,6 @@ namespace reactor {
 	Dispatcher::Dispatcher() : _demultiplexer(SyncEventDemultiplexer::getInstance()) {}
 
 	Dispatcher::~Dispatcher() {}
-
-	template <class Factory>
-	void Dispatcher::registerIOHandler(sharedData_t sharedData) {
-		const handle_t handle = sharedData.get()->fd;
-		Factory factory;
-		u::shared_ptr<AEventHandler> handler = factory.createHandler(sharedData);
-
-		this->_ioHandlers[handle].push_back(handler);
-		this->_handlerIndices[handler] = this->_ioHandlers[handle].size() - 1;
-		this->_demultiplexer->requestEvent(handler.get(), sharedData.get()->type);
-	}
-
-	template <class Factory>
-	void Dispatcher::registerExeHandler(sharedData_t sharedData, ...) {
-		const handle_t handle = sharedData->fd;
-		Factory factory;
-		va_list args;
-		va_start(args, sharedData);
-		u::shared_ptr<AEventHandler> handler = factory.createHandler(sharedData, args);
-		va_end(args);
-
-		this->_exeHandlers[handle].push_back(handler);
-		this->_handlerIndices[handler] = this->_exeHandlers[handle].size() - 1;
-	}
-
 	/*IOhandler 하나만 Dispatcher, kevent에서 삭제합니다.*/
 	void Dispatcher::removeIOHandler(fd_t fd, enum EventType type) {
 
@@ -116,7 +91,7 @@ namespace reactor {
 		if (this->_fdsToClose.size() != 0)
 			this->closePendingFds();
 		_demultiplexer->waitEvents();
-
+		this->exeHandlerexe();
 		// 벡터 순회하면서 executeHandler-> handleEvent실행.
 	}
 }  // namespace reactor

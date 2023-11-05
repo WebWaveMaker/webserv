@@ -5,8 +5,9 @@
 #include "ServerAcceptHandler.h"
 
 namespace reactor {
+	class AExeHandler;
 
-	class ServerAcceptHandler : public AEventHandler {
+	class ServerAcceptHandler : public AExeHandler {
 	   private:
 		ServerAcceptHandler(const ServerAcceptHandler& obj);
 		ServerAcceptHandler& operator=(const ServerAcceptHandler& obj);

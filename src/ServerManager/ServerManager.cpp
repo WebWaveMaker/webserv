@@ -1,4 +1,6 @@
 #include "ServerManager.hpp"
+#include "Dispatcher.hpp"
+#include "Server.hpp"
 
 ServerManager::ServerManager() : _configParser(), _servers() {}
 
@@ -63,6 +65,7 @@ utils::shared_ptr<ServerConfig> ServerManager::getServerConfig(const int clientF
 			return (serverIt->second->getConfig());
 		}
 	}
+	return u::shared_ptr<ServerConfig>();
 }
 
 ServerManager::~ServerManager() {
@@ -71,4 +74,9 @@ ServerManager::~ServerManager() {
 	for (std::map<int, Server*>::iterator it = this->_servers.begin(); it != this->_servers.end(); ++it)
 		delete it->second;
 	this->_servers.clear();
+}
+
+void ServerManager::registerReadEvent(fd_t fd) {
+	reactor::Dispatcher::getInstance()->registerExeHandler<reactor::ServerAcceptHandlerFactory>(
+		sharedData_t(new sharedData(fd, EVENT_READ, std::vector<char>())), NULL);
 }

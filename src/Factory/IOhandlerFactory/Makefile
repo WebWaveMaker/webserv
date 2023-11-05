@@ -6,7 +6,7 @@
 #    By: sanghwal <sanghwal@student.42seoul.kr>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/07 19:34:14 by jgo               #+#    #+#              #
-#    Updated: 2023/11/04 17:28:16 by sanghwal         ###   ########seoul.kr   #
+#    Updated: 2023/10/31 18:18:41 by sanghwal         ###   ########seoul.kr   #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,11 +20,8 @@ endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-DIRS := ClientReadHandler \
-		ClientWriteHandler \
-		FileReadHandler \
-		ServerReadHandler \
-		TestAcceptHandler \
-		AExeHandler
+DIRS := ClientReadHandlerFactory \
+		ClientWriteHandlerFactory \
+		ServerReadHandlerFactory
 
 include $(TOPDIR)/config/makefile/objRecipes.mk

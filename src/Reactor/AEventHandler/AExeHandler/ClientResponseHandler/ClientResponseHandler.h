@@ -2,6 +2,9 @@
 #ifndef CLIENTRESPONSEHANDLER_H
 #define CLIENTRESPONSEHANDLER_H
 
-#include "AEventHandler.hpp"
+#include <cstdarg>
+#include "AExeHandler.hpp"
+#include "RequestParser.hpp"
+
 
 #endif

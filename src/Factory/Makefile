@@ -6,25 +6,19 @@
 #    By: sanghwal <sanghwal@student.42seoul.kr>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/07 19:34:14 by jgo               #+#    #+#              #
-#    Updated: 2023/11/04 17:28:16 by sanghwal         ###   ########seoul.kr   #
+#    Updated: 2023/10/27 15:51:20 by sanghwal         ###   ########seoul.kr   #
 #                                                                              #
 # **************************************************************************** #
 
 ifndef TOPDIR
-	TOPDIR := $(abspath ../../../)
-endif
-
-ifndef DSTDIR
-	DSTDIR := $(abspath ../)
+	TOPDIR := $(abspath ../../)
 endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-DIRS := ClientReadHandler \
-		ClientWriteHandler \
-		FileReadHandler \
-		ServerReadHandler \
-		TestAcceptHandler \
-		AExeHandler
+DIRS := ExeHandlerFactory \
+		IOhandlerFactory
 
-include $(TOPDIR)/config/makefile/objRecipes.mk
+LIBS :=	$(wildcard objs/*.o)
+
+include $(TOPDIR)/config/makefile/libRecipes.mk

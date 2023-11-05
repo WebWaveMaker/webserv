@@ -4,6 +4,8 @@
 
 #include "ServerManager.h"
 
+class Server;
+
 class ServerManager : public u::TSingleton<ServerManager> {
    private:
 	ConfigParser _configParser;
@@ -23,6 +25,7 @@ class ServerManager : public u::TSingleton<ServerManager> {
 	Server* getServer(int serverFd) const;
 	utils::shared_ptr<ServerConfig> getServerConfig(const int clientFd) const;
 	config_t getServerConfigs() const;
+	void registerReadEvent(fd_t fd);
 	~ServerManager();
 };
 

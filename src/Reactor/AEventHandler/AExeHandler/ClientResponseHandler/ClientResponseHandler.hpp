@@ -5,11 +5,14 @@
 #include "ClientResponseHandler.h"
 
 namespace reactor {
-	class ClientResponseHandler : public AEventHandler {
+	class ClientResponseHandler : public AExeHandler {
 	   private:
+		request_t _request;
+
 	   public:
-		ClientResponseHandler();
+		ClientResponseHandler(sharedData_t sharedData, va_list args);
 		virtual ~ClientResponseHandler();
+		virtual void handleEvent();
 	};
 }  // namespace reactor
 #endif

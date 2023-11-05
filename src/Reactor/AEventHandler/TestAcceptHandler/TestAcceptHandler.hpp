@@ -4,6 +4,8 @@
 
 #include "TestAcceptHandler.h"
 
+class Client;
+
 class TestAcceptHandler {
    private:
 	TestAcceptHandler();
