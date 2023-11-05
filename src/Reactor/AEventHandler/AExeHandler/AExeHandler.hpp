@@ -7,7 +7,7 @@
 namespace reactor {
 	class AExeHandler : public reactor::AEventHandler {
 	   protected:
-		bool removeHandlerIfNecessary();
+		bool removeHandlerIfNecessary(enum EventType type);
 		AExeHandler(const AExeHandler& obj);
 		AExeHandler& operator=(const AExeHandler& obj);
 

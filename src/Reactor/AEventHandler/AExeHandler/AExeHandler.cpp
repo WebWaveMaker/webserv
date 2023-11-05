@@ -1,7 +1,7 @@
 #include "AExeHandler.hpp"
 #include "Dispatcher.hpp"
 
-bool AExeHandler::removeHandlerIfNecessary() {
+bool AExeHandler::removeHandlerIfNecessary(enum EventType type) {
 	reactor::Dispatcher* dispatcher = reactor::Dispatcher::getInstance();
 
 	if (dispatcher->isFdMarkedToClose(this->getHandle())) {
@@ -10,8 +10,8 @@ bool AExeHandler::removeHandlerIfNecessary() {
 	}
 
 	HandlerState state = this->getState();
-	if (state == DONE) {
-		dispatcher->removeIOHandler(this->getHandle(), EVENT_READ);
+	if (state == RESOLVE) {
+		dispatcher->removeIOHandler(this->getHandle(), type);
 		return false;  // Continue execution
 	} else if (state == TERMINATE) {
 		dispatcher->addFdToClose(this->getHandle());
