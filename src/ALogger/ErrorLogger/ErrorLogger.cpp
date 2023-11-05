@@ -1,6 +1,6 @@
 #include "ErrorLogger.hpp"
 
-std::string ErrorLogger::convertLogLevelToString(const enum LogLevel& logLevel) {
+std::string ErrorLogger::convertLogLevelToString(const enum LogLevels& logLevel) {
 	switch (logLevel) {
 		case LOG_ERROR:
 			return "error";
@@ -18,9 +18,10 @@ std::string ErrorLogger::convertLogLevelToString(const enum LogLevel& logLevel) 
 		default:
 			break;
 	}
+	return "";
 }
 
-ErrorLogger::ErrorLogger(const int fd, enum LogLevel logLevel)
+ErrorLogger::ErrorLogger(const int fd, enum LogLevels logLevel)
 	: ALogger(fd), _logLevel(logLevel), _logLevelStr(this->convertLogLevelToString(logLevel)) {}
 
 ErrorLogger::ErrorLogger(const ErrorLogger& obj)
@@ -32,12 +33,12 @@ ErrorLogger& ErrorLogger::operator=(const ErrorLogger& obj) {
 	if (this == &obj)
 		return *this;
 	this->ALogger::operator=(obj);
-	const_cast<enum LogLevel&>(_logLevel) = obj.getLogLevel();
+	const_cast<enum LogLevels&>(_logLevel) = obj.getLogLevel();
 	const_cast<std::string&>(_logLevelStr) = obj.getLogLevelStr();
 	return *this;
 }
 
-enum LogLevel ErrorLogger::getLogLevel(void) const {
+enum LogLevels ErrorLogger::getLogLevel(void) const {
 	return this->_logLevel;
 }
 std::string ErrorLogger::getLogLevelStr(void) const {
@@ -73,6 +74,11 @@ void ErrorLogger::systemCallError(const char* file, const int line, const char* 
 	std::cerr << ErrorLogger::makeLogMsg(file, line, func, msg) << std::endl;
 }
 
+bool ErrorLogger::parseError(const char* file, const int line, const char* func, const std::string& msg) {
+	std::cerr << ErrorLogger::makeLogMsg(file, line, func, msg) << std::endl;
+	return EXIT_FAILURE;
+}
+
 std::string ErrorLogger::makeLogMsg(const std::string& msg, const std::string& func, void* arg) {
 	(void)arg;	// for extra value;
 	return utils::getCurTime(logTimeFormat::errorTimeFormat) + RED + "[" + this->_logLevelStr + "] " + RESET + func +
@@ -86,5 +92,5 @@ void ErrorLogger::log(const std::string& msg, const char* func, const int enum__
 	const std::string buf = this->makeLogMsg(msg, func, arg);
 
 	if (write(this->fd_, buf.c_str(), buf.size()) == -1)
-		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
+		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "ErrorLogger log error");
 }
