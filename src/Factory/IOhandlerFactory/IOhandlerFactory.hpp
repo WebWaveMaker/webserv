@@ -11,7 +11,7 @@ namespace reactor {
 
 	   public:
 		IOhandlerFactory(){};
-		virtual utils::shared_ptr<AEventHandler> createHandler(sharedData_t sharedData) = 0;
+		virtual utils::shared_ptr<AEventHandler> createHandler(sharedData_t& sharedData) = 0;
 	};
 
 }  // namespace reactor

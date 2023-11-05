@@ -12,7 +12,7 @@ namespace reactor {
 		ServerAcceptHandler& operator=(const ServerAcceptHandler& obj);
 
 	   public:
-		ServerAcceptHandler(sharedData_t sharedData);
+		ServerAcceptHandler(sharedData_t& sharedData);
 		virtual void handleEvent();
 		virtual ~ServerAcceptHandler();
 	};

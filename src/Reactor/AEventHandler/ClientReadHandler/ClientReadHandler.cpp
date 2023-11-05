@@ -1,6 +1,6 @@
 #include "ClientReadHandler.hpp"
 
-reactor::ClientReadHandler::ClientReadHandler(sharedData_t sharedData) : AEventHandler(sharedData) {}
+reactor::ClientReadHandler::ClientReadHandler(sharedData_t& sharedData) : AEventHandler(sharedData) {}
 
 reactor::ClientReadHandler::~ClientReadHandler() {}
 

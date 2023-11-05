@@ -11,7 +11,7 @@ namespace reactor {
 		RequestParser _request;
 
 	   public:
-		ClientRequestHandler(sharedData_t sharedData, va_list args);
+		ClientRequestHandler(sharedData_t& sharedData, va_list args);
 		~ClientRequestHandler();
 		RequestParser& getRequest();
 		virtual void handleEvent();

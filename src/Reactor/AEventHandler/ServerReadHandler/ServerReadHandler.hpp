@@ -9,7 +9,7 @@ namespace reactor {
 	class ServerReadHandler : public AEventHandler {
 	   private:
 	   public:
-		ServerReadHandler(sharedData_t sharedData);
+		ServerReadHandler(sharedData_t& sharedData);
 		~ServerReadHandler();
 		virtual void handleEvent();
 	};
