@@ -5,7 +5,7 @@ namespace reactor {
 	ClientWriteHandler::~ClientWriteHandler() {}
 
 	void ClientWriteHandler::handleEvent() {
-		if (this->getState() == TERMINATE)
+		if (this->getState() == TERMINATE || this->getState() == RESOLVE || this->getBuffer().size() == 0)
 			return;
 		std::vector<char>& buffer = this->getBuffer();
 		ssize_t numberOfBytes = send(this->getHandle(), buffer.data(), this->getBuffer().size(), 0);
@@ -13,15 +13,6 @@ namespace reactor {
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "send failed");
 			return;
 		}
-		if (numberOfBytes == 0) {  // 이 조건문이 맞는지 모르겠음.
-			this->setState(TERMINATE);
-			return;
-		}
-		if (numberOfBytes <= static_cast<ssize_t>(this->getBuffer().size()))
-			buffer.erase(buffer.begin(), buffer.begin() + numberOfBytes);
-		// if (numberOfBytes == static_cast<ssize_t>(this->getBuffer().size())) {
-		// 	this->getBuffer().clear();
-		// 	// SyncEventDemultiplexer::getInstance()->unRequestEvent(this, this->getType()); ??
-		// }
+		buffer.erase(buffer.begin(), buffer.begin() + numberOfBytes);
 	}
 }  // namespace reactor

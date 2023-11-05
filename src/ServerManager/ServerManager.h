@@ -5,13 +5,9 @@
 #include <map>
 #include <vector>
 
-#include "Client.hpp"
 #include "ConfigParser.hpp"
-#include "Server.hpp"
+// #include "Server.hpp"
 #include "ServerConfig.hpp"
-
-class Server;
-class Client;
 
 typedef int fd_t;
 

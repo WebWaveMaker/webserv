@@ -6,7 +6,7 @@
 
 namespace reactor {
 
-	class ClientRequestHandler : public AEventHandler {
+	class ClientRequestHandler : public AExeHandler {
 	   private:
 		RequestParser _request;
 

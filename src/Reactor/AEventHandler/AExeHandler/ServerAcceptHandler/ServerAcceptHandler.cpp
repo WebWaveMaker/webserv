@@ -1,14 +1,16 @@
 #include "ServerAcceptHandler.hpp"
+#include "AExeHandler.hpp"
+#include "Dispatcher.hpp"
 
 namespace reactor {
 
-	ServerAcceptHandler::ServerAcceptHandler(sharedData_t& sharedData) : AEventHandler(sharedData) {
+	ServerAcceptHandler::ServerAcceptHandler(sharedData_t& sharedData) : AExeHandler(sharedData) {
 		Dispatcher::getInstance()->registerIOHandler<ServerReadHandlerFactory>(sharedData);
 		std::cout << "ServerAcceptHandler constructor called\n";
 	}
 
 	void ServerAcceptHandler::handleEvent() {
-		if (this->getState() != ACCEPT)
+		if (this->getState() != ACCEPT || this->removeHandlerIfNecessary())
 			return;
 		sockaddr_in clientAddr;
 		socklen_t clientAddrLen = sizeof(clientAddr);

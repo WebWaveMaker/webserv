@@ -8,12 +8,11 @@ endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-DIRS := ClientReadHandler \
-		ClientRequestHandler \
-		ClientResponseHandler \
+DIRS := AExeHandler \
+		ClientReadHandler \
 		ClientWriteHandler \
 		FileReadHandler \
-		ServerAcceptHandler \
+		FileWriteHandler \
 		ServerReadHandler \
 		TestAcceptHandler
 
