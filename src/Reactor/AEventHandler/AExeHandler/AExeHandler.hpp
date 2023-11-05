@@ -5,14 +5,14 @@
 #include "AExeHandler.h"
 
 namespace reactor {
-	class AExeHandler : public reactor::AEventHandler {
+	class AExeHandler : public AEventHandler {
 	   protected:
-		bool removeHandlerIfNecessary(enum EventType type);
+		bool removeHandlerIfNecessary();
 		AExeHandler(const AExeHandler& obj);
 		AExeHandler& operator=(const AExeHandler& obj);
 
 	   public:
-		AExeHandler(sharedData_t sharedData) : reactor::AEventHandler(sharedData){};
+		AExeHandler(sharedData_t sharedData) : AEventHandler(sharedData){};
 		virtual ~AExeHandler(){};
 	};
 
