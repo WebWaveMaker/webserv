@@ -12,7 +12,7 @@
 #include "AccessLogger.hpp"
 #include "Client.hpp"
 #include "ErrorLogger.hpp"
-#include "ServerConfig.hpp"
 #include "ServerAcceptHandlerFactory.hpp"
+#include "ServerConfig.hpp"
 
 #endif
