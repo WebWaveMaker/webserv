@@ -3,12 +3,12 @@ ifndef TOPDIR
 endif
 
 ifndef DSTDIR
-	DSTDIR := $(abspath ../../)
+	DSTDIR := $(abspath ../../../)
 endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-SRCS := $(addprefix $(DSTDIR)/objs/, ClientReadHandler.cpp)
+SRCS := $(addprefix $(DSTDIR)/objs/, ServerReadHandler.cpp)
 
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)

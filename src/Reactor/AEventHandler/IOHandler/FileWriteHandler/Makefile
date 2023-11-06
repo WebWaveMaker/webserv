@@ -3,7 +3,7 @@ ifndef TOPDIR
 endif
 
 ifndef DSTDIR
-	DSTDIR := $(abspath ../../)
+	DSTDIR := $(abspath ../../../)
 endif
 
 include $(TOPDIR)/config/makefile/common.mk

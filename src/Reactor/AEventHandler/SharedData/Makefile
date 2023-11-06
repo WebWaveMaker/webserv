@@ -8,10 +8,11 @@ endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-SRCS := $(addprefix $(DSTDIR)/objs/, ClientWriteHandler.cpp)
+SRCS := $(addprefix $(DSTDIR)/objs/, SharedData.cpp)
 
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 
--include $(DEPS)
+-include $(DEPS)erverReadHandler
+
 include $(TOPDIR)/config/makefile/objRecipes.mk

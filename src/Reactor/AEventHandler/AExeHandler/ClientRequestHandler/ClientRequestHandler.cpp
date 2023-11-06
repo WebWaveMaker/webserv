@@ -3,7 +3,7 @@
 
 namespace reactor {
 	ClientRequestHandler::ClientRequestHandler(sharedData_t& sharedData, va_list args)
-		: AExeHandler(sharedData), _request(ServerManager::getInstance()->getServerConfig(sharedData.get()->fd)) {
+		: AExeHandler(sharedData), _request(ServerManager::getInstance()->getServerConfig(sharedData.get()->getFd())) {
 		Dispatcher::getInstance()->registerIOHandler<ClientReadHandlerFactory>(sharedData);
 		va_end(args);
 	}
