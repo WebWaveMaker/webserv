@@ -38,8 +38,6 @@ namespace reactor {
 			va_list args;
 			va_start(args, sharedData);
 			u::shared_ptr<AEventHandler> handler = factory.createExeHandler(sharedData, args);
-			va_end(args);
-
 			this->_exeHandlers[handle].push_back(handler);
 			this->_handlerIndices[handler] = this->_exeHandlers[handle].size() - 1;
 		}

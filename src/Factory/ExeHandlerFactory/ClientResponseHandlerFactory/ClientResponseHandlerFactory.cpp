@@ -7,7 +7,8 @@ namespace reactor {
 
 	utils::shared_ptr<AEventHandler> ClientResponseHandlerFactory::createExeHandler(sharedData_t& sharedData,
 																					va_list args) {
-		return utils::shared_ptr<AEventHandler>(new ClientResponseHandler(sharedData, args));
+		return utils::static_pointer_cast<AEventHandler, ClientResponseHandler>(
+			utils::shared_ptr<ClientResponseHandler>(new ClientResponseHandler(sharedData, args)));
 	}
 
 }  // namespace reactor

@@ -15,7 +15,7 @@ namespace reactor {
 	}
 
 	void ClientRequestHandler::handleEvent() {
-		if (this->removeHandlerIfNecessary())
+		if (this->removeHandlerIfNecessary() || this->getBuffer().empty())
 			return;
 		request_t request = this->_request.parse(this->getBuffer().data());
 		this->getBuffer().clear();
