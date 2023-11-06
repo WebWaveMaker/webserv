@@ -22,6 +22,8 @@ void reactor::ClientReadHandler::handleEvent() {
 	std::cout << "readByte: " << readByte << std::endl;
 	std::cout << buffer.data() << std::endl;
 
-	if (readByte && readByte < BUFFER_SIZE)
+	if (readByte && readByte < BUFFER_SIZE) {
 		this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
+		this->getBuffer().push_back('\0');
+	}
 }
