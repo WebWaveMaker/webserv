@@ -78,5 +78,5 @@ ServerManager::~ServerManager() {
 
 void ServerManager::registerReadEvent(fd_t fd) {
 	reactor::Dispatcher::getInstance()->registerExeHandler<reactor::ServerAcceptHandlerFactory>(
-		sharedData_t(new sharedData(fd, EVENT_READ, std::vector<char>())), NULL);
+		reactor::sharedData_t(new reactor::SharedData(fd, EVENT_READ, std::vector<char>())), NULL);
 }

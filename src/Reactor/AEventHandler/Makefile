@@ -9,11 +9,8 @@ endif
 include $(TOPDIR)/config/makefile/common.mk
 
 DIRS := AExeHandler \
-		ClientReadHandler \
-		ClientWriteHandler \
-		FileReadHandler \
-		FileWriteHandler \
-		ServerReadHandler \
+		IOHandler \
+		SharedData \
 		TestAcceptHandler
 
 include $(TOPDIR)/config/makefile/objRecipes.mk
