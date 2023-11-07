@@ -6,7 +6,7 @@ namespace reactor {
 		Dispatcher* dispatcher = Dispatcher::getInstance();
 
 		if (dispatcher->isFdMarkedToClose(this->getHandle())) {
-			dispatcher->removeExeHandler(u::shared_ptr<AEventHandler>(this));
+			dispatcher->removeExeHandler(this);
 			return true;  // Indicating that the handler was removed
 		}
 
@@ -16,7 +16,7 @@ namespace reactor {
 			return false;  // Continue execution
 		} else if (state == TERMINATE) {
 			dispatcher->addFdToClose(this->getHandle());
-			dispatcher->removeExeHandler(u::shared_ptr<AEventHandler>(this));
+			dispatcher->removeExeHandler(this);
 			return true;  // Indicating that the handler was removed
 		}
 

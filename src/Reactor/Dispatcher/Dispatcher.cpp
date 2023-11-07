@@ -31,20 +31,15 @@ namespace reactor {
 		}
 	}
 	/*Exehandler 하나만 Dispatcher에서 삭제합니다.*/
-	void Dispatcher::removeExeHandler(u::shared_ptr<AEventHandler> handler) {
+	void Dispatcher::removeExeHandler(AEventHandler* handler) {
 		const handle_t handle = handler->getHandle();
-
-		if (this->_exeHandlers.find(handle) != this->_exeHandlers.end()) {
-			const size_t index = this->_handlerIndices[handler];
-
-			if (index != this->_exeHandlers[handle].size() - 1) {
-				std::swap(this->_exeHandlers[handle][index], this->_exeHandlers[handle].back());
-				this->_handlerIndices[this->_exeHandlers[handle][index]] = index;
+		for (size_t i = 0; i < this->_exeHandlers[handle].size(); ++i) {
+			if (this->_exeHandlers[handle][i].get() == handler) {
+				this->_removeHandlers.push_back(this->_exeHandlers[handle][i]);
+				return;
 			}
-
-			this->_exeHandlers[handle].pop_back();
-			this->_handlerIndices.erase(handler);
 		}
+		// this->_pendingChanges.push_back(HandlerChange(HandlerChange::Remove, handler));
 	}
 
 	void Dispatcher::addFdToClose(fd_t fd) {
@@ -77,6 +72,30 @@ namespace reactor {
 		this->_fdsToClose.clear();
 	}
 
+	void Dispatcher::applyHandlersChanges() {
+		for (size_t i = 0; i < this->_addHandlers.size(); ++i) {
+			const handle_t handle = this->_addHandlers[i]->getHandle();
+			this->_exeHandlers[handle].push_back(this->_addHandlers[i]);
+			this->_handlerIndices[this->_addHandlers[i]] = this->_exeHandlers[handle].size() - 1;
+		}
+		for (size_t i = 0; i < this->_removeHandlers.size(); ++i) {
+			const handle_t handle = this->_removeHandlers[i]->getHandle();
+			if (this->_exeHandlers.find(handle) != this->_exeHandlers.end()) {
+				const size_t index = this->_handlerIndices[this->_removeHandlers[i]];
+				if (index < this->_exeHandlers[handle].size()) {
+					if (index != this->_exeHandlers[handle].size() - 1) {
+						std::swap(this->_exeHandlers[handle][index], this->_exeHandlers[handle].back());
+						this->_handlerIndices[this->_exeHandlers[handle][index]] = index;
+					}
+					this->_exeHandlers[handle].pop_back();
+					this->_handlerIndices.erase(this->_removeHandlers[i]);
+				}
+			}
+		}
+		this->_addHandlers.clear();
+		this->_removeHandlers.clear();
+	}
+
 	void Dispatcher::exeHandlerexe() {
 		for (std::map<fd_t, std::vector<u::shared_ptr<AEventHandler> > >::iterator it = this->_exeHandlers.begin();
 			 it != this->_exeHandlers.end(); ++it) {
@@ -85,6 +104,7 @@ namespace reactor {
 				evnetIt->get()->handleEvent();
 			}
 		}
+		this->applyHandlersChanges();
 	}
 
 	void Dispatcher::handleEvent(void) {
@@ -92,6 +112,5 @@ namespace reactor {
 			this->closePendingFds();
 		_demultiplexer->waitEvents();
 		this->exeHandlerexe();
-		// 벡터 순회하면서 executeHandler-> handleEvent실행.
 	}
 }  // namespace reactor

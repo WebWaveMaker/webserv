@@ -13,6 +13,8 @@ namespace reactor {
 		std::map<fd_t, std::vector<u::shared_ptr<AEventHandler> > > _exeHandlers;
 		std::map<u::shared_ptr<AEventHandler>, size_t> _handlerIndices;
 		std::set<fd_t> _fdsToClose;
+		std::vector<u::shared_ptr<AEventHandler> > _removeHandlers;
+		std::vector<u::shared_ptr<AEventHandler> > _addHandlers;
 
 		Dispatcher(const Dispatcher& obj);
 		Dispatcher& operator=(const Dispatcher& obj);
@@ -33,21 +35,20 @@ namespace reactor {
 
 		template <class Factory>
 		void registerExeHandler(sharedData_t sharedData, ...) {
-			const handle_t handle = sharedData->getFd();
 			Factory factory;
 			va_list args;
 			va_start(args, sharedData);
 			u::shared_ptr<AEventHandler> handler = factory.createExeHandler(sharedData, args);
-			this->_exeHandlers[handle].push_back(handler);
-			this->_handlerIndices[handler] = this->_exeHandlers[handle].size() - 1;
+			this->_addHandlers.push_back(handler);
 		}
 		void removeIOHandler(fd_t fd, enum EventType type);
-		void removeExeHandler(u::shared_ptr<AEventHandler> handler);
+		void removeExeHandler(AEventHandler* handler);
 		void addFdToClose(fd_t fd);
 		void removeFdToClose(fd_t fd);
 		bool isFdMarkedToClose(fd_t fd) const;
 		void closePendingFds();
 		void exeHandlerexe();
+		void applyHandlersChanges();
 		void handleEvent();
 	};
 }  // namespace reactor
