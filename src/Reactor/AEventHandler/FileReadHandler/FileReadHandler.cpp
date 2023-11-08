@@ -2,7 +2,7 @@
 
 namespace reactor {
 
-	FileReadHandler::FileReadHandler(sharedData_t sharedData)
+	FileReadHandler::FileReadHandler(sharedData_t& sharedData)
 		: AEventHandler(sharedData), _fp(fdopen(this->getHandle(), "r")) {}
 	FileReadHandler::~FileReadHandler() {}
 
