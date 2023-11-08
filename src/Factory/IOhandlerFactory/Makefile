@@ -10,6 +10,8 @@ include $(TOPDIR)/config/makefile/common.mk
 
 DIRS := ClientReadHandlerFactory \
 		ClientWriteHandlerFactory \
+		FileReadHandlerFactory \
+		FileWriteHandlerFactory \
 		ServerReadHandlerFactory
 
 include $(TOPDIR)/config/makefile/objRecipes.mk
