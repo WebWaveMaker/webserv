@@ -62,8 +62,10 @@ namespace reactor {
 
 				std::vector<u::shared_ptr<AEventHandler> > handlersToErase = this->_ioHandlers[*it];
 				for (std::vector<u::shared_ptr<AEventHandler> >::iterator handlerIt = handlersToErase.begin();
-					 handlerIt != handlersToErase.end(); ++handlerIt)
+					 handlerIt != handlersToErase.end(); ++handlerIt) {
+					(*handlerIt)->setState(TERMINATE);
 					this->_handlerIndices.erase(*handlerIt);
+				}
 
 				this->_ioHandlers.erase(*it);
 				std::cout << *it << " : was closed\n";
@@ -105,12 +107,18 @@ namespace reactor {
 			}
 		}
 		this->applyHandlersChanges();
+		for (int i = 0; i < this->_fdsToClose.size(); ++i) {
+			for (int handlerIdx = 0; i < this->_exeHandlers[i].size(); ++handlerIdx)
+				this->_removeHandlers.push_back(this->_exeHandlers[i][handlerIdx]);
+		}
+		this->applyHandlersChanges();
 	}
 
 	void Dispatcher::handleEvent(void) {
+		this->_demultiplexer->waitEvents();
+		if (this->_exeHandlers.size() != 0)
+			this->exeHandlerexe();
 		if (this->_fdsToClose.size() != 0)
 			this->closePendingFds();
-		_demultiplexer->waitEvents();
-		this->exeHandlerexe();
 	}
 }  // namespace reactor
