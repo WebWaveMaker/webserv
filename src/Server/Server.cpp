@@ -11,7 +11,7 @@ Server::Server(utils::shared_ptr<ServerConfig>& serverConfig) : _serverConfig(se
 
 void Server::listenServer() {
 
-	this->makeScoket();
+	this->makeSocket();
 
 	try {
 		this->mallocParameter();
@@ -24,12 +24,7 @@ void Server::listenServer() {
 }
 
 void Server::registerReadEvent() {
-
-	reactor::Dispatcher* dispatcher = reactor::Dispatcher::getInstance();
-
-	dispatcher->registerHander(
-		new reactor::ServerAcceptHandler(this->_fd, this, this->_clients, this->_accessLogger, this->_errorLogger),
-		EVENT_READ);
+	ServerManager::getInstance()->registerReadEvent(this->_fd);
 }
 
 void Server::bindListen() {
@@ -50,7 +45,7 @@ void Server::bindListen() {
 	}
 }
 
-void Server::makeScoket() {
+void Server::makeSocket() {
 
 	this->_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -86,21 +81,22 @@ int Server::makeFd(const char* path, const char* option) {
 	return (fileFd);
 }
 
-Client* Server::createClient(int clientFd, struct sockaddr_in& clientAddr) {
+void Server::createClient(int clientFd, struct sockaddr_in& clientAddr) {
 	try {
-		Client* newClient = new Client(clientFd, clientAddr, this->_serverConfig);
-		return (newClient);
+		utils::shared_ptr<Client> newClient(new Client(clientFd, clientAddr));
+		(*this->_clients.get())[clientFd] = newClient;
+		this->_accessLogger->log("New client connected\n", __func__, LOG_INFO, newClient.get());
 	} catch (std::exception& e) {
 		throw;
 	}
 }
 
-void Server::eraseClient(int key) {
-	this->removeClient(key);
+bool Server::hasClient(int key) {
+	return (this->_clients->find(key) != this->_clients->end());
 }
 
-ICallback* Server::getCallback() {
-	return (this);
+void Server::eraseClient(int key) {
+	this->removeClient(key);
 }
 
 void Server::removeClient(int key) {
@@ -110,7 +106,6 @@ void Server::removeClient(int key) {
 		this->_clients->erase(it);
 	} else {
 		this->_errorLogger->log("Not Found client\n", __func__, LOG_ERROR, NULL);
-		throw std::runtime_error("removeClient Error\n");
 	}
 }
 
@@ -118,8 +113,8 @@ int Server::getFd() const {
 	return (this->_fd);
 }
 
-const ServerConfig& Server::getConfig() const {
-	return (*(this->_serverConfig.get()));
+utils::shared_ptr<ServerConfig> Server::getConfig() const {
+	return this->_serverConfig;
 }
 
 const sockaddr_in& Server::getAddr() const {

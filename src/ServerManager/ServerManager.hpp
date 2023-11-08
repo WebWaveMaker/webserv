@@ -4,7 +4,9 @@
 
 #include "ServerManager.h"
 
-class ServerManager {
+class Server;
+
+class ServerManager : public u::TSingleton<ServerManager> {
    private:
 	ConfigParser _configParser;
 	config_t _serverConfigs;
@@ -14,10 +16,16 @@ class ServerManager {
 	ServerManager& operator=(const ServerManager& obj);
 
    public:
+	ServerManager();
 	ServerManager(const std::string path);
-	void CreateServer(config_t& serverConfigs);
+	void init(const std::string path);
+	void createServer(config_t& serverConfigs);
+	void createClient(int serverFd, int clientFd, struct sockaddr_in& clientAddr);
+	void eraseClient(fd_t fd);
 	Server* getServer(int serverFd) const;
+	utils::shared_ptr<ServerConfig> getServerConfig(const int clientFd) const;
 	config_t getServerConfigs() const;
+	void registerReadEvent(fd_t fd);
 	~ServerManager();
 };
 

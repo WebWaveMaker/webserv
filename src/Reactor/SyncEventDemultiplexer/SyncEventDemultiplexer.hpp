@@ -18,6 +18,7 @@ namespace reactor {
 		~SyncEventDemultiplexer();
 		void requestEvent(AEventHandler* handler, const enum EventType type);
 		void unRequestEvent(AEventHandler* handler, const enum EventType type);
+		void unRequestAllEvent(fd_t fd);
 		void waitEvents(void);
 	};
 

@@ -3,16 +3,6 @@
 #define AEVENTHANDLER_H
 
 #include <sys/socket.h>
-#include "AccessLogger.hpp"
-#include "ErrorLogger.hpp"
-#include "utils.hpp"
-
-typedef int handle_t;
-
-/**
- * @brief 
- * 
- */
-enum EventType { EVENT_READ, EVENT_WRITE };
+#include "SharedData.hpp"
 
 #endif

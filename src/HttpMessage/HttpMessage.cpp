@@ -2,12 +2,19 @@
 
 HttpMessage::HttpMessage() : _startLine(), _headers(), _body() {}
 HttpMessage::HttpMessage(const HttpMessage& obj) {
-	(void)obj;
+	*this = obj;
 }
+
 HttpMessage::~HttpMessage() {}
+
 HttpMessage& HttpMessage::operator=(const HttpMessage& obj) {
-	if (this != &obj)
-		return *this;
+	if (this != &obj) {
+		this->_startLine[0] = obj._startLine[0];
+		this->_startLine[1] = obj._startLine[1];
+		this->_startLine[2] = obj._startLine[2];
+		this->_headers = obj._headers;
+		this->_body = obj._body;
+	}
 	return *this;
 }
 

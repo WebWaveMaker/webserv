@@ -4,7 +4,7 @@
 
 #include "Server.h"
 
-class Server : public ICallback {
+class Server {
    private:
 	utils::shared_ptr<ServerConfig> _serverConfig;
 	int _fd;
@@ -18,7 +18,7 @@ class Server : public ICallback {
 
 	void removeClient(int key);
 	void listenServer();
-	void makeScoket();
+	void makeSocket();
 	void mallocParameter();
 	void bindListen();
 	void registerReadEvent();
@@ -27,12 +27,12 @@ class Server : public ICallback {
    public:
 	Server(utils::shared_ptr<ServerConfig>& serverConfig);
 
-	virtual Client* createClient(int clientFd, struct sockaddr_in& clientAddr);
-	virtual void eraseClient(int key);
-	virtual ICallback* getCallback();
+	void createClient(int clientFd, struct sockaddr_in& clientAddr);
+	void eraseClient(int key);
 
+	bool hasClient(int key);
 	int getFd() const;
-	const ServerConfig& getConfig() const;
+	utils::shared_ptr<ServerConfig> getConfig() const;
 	const sockaddr_in& getAddr() const;
 	AccessLogger& getAccessLogger() const;
 	ErrorLogger& getErrorLogger() const;

@@ -26,4 +26,6 @@ class HttpMessage {
 	std::string getRawStr(void) const;
 };
 
+typedef utils::shared_ptr<HttpMessage> msg_t;
+
 #endif

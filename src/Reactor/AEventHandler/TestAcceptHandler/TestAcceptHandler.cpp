@@ -1,4 +1,5 @@
 #include "TestAcceptHandler.hpp"
+#include "Client.hpp"
 
 void TestAcceptHandler::printClientInfo(const Client* client) {
 	if (client == u::nullptr_t) {
@@ -7,7 +8,6 @@ void TestAcceptHandler::printClientInfo(const Client* client) {
 	}
 	std::cout << "!!Client Info!!\n";
 	std::cout << "clientFd:  " + u::itos(client->getFd()) << std::endl;
-	std::cout << "clientAddrStr:  " + client->getAddrStr() << std::endl;
 	std::cout << "IP Address: " << inet_ntoa(client->getAddr().sin_addr) << std::endl;
 	std::cout << "Port: " << ntohs(client->getAddr().sin_port) << std::endl;
 }

@@ -9,20 +9,17 @@ namespace reactor {
 	class AEventHandler {
 	   private:
 	   protected:
-		const handle_t _fd;
-		const utils::shared_ptr<AccessLogger> _accessLogger;
-		const utils::shared_ptr<ErrorLogger> _errorLogger;
-		utils::shared_ptr<std::vector<char> > _buf;
+		sharedData_t _sharedData;
 
 	   public:
-		AEventHandler(const handle_t fd, const utils::shared_ptr<AccessLogger>& accessLogger,
-					  const utils::shared_ptr<ErrorLogger>& errorLogger)
-			: _fd(fd), _accessLogger(accessLogger), _errorLogger(errorLogger), _buf(new std::vector<char>){};
-		AEventHandler(const handle_t fd, const utils::shared_ptr<AccessLogger>& accessLogger,
-					  const utils::shared_ptr<ErrorLogger>& errorLogger, utils::shared_ptr<std::vector<char> > buf)
-			: _fd(fd), _accessLogger(accessLogger), _errorLogger(errorLogger), _buf(buf){};
+		AEventHandler(sharedData_t& sharedData) : _sharedData(sharedData){};
 		virtual ~AEventHandler(){};
-		virtual handle_t getHandle() const { return this->_fd; };
+		sharedData_t getData() const { return this->_sharedData; };
+		handle_t getHandle() const { return this->_sharedData.get()->getFd(); };
+		std::vector<char>& getBuffer() { return this->_sharedData.get()->getBuffer(); };
+		enum EventType getType() const { return this->_sharedData.get()->getType(); };
+		enum AsyncState getState() const { return this->_sharedData.get()->getState(); };
+		void setState(const enum AsyncState state) { this->_sharedData->setState(state); };
 		virtual void handleEvent() = 0;
 	};
 
