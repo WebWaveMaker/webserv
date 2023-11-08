@@ -4,13 +4,13 @@
 
 #include "FileReadHandlerFactory.h"
 
-class FileReadHandlerFactory : public IOhandlerFactory {
-   private:
-   public:
-	FileReadHandlerFactory();
-	~FileReadHandlerFactory();
-    virtual utils::shared_ptr<AEventHandler> createHandler(sharedData_t& sharedData);
-};
-
+namespace reactor {
+	class FileReadHandlerFactory : public IOhandlerFactory {
+	   private:
+	   public:
+		FileReadHandlerFactory();
+		~FileReadHandlerFactory();
+		virtual utils::shared_ptr<AEventHandler> createHandler(sharedData_t& sharedData);
+	};
+}  // namespace reactor
 #endif
-
