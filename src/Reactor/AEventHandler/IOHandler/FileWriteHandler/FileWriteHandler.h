@@ -5,5 +5,6 @@
 #include "AEventHandler.hpp"
 #include "ErrorLogger.hpp"
 #include "SyncEventDemultiplexer.hpp"
+#include <cstdio>
 
 #endif
