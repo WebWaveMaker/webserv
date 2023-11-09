@@ -36,6 +36,7 @@ class Server {
 	const sockaddr_in& getAddr() const;
 	AccessLogger& getAccessLogger() const;
 	ErrorLogger& getErrorLogger() const;
+	utils::shared_ptr<std::vector<fd_t> > getClientFds();
 
 	~Server();
 };

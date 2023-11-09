@@ -80,3 +80,13 @@ void ServerManager::registerReadEvent(fd_t fd) {
 	reactor::Dispatcher::getInstance()->registerExeHandler<reactor::ServerAcceptHandlerFactory>(
 		reactor::sharedData_t(new reactor::SharedData(fd, EVENT_READ, std::vector<char>())), NULL);
 }
+
+utils::shared_ptr<std::vector<fd_t> > ServerManager::getClientFds() {
+	utils::shared_ptr<std::vector<fd_t> > clientFds = utils::shared_ptr<std::vector<fd_t> >(new std::vector<fd_t>);
+
+	for (std::map<int, Server*>::iterator it = this->_servers.begin(); it != this->_servers.end(); ++it) {
+		std::vector<fd_t>* serverClients = it->second->getClientFds().get();
+		std::copy(serverClients->begin(), serverClients->end(), std::back_inserter(*(clientFds.get())));
+	}
+	return (clientFds);
+}
