@@ -32,7 +32,7 @@ enum EventType {
 	// EVFILT_VNODE = -4,
 	// EVFILT_PROC = -5,
 	// EVFILT_SIGNAL = -6,
-	// EVFILT_TIMER = -7,
+	EVENT_TIMER = -7,
 	EVENT_EXE = -11
 	// EVFILT_MACHPORT = -8,
 	// EVFILT_FS = -9,

@@ -10,7 +10,8 @@ include $(TOPDIR)/config/makefile/common.mk
 
 DIRS :=	ClientRequestHandler \
 		ClientResponseHandler \
-		ServerAcceptHandler
+		ServerAcceptHandler \
+		TimeoutHandler
 
 SRCS := $(addprefix $(DSTDIR)/objs/, AExeHandler.cpp)
 
