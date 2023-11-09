@@ -34,6 +34,7 @@ namespace reactor {
 		}
 		Dispatcher::getInstance()->registerExeHandler<ClientRequestHandlerFactory>(
 			sharedData_t(new SharedData(clientFd, EVENT_READ, std::vector<char>())));
+		SyncEventDemultiplexer::getInstance()->setFdTime(clientFd, std::time(NULL));
 		this->setState(PENDING);
 		// Dispatcher::getInstance()->removeExeHandler(u::shared_ptr<AEventHandler>(this));
 	}
