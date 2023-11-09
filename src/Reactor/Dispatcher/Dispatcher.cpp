@@ -107,8 +107,8 @@ namespace reactor {
 			}
 		}
 		this->applyHandlersChanges();
-		for (int i = 0; i < this->_fdsToClose.size(); ++i) {
-			for (int handlerIdx = 0; i < this->_exeHandlers[i].size(); ++handlerIdx)
+		for (size_t i = 0; i < this->_fdsToClose.size(); ++i) {
+			for (size_t handlerIdx = 0; i < this->_exeHandlers[i].size(); ++handlerIdx)
 				this->_removeHandlers.push_back(this->_exeHandlers[i][handlerIdx]);
 		}
 		this->applyHandlersChanges();
