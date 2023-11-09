@@ -53,11 +53,26 @@ namespace reactor {
 	bool Dispatcher::isFdMarkedToClose(fd_t fd) const {
 		return (this->_fdsToClose.find(fd) != this->_fdsToClose.end());
 	}
+	bool Dispatcher::isWriting(fd_t fd) const {
+
+		std::map<fd_t, std::vector<u::shared_ptr<AEventHandler> > >::const_iterator it = this->_exeHandlers.find(fd);
+		if (it != this->_exeHandlers.end()) {
+			const std::vector<u::shared_ptr<AEventHandler> >& handlers = it->second;
+			for (std::vector<u::shared_ptr<AEventHandler> >::const_iterator handlerIt = handlers.begin();
+				 handlerIt != handlers.end(); ++handlerIt) {
+				if ((*handlerIt)->getType() == EVENT_WRITE) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 	/*연결이 종료 되어야할 clientFd들을 연결 종료합니다.(IOhandler만 모두 삭제합니다.)*/
 	void Dispatcher::closePendingFds() {
 		for (std::set<fd_t>::iterator it = this->_fdsToClose.begin(); it != this->_fdsToClose.end(); ++it) {
 			if (this->_ioHandlers.find(*it) != this->_ioHandlers.end()) {
 				this->_demultiplexer->unRequestAllEvent(*it);
+				this->_demultiplexer->eraseFdTime(*it);
 				ServerManager::getInstance()->eraseClient(*it);
 
 				std::vector<u::shared_ptr<AEventHandler> > handlersToErase = this->_ioHandlers[*it];
@@ -116,9 +131,9 @@ namespace reactor {
 
 	void Dispatcher::handleEvent(void) {
 		this->_demultiplexer->waitEvents();
-		if (this->_exeHandlers.size() != 0)
-			this->exeHandlerexe();
-		if (this->_fdsToClose.size() != 0)
-			this->closePendingFds();
+		// if (!this->_exeHandlers.empty())
+		this->exeHandlerexe();
+		// if (!this->_fdsToClose.empty())
+		this->closePendingFds();
 	}
 }  // namespace reactor

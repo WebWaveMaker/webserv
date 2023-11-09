@@ -27,6 +27,7 @@ class ServerManager : public u::TSingleton<ServerManager> {
 	config_t getServerConfigs() const;
 	utils::shared_ptr<std::vector<fd_t> > getClientFds();
 	void registerReadEvent(fd_t fd);
+	void registerTimeoutEvent();
 	~ServerManager();
 };
 

@@ -49,6 +49,8 @@ namespace reactor {
 		void closePendingFds();
 		void exeHandlerexe();
 		void applyHandlersChanges();
+		bool isWriting(fd_t fd) const;
+
 		void handleEvent();
 	};
 }  // namespace reactor
