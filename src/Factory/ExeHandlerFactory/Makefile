@@ -10,6 +10,7 @@ include $(TOPDIR)/config/makefile/common.mk
 
 DIRS := ClientRequestHandlerFactory \
 		ClientResponseHandlerFactory \
-		ServerAcceptHandlerFactory
+		ServerAcceptHandlerFactory \
+		TimeoutHandlerFactory
 
 include $(TOPDIR)/config/makefile/objRecipes.mk
