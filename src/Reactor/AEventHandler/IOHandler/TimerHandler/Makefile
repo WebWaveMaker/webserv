@@ -3,16 +3,15 @@ ifndef TOPDIR
 endif
 
 ifndef DSTDIR
-	DSTDIR := $(abspath ../../)
+	DSTDIR := $(abspath ../../../)
 endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-DIRS := ClientReadHandler \
-		ClientWriteHandler \
-		FileReadHandler \
-		FileWriteHandler \
-		ServerReadHandler \
-		TimerHandler
+SRCS := $(addprefix $(DSTDIR)/objs/, TimerHandler.cpp)
 
+OBJS := $(SRCS:.cpp=.o)
+DEPS := $(SRCS:.cpp=.d)
+
+-include $(DEPS)
 include $(TOPDIR)/config/makefile/objRecipes.mk

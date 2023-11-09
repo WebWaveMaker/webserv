@@ -8,11 +8,10 @@ endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-DIRS := ClientReadHandler \
-		ClientWriteHandler \
-		FileReadHandler \
-		FileWriteHandler \
-		ServerReadHandler \
-		TimerHandler
+SRCS := $(addprefix $(DSTDIR)/objs/, TimeoutHandlerFactory.cpp)
 
+OBJS := $(SRCS:.cpp=.o)
+DEPS := $(SRCS:.cpp=.d)
+
+-include $(DEPS)
 include $(TOPDIR)/config/makefile/objRecipes.mk

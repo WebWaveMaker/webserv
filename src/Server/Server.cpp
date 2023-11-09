@@ -129,6 +129,16 @@ ErrorLogger& Server::getErrorLogger() const {
 	return (*(this->_errorLogger));
 }
 
+utils::shared_ptr<std::vector<fd_t> > Server::getClientFds() {
+	utils::shared_ptr<std::vector<fd_t> > clientFds = utils::shared_ptr<std::vector<fd_t> >(new std::vector<fd_t>);
+
+	for (std::map<int, u::shared_ptr<Client> >::iterator it = this->_clients->begin(); it != this->_clients->end();
+		 ++it) {
+		clientFds->push_back(it->first);
+	}
+	return (clientFds);
+}
+
 Server::~Server() {
 	std::cout << "Server destructor called\n";
 

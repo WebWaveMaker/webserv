@@ -53,17 +53,34 @@ namespace reactor {
 	bool Dispatcher::isFdMarkedToClose(fd_t fd) const {
 		return (this->_fdsToClose.find(fd) != this->_fdsToClose.end());
 	}
+	bool Dispatcher::isWriting(fd_t fd) const {
+
+		std::map<fd_t, std::vector<u::shared_ptr<AEventHandler> > >::const_iterator it = this->_exeHandlers.find(fd);
+		if (it != this->_exeHandlers.end()) {
+			const std::vector<u::shared_ptr<AEventHandler> >& handlers = it->second;
+			for (std::vector<u::shared_ptr<AEventHandler> >::const_iterator handlerIt = handlers.begin();
+				 handlerIt != handlers.end(); ++handlerIt) {
+				if ((*handlerIt)->getType() == EVENT_WRITE) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 	/*연결이 종료 되어야할 clientFd들을 연결 종료합니다.(IOhandler만 모두 삭제합니다.)*/
 	void Dispatcher::closePendingFds() {
 		for (std::set<fd_t>::iterator it = this->_fdsToClose.begin(); it != this->_fdsToClose.end(); ++it) {
 			if (this->_ioHandlers.find(*it) != this->_ioHandlers.end()) {
 				this->_demultiplexer->unRequestAllEvent(*it);
+				this->_demultiplexer->eraseFdTime(*it);
 				ServerManager::getInstance()->eraseClient(*it);
 
 				std::vector<u::shared_ptr<AEventHandler> > handlersToErase = this->_ioHandlers[*it];
 				for (std::vector<u::shared_ptr<AEventHandler> >::iterator handlerIt = handlersToErase.begin();
-					 handlerIt != handlersToErase.end(); ++handlerIt)
+					 handlerIt != handlersToErase.end(); ++handlerIt) {
+					(*handlerIt)->setState(TERMINATE);
 					this->_handlerIndices.erase(*handlerIt);
+				}
 
 				this->_ioHandlers.erase(*it);
 				std::cout << *it << " : was closed\n";
@@ -105,12 +122,18 @@ namespace reactor {
 			}
 		}
 		this->applyHandlersChanges();
+		for (size_t i = 0; i < this->_fdsToClose.size(); ++i) {
+			for (size_t handlerIdx = 0; i < this->_exeHandlers[i].size(); ++handlerIdx)
+				this->_removeHandlers.push_back(this->_exeHandlers[i][handlerIdx]);
+		}
+		this->applyHandlersChanges();
 	}
 
 	void Dispatcher::handleEvent(void) {
-		if (this->_fdsToClose.size() != 0)
-			this->closePendingFds();
-		_demultiplexer->waitEvents();
+		this->_demultiplexer->waitEvents();
+		// if (!this->_exeHandlers.empty())
 		this->exeHandlerexe();
+		// if (!this->_fdsToClose.empty())
+		this->closePendingFds();
 	}
 }  // namespace reactor

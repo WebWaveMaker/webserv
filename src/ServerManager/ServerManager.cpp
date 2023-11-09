@@ -7,6 +7,7 @@ ServerManager::ServerManager() : _configParser(), _servers() {}
 void ServerManager::init(const std::string path) {
 	this->_serverConfigs = this->_configParser.parse(path);
 	try {
+		this->registerTimeoutEvent();
 		this->createServer(this->_serverConfigs);
 	} catch (std::exception& e) {
 		throw;
@@ -79,4 +80,19 @@ ServerManager::~ServerManager() {
 void ServerManager::registerReadEvent(fd_t fd) {
 	reactor::Dispatcher::getInstance()->registerExeHandler<reactor::ServerAcceptHandlerFactory>(
 		reactor::sharedData_t(new reactor::SharedData(fd, EVENT_READ, std::vector<char>())), NULL);
+}
+
+void ServerManager::registerTimeoutEvent() {
+	reactor::Dispatcher::getInstance()->registerExeHandler<reactor::TimeoutHandlerFactory>(
+		reactor::sharedData_t(new reactor::SharedData(4242, EVENT_TIMER, std::vector<char>())), NULL);
+}
+
+utils::shared_ptr<std::vector<fd_t> > ServerManager::getClientFds() {
+	utils::shared_ptr<std::vector<fd_t> > clientFds = utils::shared_ptr<std::vector<fd_t> >(new std::vector<fd_t>);
+
+	for (std::map<int, Server*>::iterator it = this->_servers.begin(); it != this->_servers.end(); ++it) {
+		u::shared_ptr<std::vector<fd_t> > serverClients = it->second->getClientFds();
+		std::copy(serverClients->begin(), serverClients->end(), std::back_inserter(*(clientFds.get())));
+	}
+	return (clientFds);
 }

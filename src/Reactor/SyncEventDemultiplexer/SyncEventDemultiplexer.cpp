@@ -5,6 +5,10 @@ namespace reactor {
 	SyncEventDemultiplexer::~SyncEventDemultiplexer() {}
 
 	void SyncEventDemultiplexer::requestEvent(AEventHandler* handler, const enum EventType type) {
+		if (type == EVENT_TIMER) {
+			this->_kq->AddEventOnChangeList(handler->getHandle(), type, EV_ADD, 0, 5000, handler);
+			return;
+		}
 		this->_kq->AddEventOnChangeList(handler->getHandle(), type, EV_ADD, 0, 0, handler);
 	}
 	void SyncEventDemultiplexer::unRequestEvent(AEventHandler* handler, const enum EventType type) {
@@ -13,6 +17,17 @@ namespace reactor {
 	void SyncEventDemultiplexer::unRequestAllEvent(fd_t fd) {
 		this->_kq->AddEventOnChangeList(fd, EVFILT_READ, EV_DELETE, 0, 0, u::nullptr_t);
 		this->_kq->AddEventOnChangeList(fd, EVFILT_WRITE, EV_DELETE, 0, 0, u::nullptr_t);
+	}
+	void SyncEventDemultiplexer::setFdTime(fd_t fd, std::time_t curTime) {
+		this->_fdsTime[fd] = curTime;
+	}
+	void SyncEventDemultiplexer::eraseFdTime(fd_t fd) {
+		this->_fdsTime.erase(fd);
+	}
+	std::time_t SyncEventDemultiplexer::getFdTime(fd_t fd) {
+		if (this->_fdsTime.find(fd) != this->_fdsTime.end())
+			return this->_fdsTime[fd];
+		return (NULL);
 	}
 
 	void SyncEventDemultiplexer::waitEvents(void) {
@@ -26,6 +41,7 @@ namespace reactor {
 			std::cout << "\nevent fd: " << this->_kq->getkEventList()[i].ident << std::endl;
 			if (this->_kq->getkEventList()[i].flags & EV_ERROR)
 				continue;
+			this->setFdTime(this->_kq->getkEventList()[i].ident, std::time(NULL));
 			static_cast<AEventHandler*>(this->_kq->getkEventList()[i].udata)->handleEvent();
 		}
 	};

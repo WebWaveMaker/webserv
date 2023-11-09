@@ -12,6 +12,7 @@ DIRS := ClientReadHandlerFactory \
 		ClientWriteHandlerFactory \
 		FileReadHandlerFactory \
 		FileWriteHandlerFactory \
-		ServerReadHandlerFactory
+		ServerReadHandlerFactory \
+		TimerHandlerFactory
 
 include $(TOPDIR)/config/makefile/objRecipes.mk
