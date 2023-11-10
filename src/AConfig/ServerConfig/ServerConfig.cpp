@@ -140,7 +140,7 @@ void ServerConfig::setLocations(std::string identifier, utils::shared_ptr<Locati
 	_locations[identifier] = location;
 }
 
-utils::shared_ptr<LocationConfig> ServerConfig::getLocation(const std::string& identifier) const {
+utils::shared_ptr<LocationConfig> ServerConfig::getLocation(const std::string& identifier) {
 	std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = _locations.find(identifier);
 	if (it == _locations.end()) {
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid location identifier");
@@ -149,7 +149,7 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocation(const std::string& i
 }
 
 bool ServerConfig::getOwnRoot(std::string& str) {
-	auto it = _directives.find(ROOT);
+	std::map<Directives, ConfigValue>::iterator it = _directives.find(ROOT);
 	if (it == _directives.end()) {
 		return false;  // 지시어를 찾을 수 없음
 	}
@@ -158,13 +158,14 @@ bool ServerConfig::getOwnRoot(std::string& str) {
 }
 
 bool ServerConfig::getOwnIndex(std::vector<std::string>& vec) {
-	auto it = _directives.find(INDEX);
+	std::map<Directives, ConfigValue>::iterator it = _directives.find(INDEX);
 	if (it == _directives.end()) {
 		return false;  // 지시어를 찾을 수 없음
 	}
 	vec = it->second.asStrVec();  // 결과를 참조를 통해 반환
 	return true;				  // 성공적으로 값을 찾음
 }
+
 // ServerConfig.cpp 파일 내부에 다음 함수 구현을 추가합니다.
 
 utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::string& reqPath) {
@@ -174,7 +175,7 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::str
 		serverRoot = ".";  // 현재 디렉토리를 가리킴
 	}
 
-	utils::shared_ptr<LocationConfig> bestMatch = u::nullptr_t;
+	utils::shared_ptr<LocationConfig> bestMatch;
 	size_t longestMatch = 0;
 
 	for (std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = _locations.begin();
@@ -199,20 +200,19 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::str
 		}
 	}
 
-	if (bestMatch != u::nullptr_t) {
+	if (bestMatch.get() != NULL) {
 		return bestMatch;
 	}
 
 	// ServerConfig의 root로 reqPath 매칭 시도
 	if (reqPath.compare(0, serverRoot.length(), serverRoot) == 0) {
-		// 매치되면 새로운 LocationConfig 생성
 		utils::shared_ptr<LocationConfig> newLocConfig;
 		if (!_locations.empty()) {
 			newLocConfig =
 				utils::shared_ptr<LocationConfig>(new LocationConfig(_locations.begin()->second->getParent()));
 		} else {
-			newLocConfig =
-				utils::shared_ptr<LocationConfig>(new LocationConfig(utils::shared_ptr<ServerConfig>(*this)));
+			utils::shared_ptr<ServerConfig> thisPtr(this);
+			newLocConfig = utils::shared_ptr<LocationConfig>(new LocationConfig(thisPtr));
 		}
 		// Index 설정
 		std::vector<std::string> indexes;
@@ -220,10 +220,10 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::str
 			newLocConfig->setDirectives("index", indexes);
 		}
 		// 새로운 LocationConfig에 ServerConfig의 root 설정
-		newLocConfig->setDirectives("root", std::vector<std::string>{serverRoot});
+		newLocConfig->setDirectives("root", std::vector<std::string>(1, serverRoot));
 		return newLocConfig;
 	}
 
 	// 모든 매칭 과정 실패, nullptr_t 반환
-	return u::nullptr_t;
+	return utils::shared_ptr<LocationConfig>();
 }
