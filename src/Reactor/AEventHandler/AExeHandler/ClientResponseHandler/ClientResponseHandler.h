@@ -4,6 +4,11 @@
 
 #include <cstdarg>
 #include "AExeHandler.hpp"
-#include "RequestParser.hpp"
+#include "ClientWriteHandlerFactory.hpp"
+#include "Director.hpp"
+#include "Dispatcher.hpp"
+#include "RequestParser.h"
+#include "GetResponseBuilder.hpp"
+#include "ServerManager.hpp"
 
 #endif

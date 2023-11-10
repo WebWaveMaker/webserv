@@ -32,8 +32,18 @@ void HttpMessage::setStartLine(const std::string startLine[3]) {
 	this->_startLine[2] = startLine[2];	 // HTTP-version | reason-phrase
 }
 
-std::string HttpMessage::getMethod(void) const {
-	return this->_startLine[0];
+enum HttpMethods HttpMessage::getMethod(void) const {
+	const std::string method = this->_startLine[0];
+
+	if (method == "GET")
+		return GET;
+	if (method == "POST")
+		return POST;
+	if (method == "DELETE")
+		return DELETE;
+	if (method == "PUT")
+		return PUT;
+	return UNKNOWN;
 }
 
 void HttpMessage::setHeaders(const std::map<std::string, std::string>& headers) {
@@ -44,10 +54,10 @@ void HttpMessage::setBody(const std::string& body) {
 	this->_body = body;
 }
 
-// void HttpMessage::setBuf(const std::string& buf) {
-// 	this->_buf = buf;
-// }
-
-// void HttpMessage::setRemain(const std::string& remain) {
-// 	this->_remain = remain;
-// }
+void HttpMessage::reset() {
+	this->_startLine[0].clear();
+	this->_startLine[1].clear();
+	this->_startLine[2].clear();
+	this->_headers.clear();
+	this->_body.clear();
+}

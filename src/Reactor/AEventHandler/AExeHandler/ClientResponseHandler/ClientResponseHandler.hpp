@@ -7,7 +7,10 @@
 namespace reactor {
 	class ClientResponseHandler : public AExeHandler {
 	   private:
-		request_t _request;
+		const request_t _request;
+		Director<sharedData_t> _director;
+
+		utils::shared_ptr<IBuilder<sharedData_t> > chooseBuilder();
 
 	   public:
 		ClientResponseHandler(sharedData_t& sharedData, va_list args);

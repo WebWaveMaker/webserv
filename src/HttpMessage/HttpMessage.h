@@ -7,5 +7,6 @@
 #include "const.h"
 #include "shared_ptr.hpp"
 #include "utils.hpp"
+#include "enum.h"
 
 #endif

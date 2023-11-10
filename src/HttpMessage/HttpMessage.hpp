@@ -19,11 +19,10 @@ class HttpMessage {
 	void setStartLine(const std::string startLine[3]);
 	void setHeaders(const std::map<std::string, std::string>& headers);
 	void setBody(const std::string& body);
-	std::string getMethod(void) const;
+	enum HttpMethods getMethod(void) const;
 	std::map<std::string, std::string>& getHeaders(void);
-	// void setBuf(const std::string& buf);
-	// void setRemain(const std::string& remain);
 	std::string getRawStr(void) const;
+	void reset();
 };
 
 typedef utils::shared_ptr<HttpMessage> msg_t;
