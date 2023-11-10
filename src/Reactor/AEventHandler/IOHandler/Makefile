@@ -12,6 +12,7 @@ DIRS := ClientReadHandler \
 		ClientWriteHandler \
 		FileReadHandler \
 		FileWriteHandler \
+		PipeReadHandler \
 		ServerReadHandler
 
 include $(TOPDIR)/config/makefile/objRecipes.mk
