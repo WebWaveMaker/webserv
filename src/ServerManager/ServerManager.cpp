@@ -8,11 +8,16 @@ void ServerManager::init(const std::string path) {
 	this->_serverConfigs = this->_configParser.parse(path);
 	try {
 		this->registerTimeoutEvent();
+		this->handleSigPipe();
 		this->createServer(this->_serverConfigs);
 	} catch (std::exception& e) {
 		throw;
 	}
 }
+
+void ServerManager::handleSigPipe() {
+	signal(SIGPIPE, SIG_IGN);
+};
 
 void ServerManager::createServer(config_t& ServerConfigs) {
 	try {

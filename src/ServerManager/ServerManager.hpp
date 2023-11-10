@@ -19,6 +19,7 @@ class ServerManager : public u::TSingleton<ServerManager> {
 	ServerManager();
 	ServerManager(const std::string path);
 	void init(const std::string path);
+	void handleSigPipe();
 	void createServer(config_t& serverConfigs);
 	void createClient(int serverFd, int clientFd, struct sockaddr_in& clientAddr);
 	void eraseClient(fd_t fd);
