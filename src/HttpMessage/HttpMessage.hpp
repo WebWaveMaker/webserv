@@ -6,7 +6,7 @@
 
 class HttpMessage {
    private:
-	std::string _startLine[3];
+	std::vector<std::string> _startLine;
 	std::map<std::string, std::string> _headers;
 	std::string _body;
 
@@ -16,13 +16,14 @@ class HttpMessage {
 	~HttpMessage();
 	HttpMessage& operator=(const HttpMessage& obj);
 
-	void setStartLine(const std::string startLine[3]);
+	void setStartLine(const std::vector<std::string> startLine);
 	void setHeaders(const std::map<std::string, std::string>& headers);
 	void setBody(const std::string& body);
+	std::string combineHeaders(void);
 	enum HttpMethods getMethod(void) const;
 	std::string getRequestTarget(void) const;
 	std::map<std::string, std::string>& getHeaders(void);
-	std::string getRawStr(void) const;
+	std::string getRawStr(void);
 	void reset();
 };
 

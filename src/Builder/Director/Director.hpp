@@ -13,8 +13,26 @@ class Director {
 	Director() {}
 	Director(utils::shared_ptr<IBuilder<T> > builder) : _builder(builder) {}
 	~Director() {}
-	bool buildProduct() { return this->_builder.get()->build(); };
+
+	enum AsyncState getBuilderReadState() const {
+		if (this->_builder.get() == utils::nullptr_t)
+			return NONE;
+		return this->_builder.get()->getReadState();
+	}
+
+	void setBuilderReadState(enum AsyncState state) {
+		if (this->_builder.get() == utils::nullptr_t)
+			return;
+		this->_builder.get()->setReadState(state);
+	}
+
+	bool buildProduct() {
+		if (this->_builder.get() == utils::nullptr_t)
+			return false;
+		return this->_builder.get()->build();
+	};
 	void setBuilder(utils::shared_ptr<IBuilder<T> > builder) { this->_builder = builder; };
+
 	utils::shared_ptr<IBuilder<T> > getBuilder(void) const { return this->_builder; }
 };
 

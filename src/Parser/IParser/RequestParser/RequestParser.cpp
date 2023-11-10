@@ -50,7 +50,7 @@ bool RequestParser::parseStartLine(std::string& buf) {
 	if (str.size() == 0)
 		return false;
 	std::stringstream ss(str);
-	std::string startLine[3];
+	std::vector<std::string> startLine(3);
 
 	ss >> startLine[0] >> startLine[1] >> startLine[2];
 	if (startLine[0].empty() || startLine[1].empty() || startLine[2].empty()) {
@@ -105,7 +105,7 @@ bool RequestParser::parserBody(std::string& buf) {
 	};
 	try {
 		const std::string str = buf.substr(0, contentLength);
-		buf = buf.substr(contentLength);
+		buf.erase(0, contentLength);
 		_curMsg->get()->second.setBody(str);
 	} catch (const std::out_of_range& ex) {
 		ErrorLogger::parseError(__FILE__, __LINE__, __func__, "content-length too large compared of body");

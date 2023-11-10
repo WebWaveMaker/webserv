@@ -19,6 +19,7 @@ namespace reactor {
 		SharedData& operator=(const SharedData& obj);
 
 		fd_t getFd() const { return this->_fd; };
+		void setFd(const fd_t fd) { const_cast<fd_t&>(this->_fd) = fd; };
 		enum EventType getType() const { return this->_type; };
 		std::vector<char>& getBuffer() { return this->_buffer; };
 		enum AsyncState getState() const { return this->_state; };

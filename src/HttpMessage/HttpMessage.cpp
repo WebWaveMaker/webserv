@@ -1,6 +1,7 @@
 #include "HttpMessage.hpp"
 
-HttpMessage::HttpMessage() : _startLine(), _headers(), _body() {}
+HttpMessage::HttpMessage() : _startLine(3), _headers(), _body() {}
+
 HttpMessage::HttpMessage(const HttpMessage& obj) {
 	*this = obj;
 }
@@ -9,24 +10,33 @@ HttpMessage::~HttpMessage() {}
 
 HttpMessage& HttpMessage::operator=(const HttpMessage& obj) {
 	if (this != &obj) {
-		this->_startLine[0] = obj._startLine[0];
-		this->_startLine[1] = obj._startLine[1];
-		this->_startLine[2] = obj._startLine[2];
+		this->_startLine = obj._startLine;
 		this->_headers = obj._headers;
 		this->_body = obj._body;
 	}
 	return *this;
 }
 
-std::string HttpMessage::getRawStr(void) const {
-	return _startLine[0] + " " + _startLine[1] + " " + _startLine[2];
+std::string HttpMessage::combineHeaders(void) {
+	std::string httpRequest;
+	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); ++it) {
+		httpRequest += it->first + ": " + it->second + "\r\n";
+	}
+	return httpRequest;
+}
+
+std::string HttpMessage::getRawStr(void) {
+	const std::string startLine = utils::join(_startLine, " ") + "\r\n";
+	const std::string headers = this->combineHeaders() + "\r\n";
+
+	return startLine + headers;
 }
 
 std::map<std::string, std::string>& HttpMessage::getHeaders(void) {
 	return this->_headers;
 }
 
-void HttpMessage::setStartLine(const std::string startLine[3]) {
+void HttpMessage::setStartLine(const std::vector<std::string> startLine) {
 	this->_startLine[0] = startLine[0];	 // method | Http-version
 	this->_startLine[1] = startLine[1];	 // request-target | status code
 	this->_startLine[2] = startLine[2];	 // HTTP-version | reason-phrase

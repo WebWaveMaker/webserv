@@ -39,8 +39,9 @@ namespace reactor {
 		this->_kq->getChangeList().clear();
 		for (int i = 0; i < eventNum; ++i) {
 			std::cout << "\nevent fd: " << this->_kq->getkEventList()[i].ident << std::endl;
-			if (this->_kq->getkEventList()[i].flags & EV_ERROR)
+			if (this->_kq->getkEventList()[i].flags & EV_ERROR) {
 				continue;
+			}
 			this->setFdTime(this->_kq->getkEventList()[i].ident, std::time(NULL));
 			static_cast<AEventHandler*>(this->_kq->getkEventList()[i].udata)->handleEvent();
 		}

@@ -2,7 +2,12 @@
 
 namespace reactor {
 	FileReadHandler::FileReadHandler(sharedData_t& sharedData)
-		: AEventHandler(sharedData), _fp(fdopen(this->getHandle(), "r")) {}
+		: AEventHandler(sharedData), _fp(fdopen(this->getHandle(), "r")) {
+		const fd_t fd = fileno(this->_fp);
+		if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0)	 // error
+			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "fcntl failed");
+		this->setHandler(fd);
+	}
 
 	FileReadHandler::~FileReadHandler() {
 		if (this->_fp != utils::nullptr_t)
@@ -20,7 +25,7 @@ namespace reactor {
 			this->setState(TERMINATE);
 			return;
 		}
-		if (feof(this->_fp)) {
+		if (feof(this->_fp) && buffer.empty()) {
 			this->setState(RESOLVE);
 			return;
 		}

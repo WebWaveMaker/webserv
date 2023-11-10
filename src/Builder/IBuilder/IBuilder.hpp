@@ -11,6 +11,8 @@ class IBuilder {
 
    public:
 	virtual ~IBuilder(){};
+	virtual enum AsyncState getReadState() const = 0;
+	virtual void setReadState(enum AsyncState state) = 0;
 	virtual T getProduct() = 0;
 	virtual void setStartLine() = 0;
 	virtual void setHeader() = 0;

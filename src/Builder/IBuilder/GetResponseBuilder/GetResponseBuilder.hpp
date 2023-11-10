@@ -18,6 +18,10 @@ class GetResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	GetResponseBuilder(reactor::sharedData_t sharedData, request_t request,
 					   const utils::shared_ptr<ServerConfig>& config);
 	~GetResponseBuilder();
+
+	// fileread RESOLVE, write empty
+	virtual enum AsyncState getReadState() const { return this->_readSharedData.get()->getState(); }
+	virtual void setReadState(enum AsyncState state) { this->_readSharedData.get()->setState(state); }
 	virtual reactor::sharedData_t getProduct();
 	virtual void setStartLine();
 	virtual void setHeader();

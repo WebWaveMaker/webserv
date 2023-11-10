@@ -20,6 +20,7 @@ namespace reactor {
 		enum EventType getType() const { return this->_sharedData.get()->getType(); };
 		enum AsyncState getState() const { return this->_sharedData.get()->getState(); };
 		void setState(const enum AsyncState state) { this->_sharedData->setState(state); };
+		void setHandler(const handle_t handle) { this->_sharedData->setFd(handle); };
 		virtual void handleEvent() = 0;
 	};
 

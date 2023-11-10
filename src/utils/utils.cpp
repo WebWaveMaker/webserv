@@ -96,7 +96,6 @@ namespace utils {
 			throw std::runtime_error("fopen() failed\n");
 		}
 		const fd_t fileFd = fileno(file);
-		fclose(file);
 		return (fileFd);
 	}
 

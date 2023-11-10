@@ -4,7 +4,7 @@ namespace reactor {
 
 	ClientResponseHandler::ClientResponseHandler(sharedData_t& sharedData, va_list args)
 		: AExeHandler(sharedData), _request(*va_arg(args, request_t*)), _director(this->chooseBuilder()) {
-		Dispatcher::getInstance()->registerIOHandler<ClientWriteHandlerFactory>(sharedData);
+		Dispatcher::getInstance()->registerIOHandler<ClientWriteHandlerFactory>(this->_sharedData);
 		va_end(args);
 	}
 	ClientResponseHandler::~ClientResponseHandler() {}
@@ -15,6 +15,12 @@ namespace reactor {
 		try {
 			if (this->_director.buildProduct() == false)  // may be throw ErrorReponseBuilder
 				return;
+			Dispatcher::getInstance()->registerIOHandler<ClientWriteHandlerFactory>(this->_sharedData);
+			if (this->_director.getBuilderReadState() == RESOLVE && this->getBuffer().empty()) {
+				Dispatcher::getInstance()->removeIOHandler(this->getHandle(), this->getType());
+				Dispatcher::getInstance()->removeExeHandler(this);
+				this->setState(RESOLVE);
+			}
 		} catch (const utils::shared_ptr<IBuilder<sharedData_t> >& e) {
 			// catch ErrorResponseBuilder
 			// and set ErrorResponseBuilder in director

@@ -20,6 +20,7 @@ namespace reactor {
 		request_t request = this->_request.parse(this->getBuffer().data());
 		this->getBuffer().clear();
 		if (request.get())
-			Dispatcher::getInstance()->registerExeHandler<ClientResponseHandlerFactory>(this->_sharedData, &request);
+			Dispatcher::getInstance()->registerExeHandler<ClientResponseHandlerFactory>(
+				sharedData_t(new SharedData(this->getHandle(), EVENT_WRITE, std::vector<char>())), &request);
 	}
 }  // namespace reactor
