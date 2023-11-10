@@ -166,64 +166,48 @@ bool ServerConfig::getOwnIndex(std::vector<std::string>& vec) {
 	return true;				  // 성공적으로 값을 찾음
 }
 
-// ServerConfig.cpp 파일 내부에 다음 함수 구현을 추가합니다.
-
 utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::string& reqPath) {
-	std::string serverRoot;
-	if (!getOwnRoot(serverRoot)) {
-		// 서버의 root 경로가 설정되지 않았다면 실행 경로를 사용
-		serverRoot = ".";  // 현재 디렉토리를 가리킴
-	}
-
+	// Initialize the best match as empty and its length as 0
 	utils::shared_ptr<LocationConfig> bestMatch;
-	size_t longestMatch = 0;
+	std::size_t bestMatchLength = 0;
 
-	for (std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = _locations.begin();
+	// Iterate through the map to find the best match
+	for (std::map<std::string, utils::shared_ptr<LocationConfig> >::iterator it = _locations.begin();
 		 it != _locations.end(); ++it) {
-		std::string fullLocationPath = it->first;
-		std::string locationRoot;
-
-		// LocationConfig의 root를 가져오거나, 없으면 ServerConfig의 root를 사용
-		if (!it->second->getOwnRoot(locationRoot)) {
-			locationRoot = serverRoot;
-		}
-
-		// 완전한 경로를 만듦
-		fullLocationPath = locationRoot + (fullLocationPath.empty() ? "" : "/" + fullLocationPath);
-
-		// reqPath가 fullLocationPath로 시작하는지 확인
-		if (reqPath.compare(0, fullLocationPath.length(), fullLocationPath) == 0) {
-			if (fullLocationPath.length() > longestMatch) {
-				longestMatch = fullLocationPath.length();
+		// Check if the current path is a prefix of the request path
+		const std::string& currentPath = it->first;
+		if (reqPath.compare(0, currentPath.length(), currentPath) == 0) {
+			// Check if it's a better match than the current best match
+			if (currentPath.length() > bestMatchLength) {
 				bestMatch = it->second;
+				bestMatchLength = currentPath.length();
 			}
 		}
 	}
 
-	if (bestMatch.get() != NULL) {
+	// If we have found a matching location configuration
+	// If we have found a matching location configuration
+	if (bestMatch.get() != u::nullptr_t) {
 		return bestMatch;
-	}
+	} else {
+		// No direct match found, fall back to root if it exists
+		std::string root;
+		if (getOwnRoot(root)) {
+			// Create a new LocationConfig with the ServerConfig (this) as the parent
+			utils::shared_ptr<ServerConfig> thisPtr(this);	// Create a shared_ptr to 'this'
+			utils::shared_ptr<LocationConfig> rootLocation(new LocationConfig(thisPtr));
 
-	// ServerConfig의 root로 reqPath 매칭 시도
-	if (reqPath.compare(0, serverRoot.length(), serverRoot) == 0) {
-		utils::shared_ptr<LocationConfig> newLocConfig;
-		if (!_locations.empty()) {
-			newLocConfig =
-				utils::shared_ptr<LocationConfig>(new LocationConfig(_locations.begin()->second->getParent()));
+			std::vector<std::string> index;
+			if (getOwnIndex(index)) {
+				rootLocation->setDirectives("root", std::vector<std::string>(1, root));
+				rootLocation->setDirectives("index", index);
+			}
+			// No need to set _parent here, as it's already set by the constructor
+			return rootLocation;
 		} else {
-			utils::shared_ptr<ServerConfig> thisPtr(this);
-			newLocConfig = utils::shared_ptr<LocationConfig>(new LocationConfig(thisPtr));
+			// Handle the case where there is no root defined
+			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+										  "No matching location found and no root is set.");
 		}
-		// Index 설정
-		std::vector<std::string> indexes;
-		if (getOwnIndex(indexes)) {
-			newLocConfig->setDirectives("index", indexes);
-		}
-		// 새로운 LocationConfig에 ServerConfig의 root 설정
-		newLocConfig->setDirectives("root", std::vector<std::string>(1, serverRoot));
-		return newLocConfig;
 	}
-
-	// 모든 매칭 과정 실패, nullptr_t 반환
-	return utils::shared_ptr<LocationConfig>();
 }
