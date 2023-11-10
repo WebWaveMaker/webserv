@@ -147,3 +147,83 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocation(const std::string& i
 	}
 	return it->second;
 }
+
+bool ServerConfig::getOwnRoot(std::string& str) {
+	auto it = _directives.find(ROOT);
+	if (it == _directives.end()) {
+		return false;  // 지시어를 찾을 수 없음
+	}
+	str = it->second.asString();  // 결과를 참조를 통해 반환
+	return true;				  // 성공적으로 값을 찾음
+}
+
+bool ServerConfig::getOwnIndex(std::vector<std::string>& vec) {
+	auto it = _directives.find(INDEX);
+	if (it == _directives.end()) {
+		return false;  // 지시어를 찾을 수 없음
+	}
+	vec = it->second.asStrVec();  // 결과를 참조를 통해 반환
+	return true;				  // 성공적으로 값을 찾음
+}
+// ServerConfig.cpp 파일 내부에 다음 함수 구현을 추가합니다.
+
+utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::string& reqPath) {
+	std::string serverRoot;
+	if (!getOwnRoot(serverRoot)) {
+		// 서버의 root 경로가 설정되지 않았다면 실행 경로를 사용
+		serverRoot = ".";  // 현재 디렉토리를 가리킴
+	}
+
+	utils::shared_ptr<LocationConfig> bestMatch = u::nullptr_t;
+	size_t longestMatch = 0;
+
+	for (std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = _locations.begin();
+		 it != _locations.end(); ++it) {
+		std::string fullLocationPath = it->first;
+		std::string locationRoot;
+
+		// LocationConfig의 root를 가져오거나, 없으면 ServerConfig의 root를 사용
+		if (!it->second->getOwnRoot(locationRoot)) {
+			locationRoot = serverRoot;
+		}
+
+		// 완전한 경로를 만듦
+		fullLocationPath = locationRoot + (fullLocationPath.empty() ? "" : "/" + fullLocationPath);
+
+		// reqPath가 fullLocationPath로 시작하는지 확인
+		if (reqPath.compare(0, fullLocationPath.length(), fullLocationPath) == 0) {
+			if (fullLocationPath.length() > longestMatch) {
+				longestMatch = fullLocationPath.length();
+				bestMatch = it->second;
+			}
+		}
+	}
+
+	if (bestMatch != u::nullptr_t) {
+		return bestMatch;
+	}
+
+	// ServerConfig의 root로 reqPath 매칭 시도
+	if (reqPath.compare(0, serverRoot.length(), serverRoot) == 0) {
+		// 매치되면 새로운 LocationConfig 생성
+		utils::shared_ptr<LocationConfig> newLocConfig;
+		if (!_locations.empty()) {
+			newLocConfig =
+				utils::shared_ptr<LocationConfig>(new LocationConfig(_locations.begin()->second->getParent()));
+		} else {
+			newLocConfig =
+				utils::shared_ptr<LocationConfig>(new LocationConfig(utils::shared_ptr<ServerConfig>(*this)));
+		}
+		// Index 설정
+		std::vector<std::string> indexes;
+		if (getOwnIndex(indexes)) {
+			newLocConfig->setDirectives("index", indexes);
+		}
+		// 새로운 LocationConfig에 ServerConfig의 root 설정
+		newLocConfig->setDirectives("root", std::vector<std::string>{serverRoot});
+		return newLocConfig;
+	}
+
+	// 모든 매칭 과정 실패, nullptr_t 반환
+	return u::nullptr_t;
+}

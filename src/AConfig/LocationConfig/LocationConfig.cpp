@@ -23,6 +23,10 @@ void LocationConfig::setDirectives(const std::string& directive, const std::vect
 
 	if (directive == "sendfile") {
 		_directives.insert(std::make_pair(SENDFILE, addBooleanValue(values[0])));
+	} else if (directive == "return") {
+		_directives.insert(std::make_pair(RETURN, addStrVecValue(values)));
+	} else if (directive == "cgi_index" && values.size() == 1) {
+		_directives.insert(std::make_pair(CGI_INDEX, addStringValue(values[0])));
 	} else if (directive == "error_page") {
 		setErrorPage(values);
 	} else if (directive == "root") {
@@ -102,8 +106,50 @@ ConfigValue LocationConfig::getDirectives(Directives method) const {
 			return _parent->getDirectives(AUTOINDEX);
 		} else if (method == INDEX) {
 			return _parent->getDirectives(INDEX);
+		} else if (method == RETURN) {
+			return _parent->getDirectives(RETURN);
+		} else if (method == CGI_INDEX) {
+			return _parent->getDirectives(CGI_INDEX);
 		}
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "LocationConfig :Invalid directive");
 	}
 	return it->second;
+}
+
+bool LocationConfig::getOwnRoot(std::string& str) {
+	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(ROOT);
+	if (it == _directives.end()) {
+		return false;  // 지시어를 찾을 수 없음
+	}
+	str = it->second.asString();  // 결과를 참조를 통해 반환
+	return true;				  // 성공적으로 값을 찾음
+}
+
+bool LocationConfig::getOwnIndex(std::vector<std::string>& vec) {
+	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(INDEX);
+	if (it == _directives.end()) {
+		return false;  // 지시어를 찾을 수 없음
+	}
+	vec = it->second.asStrVec();  // 결과를 참조를 통해 반환
+	return true;				  // 성공적으로 값을 찾음
+}
+
+bool LocationConfig::isCgi() {
+	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(CGI_INDEX);
+	if (it == _directives.end()) {
+		return false;  // 지시어를 찾을 수 없음
+	}
+	return true;  // 성공적으로 값을 찾음
+}
+
+bool LocationConfig::isRedirect() {
+	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(RETURN);
+	if (it == _directives.end()) {
+		return false;  // 지시어를 찾을 수 없음
+	}
+	return true;  // 성공적으로 값을 찾음
+}
+
+utils::shared_ptr<ServerConfig> LocationConfig::getParent() {
+	return _parent;
 }
