@@ -25,6 +25,11 @@ class LocationConfig : public AConfig {
 	virtual void setErrorPage(const std::vector<std::string>& values);
 	virtual std::string getErrorPage(unsigned int error_code) const;
 	virtual ConfigValue getDirectives(Directives method) const;
+	utils::shared_ptr<ServerConfig> getParent();
+	bool getOwnRoot(std::string& str);
+	bool getOwnIndex(std::vector<std::string>& vec);
+	bool isCgi();
+	bool isRedirect();
 };
 
 #endif	// LOCATIONCONFIG_HPP
