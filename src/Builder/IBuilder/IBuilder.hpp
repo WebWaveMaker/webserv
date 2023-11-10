@@ -16,7 +16,7 @@ class IBuilder {
 	virtual void setHeader() = 0;
 	virtual bool setBody() = 0;
 	virtual void reset() = 0;
-	virtual void build() = 0;
+	virtual bool build() = 0;
 	virtual void prepare() = 0;
 };
 

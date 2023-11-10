@@ -13,6 +13,12 @@ namespace utils {
 		os << num;
 		return os.str();
 	}
+	
+	std::string lltos(const long long& num) {
+		std::ostringstream os;
+		os << num;
+		return os.str();
+	}
 
 	extern unsigned int stringToDecimal(const std::string& value) {
 		if (value.empty()) {

@@ -6,6 +6,7 @@
 
 namespace utils {
 	std::string itos(const int& num);
+	std::string lltos(const long long& num);
 	std::string getCurTime(const char* format);
 	unsigned int stringToDecimal(const std::string& value);
 	std::vector<std::string> split(std::string input, const std::string& delimiter);
