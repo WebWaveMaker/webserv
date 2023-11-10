@@ -1,10 +1,13 @@
 #include "FileReadHandler.hpp"
 
 namespace reactor {
-
 	FileReadHandler::FileReadHandler(sharedData_t& sharedData)
 		: AEventHandler(sharedData), _fp(fdopen(this->getHandle(), "r")) {}
-	FileReadHandler::~FileReadHandler() {}
+
+	FileReadHandler::~FileReadHandler() {
+		if (this->_fp != utils::nullptr_t)
+			fclose(this->_fp);
+	}
 
 	void FileReadHandler::handleEvent() {
 		if (this->getState() == TERMINATE || this->getState() == RESOLVE)
@@ -18,7 +21,7 @@ namespace reactor {
 			return;
 		}
 		if (feof(this->_fp)) {
-			this->setState(TERMINATE);
+			this->setState(RESOLVE);
 			return;
 		}
 		std::cout << "readByte: " << readByte << std::endl;
