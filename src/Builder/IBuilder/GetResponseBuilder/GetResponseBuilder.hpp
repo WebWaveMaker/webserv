@@ -8,14 +8,15 @@ class GetResponseBuilder : public IBuilder<reactor::sharedData_t> {
    private:
 	reactor::sharedData_t _sharedData;
 	const request_t _request;
-	const utils::shared_ptr<ServerConfig>& _serverConfig;
-	// utils::shared_ptr<LocationConfig>& _locationConfig; // may be needed?
+	const utils::shared_ptr<ServerConfig> _serverConfig;
+	const utils::shared_ptr<LocationConfig> _locationConfig;  // may be needed?
 
 	reactor::sharedData_t _readSharedData;	// for file, pipe read
 	HttpMessage _response;	// for startLine, headers // defaultResponseBuilder가 기본적인 것들을 채울 예정.
 
    public:
-	GetResponseBuilder(reactor::sharedData_t sharedData, request_t request, const utils::shared_ptr<ServerConfig>& config);
+	GetResponseBuilder(reactor::sharedData_t sharedData, request_t request,
+					   const utils::shared_ptr<ServerConfig>& config);
 	~GetResponseBuilder();
 	virtual reactor::sharedData_t getProduct();
 	virtual void setStartLine();

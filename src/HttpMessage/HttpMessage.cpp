@@ -46,6 +46,10 @@ enum HttpMethods HttpMessage::getMethod(void) const {
 	return UNKNOWN;
 }
 
+std::string HttpMessage::getRequestTarget(void) const {
+	return this->_startLine[1];
+}
+
 void HttpMessage::setHeaders(const std::map<std::string, std::string>& headers) {
 	this->_headers = headers;
 }

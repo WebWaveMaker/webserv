@@ -8,6 +8,7 @@ NAME :=	$(PROJECT_NAME)
 
 DIRS :=	AConfig \
 		ALogger \
+		Builder \
 		Client \
 		Factory \
 		HttpMessage \

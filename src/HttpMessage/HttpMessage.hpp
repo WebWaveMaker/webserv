@@ -20,6 +20,7 @@ class HttpMessage {
 	void setHeaders(const std::map<std::string, std::string>& headers);
 	void setBody(const std::string& body);
 	enum HttpMethods getMethod(void) const;
+	std::string getRequestTarget(void) const;
 	std::map<std::string, std::string>& getHeaders(void);
 	std::string getRawStr(void) const;
 	void reset();
