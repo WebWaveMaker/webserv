@@ -80,7 +80,7 @@ bool RequestParser::parseHeader(std::string& buf) {
 
 		headers[key] = val;	 // 중복은 어떻게 처리? 우선은 overwrite
 	}
-	if (_curMsg->get()->second.getMethod() == "POST" && headers.count("Content-Length") == 0) {
+	if (_curMsg->get()->second.getMethod() == POST && headers.count("Content-Length") == 0) {
 		_curMsg->get()->first = ERROR;
 		return false;
 	}

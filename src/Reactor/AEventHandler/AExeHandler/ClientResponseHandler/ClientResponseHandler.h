@@ -7,8 +7,8 @@
 #include "ClientWriteHandlerFactory.hpp"
 #include "Director.hpp"
 #include "Dispatcher.hpp"
-#include "RequestParser.h"
 #include "GetResponseBuilder.hpp"
+#include "RequestParser.h"
 #include "ServerManager.hpp"
 
 #endif

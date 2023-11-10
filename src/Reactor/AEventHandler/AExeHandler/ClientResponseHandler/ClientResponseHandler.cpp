@@ -32,6 +32,8 @@ namespace reactor {
 			// catch ErrorResponseBuilder
 			// and set ErrorResponseBuilder in director
 			this->_director.setBuilder(e);
+		} catch (const std::exception& e) {
+			// this->_director.setBuilder(utils::shared_ptr<IBuilder<sharedData_t>()); // error 500 internal server error
 		}
 		return utils::shared_ptr<IBuilder<sharedData_t> >();
 	}

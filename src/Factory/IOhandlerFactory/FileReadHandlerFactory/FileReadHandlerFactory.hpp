@@ -10,7 +10,7 @@ namespace reactor {
 	   public:
 		FileReadHandlerFactory();
 		~FileReadHandlerFactory();
-		virtual utils::shared_ptr<AEventHandler> createHandler(sharedData_t& sharedData);
+		virtual utils::shared_ptr<AEventHandler> createIOHandler(sharedData_t& sharedData);
 	};
 }  // namespace reactor
 #endif

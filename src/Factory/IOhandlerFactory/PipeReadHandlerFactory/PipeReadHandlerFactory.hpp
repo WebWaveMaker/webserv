@@ -13,6 +13,6 @@ namespace reactor {
 		virtual ~PipeReadHandlerFactory();
 		virtual utils::shared_ptr<AEventHandler> createIOHandler(sharedData_t& sharedData);
 	};
-	
+
 }  // namespace reactor
 #endif
