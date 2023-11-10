@@ -22,7 +22,6 @@ class Server {
 	void mallocParameter();
 	void bindListen();
 	void registerReadEvent();
-	int makeFd(const char* path, const char* option);
 
    public:
 	Server(utils::shared_ptr<ServerConfig>& serverConfig);

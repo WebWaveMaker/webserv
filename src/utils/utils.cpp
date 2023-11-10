@@ -13,7 +13,7 @@ namespace utils {
 		os << num;
 		return os.str();
 	}
-	
+
 	std::string lltos(const long long& num) {
 		std::ostringstream os;
 		os << num;
@@ -88,6 +88,16 @@ namespace utils {
 		s.erase(0, s.find_first_not_of(" \n\r\t"));
 		s.erase(s.find_last_not_of(" \n\r\t") + 1);
 		return s;
+	}
+
+	fd_t makeFd(const char* path, const char* option) {
+		FILE* file = fopen(path, option);
+		if (file == NULL) {
+			throw std::runtime_error("fopen() failed\n");
+		}
+		const fd_t fileFd = fileno(file);
+		fclose(file);
+		return (fileFd);
 	}
 
 }  // namespace utils

@@ -63,22 +63,12 @@ void Server::makeSocket() {
 void Server::mallocParameter() {
 
 	std::pair<std::string, LogLevels> errorLog = this->_serverConfig.get()->getDirectives(ERROR_LOG).asLog();
-	const int errorFd = this->makeFd(errorLog.first.c_str(), "w");
+	const int errorFd = utils::makeFd(errorLog.first.c_str(), "w");
 
 	this->_clients =
 		utils::shared_ptr<std::map<int, utils::shared_ptr<Client> > >(new std::map<int, utils::shared_ptr<Client> >);
 	this->_accessLogger = utils::shared_ptr<AccessLogger>(new AccessLogger(STDOUT_FILENO));
 	this->_errorLogger = utils::shared_ptr<ErrorLogger>(new ErrorLogger(errorFd, errorLog.second));
-}
-
-int Server::makeFd(const char* path, const char* option) {
-	FILE* file = fopen(path, option);
-	if (file == NULL) {
-		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
-		throw;
-	}
-	const int fileFd = fileno(file);
-	return (fileFd);
 }
 
 void Server::createClient(int clientFd, struct sockaddr_in& clientAddr) {

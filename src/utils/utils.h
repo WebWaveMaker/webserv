@@ -10,6 +10,7 @@
 #include "TSingleton.hpp"
 #include "color.h"
 #include "nullptr_t.hpp"
+#include "types.h"
 
 class logTimeFormat {
    public:
