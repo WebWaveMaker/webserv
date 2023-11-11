@@ -25,7 +25,7 @@ namespace reactor {
 			this->setState(TERMINATE);
 			return;
 		}
-		if (feof(this->_fp) && buffer.empty()) {
+		if (feof(this->_fp) && readByte == 0) {
 			this->setState(RESOLVE);
 			return;
 		}

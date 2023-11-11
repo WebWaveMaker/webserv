@@ -10,5 +10,6 @@
 #include "GetResponseBuilder.hpp"
 #include "RequestParser.h"
 #include "ServerManager.hpp"
+#include "Kqueue.hpp"
 
 #endif

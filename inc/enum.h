@@ -13,7 +13,7 @@ enum Directives {
 	SERVER_NAME,		   // server, 	string default : empty
 	ROOT,				   // server, location 	string default : specific to directory
 	AUTOINDEX,			   // server, location 	on : true, off : false default : false
-	INDEX,				   // server, location 	string default : index.html
+	INDEX,				   // server, location 	std::vector<string> default : index.html
 	LIMIT_EXCEPT,		   // server, location 	std::vector<enum HttpMethods> default : {GET, POST, DELETE, PUT}
 	RETURN,				   // server, location 	int, string default : empty
 	CGI_INDEX,			   // server, location 	string default : empty

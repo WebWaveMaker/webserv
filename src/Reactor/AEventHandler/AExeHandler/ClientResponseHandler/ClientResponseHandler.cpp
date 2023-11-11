@@ -15,7 +15,6 @@ namespace reactor {
 		try {
 			if (this->_director.buildProduct() == false)  // may be throw ErrorReponseBuilder
 				return;
-			Dispatcher::getInstance()->registerIOHandler<ClientWriteHandlerFactory>(this->_sharedData);
 			if (this->_director.getBuilderReadState() == RESOLVE && this->getBuffer().empty()) {
 				Dispatcher::getInstance()->removeIOHandler(this->getHandle(), this->getType());
 				Dispatcher::getInstance()->removeExeHandler(this);

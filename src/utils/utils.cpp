@@ -92,9 +92,8 @@ namespace utils {
 
 	fd_t makeFd(const char* path, const char* option) {
 		FILE* file = fopen(path, option);
-		if (file == NULL) {
-			throw std::runtime_error("fopen() failed\n");
-		}
+		if (file == NULL)
+			return -1;
 		const fd_t fileFd = fileno(file);
 		return (fileFd);
 	}
