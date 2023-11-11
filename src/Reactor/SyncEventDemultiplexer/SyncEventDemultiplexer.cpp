@@ -28,7 +28,7 @@ namespace reactor {
 	void SyncEventDemultiplexer::eraseFdTime(fd_t fd) {
 		this->_fdsTime.erase(fd);
 	}
-	
+
 	std::time_t SyncEventDemultiplexer::getFdTime(fd_t fd) {
 		if (this->_fdsTime.find(fd) != this->_fdsTime.end())
 			return this->_fdsTime[fd];

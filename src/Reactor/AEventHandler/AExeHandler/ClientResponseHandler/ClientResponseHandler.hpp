@@ -10,6 +10,7 @@ namespace reactor {
 		const request_t _request;
 		Director<sharedData_t> _director;
 		const utils::shared_ptr<ServerConfig> _serverConfig;
+		const utils::shared_ptr<LocationConfig> _locationConfig;
 
 		utils::shared_ptr<IBuilder<sharedData_t> > chooseBuilder();
 

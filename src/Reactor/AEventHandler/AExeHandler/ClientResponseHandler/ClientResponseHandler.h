@@ -7,9 +7,10 @@
 #include "ClientWriteHandlerFactory.hpp"
 #include "Director.hpp"
 #include "Dispatcher.hpp"
+#include "ErrorResponseBuilder.hpp"
 #include "GetResponseBuilder.hpp"
+#include "Kqueue.hpp"
 #include "RequestParser.h"
 #include "ServerManager.hpp"
-#include "Kqueue.hpp"
 
 #endif

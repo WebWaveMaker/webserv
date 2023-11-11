@@ -6,7 +6,8 @@ namespace reactor {
 		: AExeHandler(sharedData),
 		  _request(*va_arg(args, request_t*)),
 		  _director(this->chooseBuilder()),
-		  _serverConfig(ServerManager::getInstance()->getServerConfig(this->getHandle())) {
+		  _serverConfig(ServerManager::getInstance()->getServerConfig(this->getHandle())),
+		  _locationConfig(_serverConfig.get()->getLocationConfig(_request.get()->second.getRequestTarget())) {
 		Dispatcher::getInstance()->registerIOHandler<ClientWriteHandlerFactory>(this->_sharedData);
 		va_end(args);
 	}
@@ -24,32 +25,28 @@ namespace reactor {
 				this->setState(RESOLVE);
 			}
 		} catch (const utils::shared_ptr<IBuilder<sharedData_t> >& e) {
-			// catch ErrorResponseBuilder
-			// and set ErrorResponseBuilder in director
 			this->_director.setBuilder(e);
 		}
 	}
 
 	utils::shared_ptr<IBuilder<sharedData_t> > ClientResponseHandler::chooseBuilder() {
 		try {
-			// if (this->_request.get()->first == ERROR)
-				// throw ErrorResponseBuilder(utils::itos(this->_request.get()->second.getErrorCode()))));
-				
+			if (this->_request.get()->first == ERROR)
+				throw utils::shared_ptr<IBuilder<sharedData_t> >(
+					new ErrorResponseBuilder(this->_request.get()->second.getErrorCode(), this->_sharedData,
+											 this->_serverConfig, this->_locationConfig));
 			std::vector<enum HttpMethods> methods = this->_serverConfig.get()->getDirectives(LIMIT_EXCEPT).asMedVec();
-
-			// if (std::find(methods.begin(), methods.end(), this->_request.get()->second.getMethod()) == methods.end())
-			// 	throw ErrorResponseBuilder(utils::itos(405));
-
-
+			if (std::find(methods.begin(), methods.end(), this->_request.get()->second.getMethod()) == methods.end())
+				throw utils::shared_ptr<IBuilder<sharedData_t> >(
+					new ErrorResponseBuilder(405, this->_sharedData, this->_serverConfig, this->_locationConfig));
 			if (this->_request.get()->second.getMethod() == GET)
-				return utils::shared_ptr<IBuilder<sharedData_t> >(
-					new GetResponseBuilder(this->_sharedData, this->_request, this->_serverConfig));
+				return utils::shared_ptr<IBuilder<sharedData_t> >(new GetResponseBuilder(
+					this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 		} catch (const utils::shared_ptr<IBuilder<sharedData_t> >& e) {
-			// catch ErrorResponseBuilder
-			// and set ErrorResponseBuilder in director
 			this->_director.setBuilder(e);
-		} catch (const std::exception& e) {
-			// this->_director.setBuilder(utils::shared_ptr<IBuilder<sharedData_t>()); // error 500 internal server error
+		} catch (...) {
+			this->_director.setBuilder(utils::shared_ptr<IBuilder<sharedData_t> >(
+				new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig)));
 		}
 		return utils::shared_ptr<IBuilder<sharedData_t> >();
 	}

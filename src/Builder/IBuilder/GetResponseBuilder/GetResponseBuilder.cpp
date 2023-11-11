@@ -1,18 +1,21 @@
 #include "GetResponseBuilder.hpp"
 
 GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const request_t request,
-									   const utils::shared_ptr<ServerConfig>& config)
+									   const utils::shared_ptr<ServerConfig>& serverConfig,
+									   const utils::shared_ptr<LocationConfig>& locationConfig)
 	: _sharedData(sharedData),
 	  _request(request),
-	  _serverConfig(config),
-	  _locationConfig(config.get()->getLocationConfig(request.get()->second.getRequestTarget())),
+	  _serverConfig(serverConfig),
+	  _locationConfig(locationConfig),
 	  _readSharedData() {
 	if (this->_request.get()->first == ERROR)
-		throw std::runtime_error("request is error");  // throw ErrorResponseBuilder(400)  400 bad request
+		throw utils::shared_ptr<IBuilder<sharedData_t> >(
+			new ErrorResponseBuilder(400, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	if (_locationConfig.get() == u::nullptr_t)
-		throw std::runtime_error("location config is null");  // throw ErrorResponseBuilder(404)  404 not found
+		throw utils::shared_ptr<IBuilder<sharedData_t> >(
+			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	// if (this->_locationConfig.get()->isRedirect())
-	//	throw RedirectResponseBuilder(); // throw ErrorResponseBuilder(301) 301 moved permanently
+	//	throw RedirectResponseBuilder(); // throw utils::shared_ptr<IBuilder<sharedData_t> >(ErrorResponseBuilder(301) 301 moved permanently
 	this->prepare();
 }
 
@@ -32,8 +35,9 @@ void GetResponseBuilder::setHeader() {
 	struct stat fileInfo;
 
 	// cgi 처리는 다르게 해야함.
-	if (stat(this->path.c_str(), &fileInfo) < 0) {
-		throw std::runtime_error("stat error");	 // throw ErrorResponseBuilder(500) internal server error later
+	if (stat(this->_path.c_str(), &fileInfo) == -1) {
+		throw std::runtime_error(
+			"stat error");	// throw utils::shared_ptr<IBuilder<sharedData_t> >(ErrorResponseBuilder(500) internal server error later
 	}
 
 	std::map<std::string, std::string> headers =
@@ -59,6 +63,7 @@ bool GetResponseBuilder::setBody() {
 void GetResponseBuilder::reset() {
 	this->_response.reset();
 	this->_sharedData.get()->getBuffer().clear();
+	this->_readSharedData.get()->getBuffer().clear();
 }
 bool GetResponseBuilder::build() {
 	return this->setBody();
@@ -70,15 +75,15 @@ fd_t GetResponseBuilder::findReadFile() {
 	const std::vector<std::string> indexVec = this->_locationConfig.get()->getDirectives(INDEX).asStrVec();
 
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {
-		this->path = locPath + *cit;
-		if (access(this->path.c_str(), R_OK) == 0)
-			return utils::makeFd(this->path.c_str(), "r");
+		this->_path = locPath + *cit;
+		if (access(this->_path.c_str(), R_OK) == 0)
+			return utils::makeFd(this->_path.c_str(), "r");
 	}
 
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {
-		this->path = serverPath + *cit;
-		if (access(this->path.c_str(), R_OK) == 0)
-			return utils::makeFd(this->path.c_str(), "r");
+		this->_path = serverPath + *cit;
+		if (access(this->_path.c_str(), R_OK) == 0)
+			return utils::makeFd(this->_path.c_str(), "r");
 	}
 	return -1;
 }
@@ -86,7 +91,8 @@ fd_t GetResponseBuilder::findReadFile() {
 void GetResponseBuilder::prepare() {
 	this->_fd = this->findReadFile();
 	if (this->_fd == -1)
-		throw std::runtime_error("file open error");  // throw ErrorResponseBuilder(404)  404 not found
+		throw utils::shared_ptr<IBuilder<sharedData_t> >(
+			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	this->setStartLine();
 	this->setHeader();
 	const std::string raw = this->_response.getRawStr();

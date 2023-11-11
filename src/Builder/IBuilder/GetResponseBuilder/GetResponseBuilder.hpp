@@ -11,9 +11,8 @@ class GetResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	const utils::shared_ptr<ServerConfig> _serverConfig;
 	const utils::shared_ptr<LocationConfig> _locationConfig;  // may be needed?
 
-	std::string path;	
+	std::string _path;
 	fd_t _fd;
-
 
 	reactor::sharedData_t _readSharedData;	// for file, pipe read
 	HttpMessage _response;	// for startLine, headers // defaultResponseBuilder가 기본적인 것들을 채울 예정.
@@ -22,7 +21,8 @@ class GetResponseBuilder : public IBuilder<reactor::sharedData_t> {
 
    public:
 	GetResponseBuilder(reactor::sharedData_t sharedData, request_t request,
-					   const utils::shared_ptr<ServerConfig>& config);
+					   const utils::shared_ptr<ServerConfig>& serverConfig,
+					   const utils::shared_ptr<LocationConfig>& locationConfig);
 	~GetResponseBuilder();
 
 	// fileread RESOLVE, write empty

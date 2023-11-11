@@ -8,6 +8,7 @@ endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-DIRS := GetResponseBuilder
+DIRS := DefaultResponseBuilder \
+		GetResponseBuilder
 
 include $(TOPDIR)/config/makefile/objRecipes.mk
