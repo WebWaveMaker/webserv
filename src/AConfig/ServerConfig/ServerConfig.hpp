@@ -30,11 +30,11 @@ class ServerConfig : public AConfig {
 	virtual std::string getErrorPage(unsigned int error_code) const;
 	virtual ConfigValue getDirectives(Directives method) const;
 	void setLocations(std::string identifier, utils::shared_ptr<LocationConfig> location);
-	bool getOwnRoot(std::string& str);
-	bool getOwnIndex(std::vector<std::string>& vec);
+	std::string getOwnRoot();
+	std::vector<std::string> getOwnIndex();
+	bool getOwnConfirmedMethods(Directives method);
 	utils::shared_ptr<LocationConfig> getLocation(const std::string& identifier);
 	utils::shared_ptr<LocationConfig> getLocationConfig(const std::string& reqPath);
 	std::string getMimeTypes(const std::string& extension) const;
 };
 #endif	// SERVERCONFIG_HPP
-`

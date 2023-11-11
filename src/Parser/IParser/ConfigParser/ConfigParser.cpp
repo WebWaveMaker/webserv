@@ -110,7 +110,7 @@ bool ConfigParser::directiveTokenizer(const std::string& content, size_t& positi
 	this->skipWhitespace(content, position);
 
 	// Get the directive name
-	while (position < content.size() && !std::isspace(content[position]) && content[position] != ';' &&
+	while (position < content.size() && std::isspace(content[position]) == false && content[position] != ';' &&
 		   content[position] != '{') {
 		directive.name.push_back(content[position++]);
 	}
@@ -125,7 +125,7 @@ bool ConfigParser::directiveTokenizer(const std::string& content, size_t& positi
 		}
 
 		std::string parameter;
-		while (position < content.size() && !std::isspace(content[position]) && content[position] != ';' &&
+		while (position < content.size() && std::isspace(content[position]) == false && content[position] != ';' &&
 			   content[position] != '{') {
 			parameter.push_back(content[position++]);
 		}

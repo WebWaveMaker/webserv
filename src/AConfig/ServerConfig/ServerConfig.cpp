@@ -148,30 +148,39 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocation(const std::string& i
 	return it->second;
 }
 
-bool ServerConfig::getOwnRoot(std::string& str) {
+std::string ServerConfig::getOwnRoot() {
+	std::string str;
 	std::map<Directives, ConfigValue>::iterator it = _directives.find(ROOT);
 	if (it == _directives.end()) {
-		return false;  // 지시어를 찾을 수 없음
+		return std::string();  // 지시어를 찾을 수 없음
 	}
 	str = it->second.asString();  // 결과를 참조를 통해 반환
-	return true;				  // 성공적으로 값을 찾음
+	return str;					  // 성공적으로 값을 찾음
 }
 
-bool ServerConfig::getOwnIndex(std::vector<std::string>& vec) {
+std::vector<std::string> ServerConfig::getOwnIndex() {
+	std::vector<std::string> vec;
 	std::map<Directives, ConfigValue>::iterator it = _directives.find(INDEX);
+	if (it == _directives.end()) {
+		return std::vector<std::string>();	// 지시어를 찾을 수 없음
+	}
+	vec = it->second.asStrVec();  // 결과를 참조를 통해 반환
+	return vec;					  // 성공적으로 값을 찾음
+}
+
+bool ServerConfig::getOwnConfirmedMethods(Directives method) {
+	std::map<Directives, ConfigValue>::iterator it = _directives.find(method);
 	if (it == _directives.end()) {
 		return false;  // 지시어를 찾을 수 없음
 	}
-	vec = it->second.asStrVec();  // 결과를 참조를 통해 반환
-	return true;				  // 성공적으로 값을 찾음
+	return true;  // 성공적으로 값을 찾음
 }
-
-// ServerConfig.cpp 파일 내부에 다음 함수 구현을 추가합니다.
 
 utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::string& reqPath) {
 	std::string serverRoot;
-	if (!getOwnRoot(serverRoot)) {
+	if (getOwnConfirmedMethods(ROOT)) {
 		// 서버의 root 경로가 설정되지 않았다면 실행 경로를 사용
+		serverRoot = getOwnRoot();
 		serverRoot = ".";  // 현재 디렉토리를 가리킴
 	}
 
@@ -184,7 +193,7 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::str
 		std::string locationRoot;
 
 		// LocationConfig의 root를 가져오거나, 없으면 ServerConfig의 root를 사용
-		if (!it->second->getOwnRoot(locationRoot)) {
+		if (it->second->getOwnConfirmedMethods(ROOT)) {
 			locationRoot = serverRoot;
 		}
 
@@ -215,8 +224,8 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::str
 			newLocConfig = utils::shared_ptr<LocationConfig>(new LocationConfig(thisPtr));
 		}
 		// Index 설정
-		std::vector<std::string> indexes;
-		if (getOwnIndex(indexes)) {
+		if (getOwnConfirmedMethods(INDEX)) {
+			std::vector<std::string> indexes = getOwnIndex();
 			newLocConfig->setDirectives("index", indexes);
 		}
 		// 새로운 LocationConfig에 ServerConfig의 root 설정

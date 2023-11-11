@@ -116,24 +116,33 @@ ConfigValue LocationConfig::getDirectives(Directives method) const {
 	return it->second;
 }
 
-bool LocationConfig::getOwnRoot(std::string& str) {
-	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(ROOT);
+std::string LocationConfig::getOwnRoot() {
+	std::string str;
+	std::map<Directives, ConfigValue>::iterator it = _directives.find(ROOT);
 	if (it == _directives.end()) {
-		return false;  // 지시어를 찾을 수 없음
+		return std::string();  // 지시어를 찾을 수 없음
 	}
 	str = it->second.asString();  // 결과를 참조를 통해 반환
-	return true;				  // 성공적으로 값을 찾음
+	return str;					  // 성공적으로 값을 찾음
 }
 
-bool LocationConfig::getOwnIndex(std::vector<std::string>& vec) {
-	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(INDEX);
+std::vector<std::string> LocationConfig::getOwnIndex() {
+	std::vector<std::string> vec;
+	std::map<Directives, ConfigValue>::iterator it = _directives.find(INDEX);
+	if (it == _directives.end()) {
+		return std::vector<std::string>();	// 지시어를 찾을 수 없음
+	}
+	vec = it->second.asStrVec();  // 결과를 참조를 통해 반환
+	return vec;					  // 성공적으로 값을 찾음
+}
+
+bool LocationConfig::getOwnConfirmedMethods(Directives method) {
+	std::map<Directives, ConfigValue>::iterator it = _directives.find(method);
 	if (it == _directives.end()) {
 		return false;  // 지시어를 찾을 수 없음
 	}
-	vec = it->second.asStrVec();  // 결과를 참조를 통해 반환
-	return true;				  // 성공적으로 값을 찾음
+	return true;  // 성공적으로 값을 찾음
 }
-
 bool LocationConfig::isCgi() {
 	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(CGI_INDEX);
 	if (it == _directives.end()) {

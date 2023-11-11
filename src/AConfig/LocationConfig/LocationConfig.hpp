@@ -26,8 +26,9 @@ class LocationConfig : public AConfig {
 	virtual std::string getErrorPage(unsigned int error_code) const;
 	virtual ConfigValue getDirectives(Directives method) const;
 	utils::shared_ptr<ServerConfig> getParent();
-	bool getOwnRoot(std::string& str);
-	bool getOwnIndex(std::vector<std::string>& vec);
+	std::string getOwnRoot();
+	std::vector<std::string> getOwnIndex();
+	bool getOwnConfirmedMethods(Directives method);
 	bool isCgi();
 	bool isRedirect();
 	std::string getMimeTypes(const std::string& extension) const;
