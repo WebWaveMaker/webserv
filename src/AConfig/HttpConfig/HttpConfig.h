@@ -4,6 +4,7 @@
 
 #include "AConfig.hpp"
 #include "ErrorLogger.hpp"
+#include "Mime.hpp"
 #include "Parser.h"
 #include "utils.hpp"
 

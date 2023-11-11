@@ -2,13 +2,14 @@
 
 HttpConfig::HttpConfig() {}
 
-HttpConfig::HttpConfig(const HttpConfig& other) : AConfig(other) {}
+HttpConfig::HttpConfig(const HttpConfig& other) : AConfig(other), _mimeTypes(other._mimeTypes) {}
 
 HttpConfig::~HttpConfig() {}
 
 HttpConfig& HttpConfig::operator=(const HttpConfig& other) {
 	if (this != &other) {
 		AConfig::operator=(other);
+		_mimeTypes = other._mimeTypes;
 	}
 	return *this;
 }
@@ -93,4 +94,12 @@ ConfigValue HttpConfig::getDirectives(Directives method) const {
 		}
 	}
 	return it->second;
+}
+
+std::string HttpConfig::getMimeType(const std::string& extension) const {
+	return this->_mimeTypes.get()->getMimeType(extension);
+}
+
+void HttpConfig::setMimeTypes(utils::shared_ptr<Mime> mimeTypes) {
+	this->_mimeTypes = mimeTypes;
 }
