@@ -55,6 +55,7 @@ bool RequestParser::parseStartLine(std::string& buf) {
 	ss >> startLine[0] >> startLine[1] >> startLine[2];
 	if (startLine[0].empty() || startLine[1].empty() || startLine[2].empty()) {
 		_curMsg->get()->first = ERROR;
+		_curMsg->get()->second.setErrorCode(400);
 		return false;
 	}
 
@@ -82,6 +83,7 @@ bool RequestParser::parseHeader(std::string& buf) {
 	}
 	if (_curMsg->get()->second.getMethod() == POST && headers.count("Content-Length") == 0) {
 		_curMsg->get()->first = ERROR;
+		_curMsg->get()->second.setErrorCode(411);  // Length Required
 		return false;
 	}
 
@@ -101,6 +103,7 @@ bool RequestParser::parserBody(std::string& buf) {
 
 	if (contentLength > bodyLimit) {
 		_curMsg->get()->first = ERROR;
+		_curMsg->get()->second.setErrorCode(413);  // Payload Too large
 		return false;
 	};
 	try {
@@ -110,6 +113,7 @@ bool RequestParser::parserBody(std::string& buf) {
 	} catch (const std::out_of_range& ex) {
 		ErrorLogger::parseError(__FILE__, __LINE__, __func__, "content-length too large compared of body");
 		_curMsg->get()->first = ERROR;
+		_curMsg->get()->second.setErrorCode(400);
 		return false;
 	}
 	return true;

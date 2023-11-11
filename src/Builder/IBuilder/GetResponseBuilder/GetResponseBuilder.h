@@ -10,5 +10,6 @@
 #include "ServerConfig.hpp"
 #include "SharedData.hpp"
 #include "utils.hpp"
+#include "DefaultResponseBuilder.hpp"
 
 #endif

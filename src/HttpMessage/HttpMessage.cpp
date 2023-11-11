@@ -1,6 +1,6 @@
 #include "HttpMessage.hpp"
 
-HttpMessage::HttpMessage() : _startLine(3), _headers(), _body() {}
+HttpMessage::HttpMessage() : _startLine(3), _headers(), _body(), _errorCode(0) {}
 
 HttpMessage::HttpMessage(const HttpMessage& obj) {
 	*this = obj;
@@ -30,6 +30,14 @@ std::string HttpMessage::getRawStr(void) {
 	const std::string headers = this->combineHeaders() + "\r\n";
 
 	return startLine + headers;
+}
+
+void HttpMessage::setErrorCode(const int errorCode) {
+	this->_errorCode = errorCode;
+}
+
+int HttpMessage::getErrorCode(void) const {
+	return this->_errorCode;
 }
 
 std::map<std::string, std::string>& HttpMessage::getHeaders(void) {

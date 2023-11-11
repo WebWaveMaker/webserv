@@ -52,8 +52,9 @@ namespace utils {
 		char buf[42];
 		std::strftime(buf, sizeof(buf), format, localTime);
 
-		return DARK_BLUE + std::string(buf) + RESET;
+		return std::string(buf);
 	}
+	
 	unsigned int stoui(const std::string s) {
 		unsigned int i;
 		std::istringstream(s) >> i;
