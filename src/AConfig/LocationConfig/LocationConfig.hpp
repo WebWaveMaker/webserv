@@ -30,6 +30,7 @@ class LocationConfig : public AConfig {
 	bool getOwnIndex(std::vector<std::string>& vec);
 	bool isCgi();
 	bool isRedirect();
+	std::string getMimeTypes(const std::string& extension) const;
 };
 
 #endif	// LOCATIONCONFIG_HPP

@@ -16,6 +16,7 @@ DIRS :=	AConfig \
 		Reactor \
 		Server \
 		ServerManager \
+		Mime \
 		utils
 
 LIBS :=	$(addsuffix .a, $(addprefix lib/, $(DIRS)))

@@ -6,6 +6,7 @@
 #include "ErrorLogger.hpp"
 #include "Mime.hpp"
 #include "Parser.h"
+#include "shared_ptr.hpp"
 #include "utils.hpp"
 
 #endif

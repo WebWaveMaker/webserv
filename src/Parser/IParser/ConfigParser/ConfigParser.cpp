@@ -109,35 +109,43 @@ bool ConfigParser::match(const std::string& content, size_t& position, const std
 bool ConfigParser::directiveTokenizer(const std::string& content, size_t& position, Directive& directive) {
 	this->skipWhitespace(content, position);
 
-	while (position < content.size() && std::isspace(content[position]) == false && content[position] != ';') {
-		directive.name.push_back(content[position]);
-		position++;
+	// Get the directive name
+	while (position < content.size() && !std::isspace(content[position]) && content[position] != ';' &&
+		   content[position] != '{') {
+		directive.name.push_back(content[position++]);
 	}
 
-	if (directive.name.empty() == false) {
-		this->skipWhitespace(content, position);
-		if (content[position] != ';') {
+	this->skipWhitespace(content, position);
+
+	// Get the directive parameters
+	while (position < content.size() && content[position] != ';' && content[position] != '{') {
+		if (content[position] == '\n' || content[position] == '}') {
 			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
-										  "Semicolon missing after directive " + directive.name);
+										  "Missing semicolon at the end of the directive: " + directive.name);
 		}
-	}
 
-	while (position < content.size() && content[position] != ';') {
 		std::string parameter;
-
-		while (position < content.size() && std::isspace(content[position]) == false && content[position] != ';') {
-			parameter.push_back(content[position]);
-			position++;
+		while (position < content.size() && !std::isspace(content[position]) && content[position] != ';' &&
+			   content[position] != '{') {
+			parameter.push_back(content[position++]);
 		}
 
-		if (parameter.empty() == false) {
+		if (!parameter.empty()) {
 			directive.parameters.push_back(parameter);
 		}
 
 		this->skipWhitespace(content, position);
 	}
 
-	return this->match(content, position, ";");
+	// Check for the semicolon at the end of the directive
+	if (position < content.size() && content[position] != ';') {
+		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+									  "Expected ';' at the end of the directive: " + directive.name);
+	} else if (position < content.size() && content[position] == ';') {
+		position++;	 // Move past the semicolon
+	}
+
+	return true;
 }
 
 bool ConfigParser::locationBlockTokenizer(const std::string& content, size_t& position, LocationBlock& locationBlock) {

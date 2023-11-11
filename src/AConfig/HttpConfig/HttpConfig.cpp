@@ -29,6 +29,7 @@ void HttpConfig::setDirectives(const std::string& directive, const std::vector<s
 		_directives.insert(std::make_pair(ERROR_LOG, addLogValue(values)));
 	} else if (directive == "client_max_body_size") {
 		_directives.insert(std::make_pair(CLIENT_MAX_BODY_SIZE, addUnsignedIntValue(values[0])));
+	} else if (directive == "include") {
 	} else {
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid directive" + directive);
 	}
@@ -96,7 +97,7 @@ ConfigValue HttpConfig::getDirectives(Directives method) const {
 	return it->second;
 }
 
-std::string HttpConfig::getMimeType(const std::string& extension) const {
+std::string HttpConfig::getMimeTypes(const std::string& extension) const {
 	return this->_mimeTypes.get()->getMimeType(extension);
 }
 
