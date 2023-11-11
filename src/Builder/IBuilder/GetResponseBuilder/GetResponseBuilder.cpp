@@ -11,6 +11,8 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 		throw std::runtime_error("request is error");  // throw ErrorResponseBuilder(400)  400 bad request
 	if (_locationConfig.get() == u::nullptr_t)
 		throw std::runtime_error("location config is null");  // throw ErrorResponseBuilder(404)  404 not found
+	// if (this->_locationConfig.get()->isRedirect())
+	//	throw RedirectResponseBuilder(); // throw ErrorResponseBuilder(301) 301 moved permanently
 	this->prepare();
 }
 
@@ -23,11 +25,7 @@ reactor::sharedData_t GetResponseBuilder::getProduct() {
 }
 
 void GetResponseBuilder::setStartLine() {
-	std::vector<std::string> startLine(3);
-	startLine[0] = "HTTP/1.1";
-	startLine[1] = "200";
-	startLine[2] = "OK";
-	this->_response.setStartLine(startLine);
+	this->_response.setStartLine(DefaultResponseBuilder::getInstance()->setDefaultStartLine(200));
 }
 
 void GetResponseBuilder::setHeader() {
@@ -38,10 +36,8 @@ void GetResponseBuilder::setHeader() {
 		throw std::runtime_error("stat error");	 // throw ErrorResponseBuilder(500) internal server error later
 	}
 
-	std::map<std::string, std::string> headers;
-	headers["Server"] = this->_serverConfig.get()->getDirectives(SERVER_NAME).asString();
-	headers["Date"] = utils::getCurTime(logTimeFormat::UTCtimeFormat);
-	headers["Content-Type"] = this->_serverConfig.get()->getDirectives(DEFAULT_TYPE).asString();
+	std::map<std::string, std::string> headers =
+		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig);
 	headers["Content-Length"] = utils::lltos(fileInfo.st_size);
 	this->_response.setHeaders(headers);
 }

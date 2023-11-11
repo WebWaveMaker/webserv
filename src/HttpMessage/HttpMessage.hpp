@@ -9,6 +9,7 @@ class HttpMessage {
 	std::vector<std::string> _startLine;
 	std::map<std::string, std::string> _headers;
 	std::string _body;
+	int _errorCode;
 
    public:
 	HttpMessage();
@@ -17,6 +18,8 @@ class HttpMessage {
 	HttpMessage& operator=(const HttpMessage& obj);
 
 	void setStartLine(const std::vector<std::string> startLine);
+	void setErrorCode(const int errorCode);
+	int getErrorCode(void) const;
 	void setHeaders(const std::map<std::string, std::string>& headers);
 	void setBody(const std::string& body);
 	std::string combineHeaders(void);

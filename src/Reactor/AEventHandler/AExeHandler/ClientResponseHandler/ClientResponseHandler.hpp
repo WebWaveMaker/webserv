@@ -9,6 +9,7 @@ namespace reactor {
 	   private:
 		const request_t _request;
 		Director<sharedData_t> _director;
+		const utils::shared_ptr<ServerConfig> _serverConfig;
 
 		utils::shared_ptr<IBuilder<sharedData_t> > chooseBuilder();
 
