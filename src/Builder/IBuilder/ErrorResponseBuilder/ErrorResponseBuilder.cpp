@@ -11,14 +11,6 @@ ErrorResponseBuilder::~ErrorResponseBuilder() {
 	close(this->_fd);
 }
 
-enum AsyncState ErrorResponseBuilder::getReadState() const {
-	return this->_readSharedData.get()->getState();
-}
-
-void ErrorResponseBuilder::setReadState(enum AsyncState state) {
-	this->_readSharedData.get()->setState(state);
-}
-
 reactor::sharedData_t ErrorResponseBuilder::getProduct() {
 	return this->_sharedData;
 }
@@ -56,7 +48,8 @@ bool ErrorResponseBuilder::setBody() {
 
 void ErrorResponseBuilder::reset() {
 	this->_response.reset();
-	this->_readSharedData.get()->getBuffer().clear();
+	if (this->_readSharedData.get())
+		this->_readSharedData.get()->getBuffer().clear();
 	this->_sharedData.get()->getBuffer().clear();
 }
 
@@ -65,9 +58,12 @@ bool ErrorResponseBuilder::build() {
 }
 
 fd_t ErrorResponseBuilder::findReadFile() {
-	const std::string locPath =
-		"." + this->_locationConfig.get()->getOwnRoot(ROOT).asString() +  // 나중에 getOwnRoot바뀔 예정.
-		this->_locationConfig.get()->getErrorPage(this->_errorCode);
+	// const std::string locPath =
+	// 	"." + this->_locationConfig.get()->getOwnRoot(ROOT).asString() +  // 나중에 getOwnRoot바뀔 예정.
+	// 	this->_locationConfig.get()->getErrorPage(this->_errorCode);
+
+	this->_path = "/Users/jgo/Programming/devjgo/webserv/var/error.html";
+	return utils::makeFd(this->_path.c_str(), "r");
 
 	return -1;
 }

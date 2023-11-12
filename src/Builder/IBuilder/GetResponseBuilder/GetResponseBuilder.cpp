@@ -9,10 +9,10 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _locationConfig(locationConfig),
 	  _readSharedData() {
 	if (this->_request.get()->first == ERROR)
-		throw utils::shared_ptr<IBuilder<sharedData_t> >(
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(400, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	if (_locationConfig.get() == u::nullptr_t)
-		throw utils::shared_ptr<IBuilder<sharedData_t> >(
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	// if (this->_locationConfig.get()->isRedirect())
 	//	throw RedirectResponseBuilder(); // throw utils::shared_ptr<IBuilder<sharedData_t> >(ErrorResponseBuilder(301) 301 moved permanently
@@ -91,7 +91,7 @@ fd_t GetResponseBuilder::findReadFile() {
 void GetResponseBuilder::prepare() {
 	this->_fd = this->findReadFile();
 	if (this->_fd == -1)
-		throw utils::shared_ptr<IBuilder<sharedData_t> >(
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	this->setStartLine();
 	this->setHeader();

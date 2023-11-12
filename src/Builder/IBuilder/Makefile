@@ -9,6 +9,7 @@ endif
 include $(TOPDIR)/config/makefile/common.mk
 
 DIRS := DefaultResponseBuilder \
+		ErrorResponseBuilder \
 		GetResponseBuilder
 
 include $(TOPDIR)/config/makefile/objRecipes.mk

@@ -5,12 +5,13 @@ namespace reactor {
 	ClientResponseHandler::ClientResponseHandler(sharedData_t& sharedData, va_list args)
 		: AExeHandler(sharedData),
 		  _request(*va_arg(args, request_t*)),
-		  _director(this->chooseBuilder()),
 		  _serverConfig(ServerManager::getInstance()->getServerConfig(this->getHandle())),
-		  _locationConfig(_serverConfig.get()->getLocationConfig(_request.get()->second.getRequestTarget())) {
+		  _locationConfig(_serverConfig.get()->getLocationConfig(_request.get()->second.getRequestTarget())),
+		  _director(this->chooseBuilder()) {
 		Dispatcher::getInstance()->registerIOHandler<ClientWriteHandlerFactory>(this->_sharedData);
 		va_end(args);
 	}
+	
 	ClientResponseHandler::~ClientResponseHandler() {}
 
 	void ClientResponseHandler::handleEvent() {
@@ -31,18 +32,19 @@ namespace reactor {
 
 	utils::shared_ptr<IBuilder<sharedData_t> > ClientResponseHandler::chooseBuilder() {
 		try {
-			if (this->_request.get()->first == ERROR)
+			// if (this->_request.get()->first == ERROR)
+			this->_request.get()->second.setErrorCode(404);
 				throw utils::shared_ptr<IBuilder<sharedData_t> >(
 					new ErrorResponseBuilder(this->_request.get()->second.getErrorCode(), this->_sharedData,
 											 this->_serverConfig, this->_locationConfig));
-			std::vector<enum HttpMethods> methods = this->_serverConfig.get()->getDirectives(LIMIT_EXCEPT).asMedVec();
-			if (std::find(methods.begin(), methods.end(), this->_request.get()->second.getMethod()) == methods.end())
-				throw utils::shared_ptr<IBuilder<sharedData_t> >(
-					new ErrorResponseBuilder(405, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			// std::vector<enum HttpMethods> methods = this->_serverConfig.get()->getDirectives(LIMIT_EXCEPT).asMedVec();
+			// if (std::find(methods.begin(), methods.end(), this->_request.get()->second.getMethod()) == methods.end())
+			// 	throw utils::shared_ptr<IBuilder<sharedData_t> >(
+					// new ErrorResponseBuilder(405, this->_sharedData, this->_serverConfig, this->_locationConfig));
 			if (this->_request.get()->second.getMethod() == GET)
 				return utils::shared_ptr<IBuilder<sharedData_t> >(new GetResponseBuilder(
 					this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
-		} catch (const utils::shared_ptr<IBuilder<sharedData_t> >& e) {
+		} catch (utils::shared_ptr<IBuilder<sharedData_t> >& e) {
 			this->_director.setBuilder(e);
 		} catch (...) {
 			this->_director.setBuilder(utils::shared_ptr<IBuilder<sharedData_t> >(
