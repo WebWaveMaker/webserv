@@ -32,7 +32,7 @@ class ServerConfig : public AConfig {
 	void setLocations(std::string identifier, utils::shared_ptr<LocationConfig> location);
 	std::string getOwnRoot();
 	std::vector<std::string> getOwnIndex();
-	bool getOwnConfirmedMethods(Directives method);
+	bool getOwnConfirmedMethods(Directives method) const;
 	utils::shared_ptr<LocationConfig> getLocation(const std::string& identifier);
 	utils::shared_ptr<LocationConfig> getLocationConfig(const std::string& reqPath);
 	std::string getMimeTypes(const std::string& extension) const;
