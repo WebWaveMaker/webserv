@@ -54,7 +54,7 @@ namespace utils {
 
 		return std::string(buf);
 	}
-	
+
 	unsigned int stoui(const std::string s) {
 		unsigned int i;
 		std::istringstream(s) >> i;

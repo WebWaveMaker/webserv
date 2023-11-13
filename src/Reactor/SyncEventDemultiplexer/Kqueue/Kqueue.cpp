@@ -37,3 +37,12 @@ std::vector<struct kevent>& Kqueue::getChangeList(void) {
 std::vector<struct kevent>& Kqueue::getkEventList(void) {
 	return this->_kEventList;
 }
+
+void Kqueue::checkSize(void) {
+	if (this->_changeList.capacity() > this->_kEventList.capacity())
+		this->_kEventList.reserve(this->_changeList.capacity());
+}
+
+void Kqueue::clear(void) {
+	this->_changeList.clear();
+}

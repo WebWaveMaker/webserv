@@ -28,7 +28,7 @@ namespace reactor {
 	void SyncEventDemultiplexer::eraseFdTime(fd_t fd) {
 		this->_fdsTime.erase(fd);
 	}
-	
+
 	std::time_t SyncEventDemultiplexer::getFdTime(fd_t fd) {
 		if (this->_fdsTime.find(fd) != this->_fdsTime.end())
 			return this->_fdsTime[fd];
@@ -36,6 +36,7 @@ namespace reactor {
 	}
 
 	void SyncEventDemultiplexer::waitEvents(void) {
+		this->_kq->checkSize();
 		const int eventNum =
 			kevent(this->_kq->getFd(), &this->_kq->getChangeList()[0], this->_kq->getChangeList().size(),
 				   &this->_kq->getkEventList()[0], this->_kq->getkEventList().size(), u::nullptr_t);

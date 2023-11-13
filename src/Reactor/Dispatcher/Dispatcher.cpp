@@ -7,28 +7,28 @@ namespace reactor {
 	Dispatcher::~Dispatcher() {}
 	/*IOhandler 하나만 Dispatcher, kevent에서 삭제합니다.*/
 	void Dispatcher::removeIOHandler(fd_t fd, enum EventType type) {
+		if (this->_ioHandlers.find(fd) == this->_ioHandlers.end())
+			return;
+		std::vector<u::shared_ptr<AEventHandler> > handlers = this->_ioHandlers.find(fd)->second;
+		u::shared_ptr<AEventHandler> handler;
 
-		if (this->_ioHandlers.find(fd) != this->_ioHandlers.end()) {
-			std::vector<u::shared_ptr<AEventHandler> > handlers = this->_ioHandlers.find(fd)->second;
-			u::shared_ptr<AEventHandler> handler;
-
-			for (std::vector<u::shared_ptr<AEventHandler> >::iterator it = handlers.begin(); it != handlers.end();
-				 ++it) {
-				if (it->get()->getType() == type)
-					handler = *it;
-			}
-
-			size_t index = this->_handlerIndices[handler];
-
-			if (index != this->_ioHandlers[fd].size() - 1) {
-				std::swap(this->_ioHandlers[fd][index], this->_ioHandlers[fd].back());
-				this->_handlerIndices[this->_ioHandlers[fd][index]] = index;
-			}
-
-			this->_demultiplexer->unRequestEvent(this->_ioHandlers[fd].back().get(), type);
-			this->_ioHandlers[fd].pop_back();
-			this->_handlerIndices.erase(handler);
+		for (std::vector<u::shared_ptr<AEventHandler> >::iterator it = handlers.begin(); it != handlers.end(); ++it) {
+			if (it->get()->getType() == type)
+				handler = *it;
 		}
+
+		size_t index = this->_handlerIndices[handler];
+
+		if (this->_ioHandlers[fd].empty())
+			return;
+		if (index != this->_ioHandlers[fd].size() - 1) {
+			std::swap(this->_ioHandlers[fd][index], this->_ioHandlers[fd].back());
+			this->_handlerIndices[this->_ioHandlers[fd][index]] = index;
+		}
+
+		this->_demultiplexer->unRequestEvent(this->_ioHandlers[fd].back().get(), type);
+		this->_ioHandlers[fd].pop_back();
+		this->_handlerIndices.erase(handler);
 	}
 	/*Exehandler 하나만 Dispatcher에서 삭제합니다.*/
 	void Dispatcher::removeExeHandler(AEventHandler* handler) {

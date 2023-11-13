@@ -23,6 +23,8 @@ class Kqueue : public utils::TSingleton<Kqueue> {
 					   const intptr_t data, void* udata);
 	void AddEventOnChangeList(const uintptr_t ident, const int16_t filter, const uint16_t flags, const uint32_t fflags,
 							  const intptr_t data, void* udata);
+	void checkSize(void);
+	void clear(void);
 
 	// getter
 	fd_t getFd(void) const;

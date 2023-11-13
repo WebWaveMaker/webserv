@@ -25,12 +25,13 @@ namespace reactor {
 			this->setState(TERMINATE);
 			return;
 		}
-		if (feof(this->_fp) && readByte == 0) {
+		std::cout << "readByte: " << readByte << std::endl;
+		std::cout << "buffer: " << buffer.data() << std::endl;
+		if (feof(this->_fp)) {
+			this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
 			this->setState(RESOLVE);
 			return;
 		}
-		std::cout << "readByte: " << readByte << std::endl;
-		std::cout << "buffer: " << buffer.data() << std::endl;
 		this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
 	}
 }  // namespace reactor
