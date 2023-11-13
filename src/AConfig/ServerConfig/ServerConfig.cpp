@@ -94,7 +94,7 @@ std::string ServerConfig::getErrorPage(unsigned int error_code) const {
 	if (it == _errorPages.end()) {
 		if (_parent.get() == u::nullptr_t)
 			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid error code");
-		return _parent->getErrorPage(error_code);
+		return _parent.get()->getErrorPage(error_code);
 	}
 	return it->second;
 }
@@ -102,30 +102,30 @@ std::string ServerConfig::getErrorPage(unsigned int error_code) const {
 ConfigValue ServerConfig::getDirectives(Directives method) const {
 	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(method);
 	if (it == _directives.end()) {
-		if (_parent.get() == u::nullptr_t)
-			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid error code");
+		// if (_parent.get() == u::nullptr_t)
+		// throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid error code");
 		if (method == SENDFILE) {
-			return _parent->getDirectives(SENDFILE);
+			return _parent.get()->getDirectives(SENDFILE);
 		} else if (method == KEEPALIVE_TIMEOUT) {
-			return _parent->getDirectives(KEEPALIVE_TIMEOUT);
+			return _parent.get()->getDirectives(KEEPALIVE_TIMEOUT);
 		} else if (method == DEFAULT_TYPE) {
-			return _parent->getDirectives(DEFAULT_TYPE);
+			return _parent.get()->getDirectives(DEFAULT_TYPE);
 		} else if (method == ERROR_LOG) {
-			return _parent->getDirectives(ERROR_LOG);
+			return _parent.get()->getDirectives(ERROR_LOG);
 		} else if (method == CLIENT_MAX_BODY_SIZE) {
-			return _parent->getDirectives(CLIENT_MAX_BODY_SIZE);
+			return _parent.get()->getDirectives(CLIENT_MAX_BODY_SIZE);
 		} else if (method == LIMIT_EXCEPT) {
-			return _parent->getDirectives(LIMIT_EXCEPT);
+			return _parent.get()->getDirectives(LIMIT_EXCEPT);
 		} else if (method == LISTEN) {
-			return _parent->getDirectives(LISTEN);
+			return _parent.get()->getDirectives(LISTEN);
 		} else if (method == SERVER_NAME) {
-			return _parent->getDirectives(SERVER_NAME);
+			return _parent.get()->getDirectives(SERVER_NAME);
 		} else if (method == ROOT) {
-			return _parent->getDirectives(ROOT);
+			return _parent.get()->getDirectives(ROOT);
 		} else if (method == AUTOINDEX) {
-			return _parent->getDirectives(AUTOINDEX);
+			return _parent.get()->getDirectives(AUTOINDEX);
 		} else if (method == INDEX) {
-			return _parent->getDirectives(INDEX);
+			return _parent.get()->getDirectives(INDEX);
 		}
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid directive");
 	}
@@ -148,66 +148,71 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocation(const std::string& i
 	return it->second;
 }
 
-bool ServerConfig::getOwnRoot(std::string& str) {
+std::string ServerConfig::getOwnRoot() {
+	std::string str;
 	std::map<Directives, ConfigValue>::iterator it = _directives.find(ROOT);
 	if (it == _directives.end()) {
-		return false;  // 지시어를 찾을 수 없음
+		return std::string();  // 지시어를 찾을 수 없음
 	}
 	str = it->second.asString();  // 결과를 참조를 통해 반환
-	return true;				  // 성공적으로 값을 찾음
+	return str;					  // 성공적으로 값을 찾음
 }
 
-bool ServerConfig::getOwnIndex(std::vector<std::string>& vec) {
+std::vector<std::string> ServerConfig::getOwnIndex() {
+	std::vector<std::string> vec;
 	std::map<Directives, ConfigValue>::iterator it = _directives.find(INDEX);
 	if (it == _directives.end()) {
-		return false;  // 지시어를 찾을 수 없음
+		return std::vector<std::string>();	// 지시어를 찾을 수 없음
 	}
 	vec = it->second.asStrVec();  // 결과를 참조를 통해 반환
-	return true;				  // 성공적으로 값을 찾음
+	return vec;					  // 성공적으로 값을 찾음
+}
+
+bool ServerConfig::getOwnConfirmedMethods(Directives method) const {
+	return _directives.find(method) != _directives.end();
 }
 
 utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::string& reqPath) {
-	// Initialize the best match as empty and its length as 0
+	std::cout << "path:" << reqPath << std::endl;
+	size_t longestMatch = 0;
 	utils::shared_ptr<LocationConfig> bestMatch;
-	std::size_t bestMatchLength = 0;
 
-	// Iterate through the map to find the best match
-	for (std::map<std::string, utils::shared_ptr<LocationConfig> >::iterator it = _locations.begin();
+	for (std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = _locations.begin();
 		 it != _locations.end(); ++it) {
-		// Check if the current path is a prefix of the request path
-		const std::string& currentPath = it->first;
-		if (reqPath.compare(0, currentPath.length(), currentPath) == 0) {
-			// Check if it's a better match than the current best match
-			if (currentPath.length() > bestMatchLength) {
+		const std::string& locationPath = it->first;
+		std::cout << "locationPath:" << locationPath << std::endl;
+
+		// Check if reqPath matches locationPath from the beginning
+		if (reqPath.compare(0, locationPath.length(), locationPath) == 0) {
+			// Also ensure that the match is either the exact string or followed by a '/' (subdirectory)
+			if (locationPath.length() > longestMatch &&
+				(reqPath.length() == locationPath.length() || reqPath[locationPath.length()] == '/')) {
+				longestMatch = locationPath.length();
 				bestMatch = it->second;
-				bestMatchLength = currentPath.length();
 			}
 		}
 	}
 
-	// If we have found a matching location configuration
-	// If we have found a matching location configuration
-	if (bestMatch.get() != u::nullptr_t) {
+	if (bestMatch.get() != NULL) {
+		std::cout << "out1" << std::endl;
 		return bestMatch;
-	} else {
-		// No direct match found, fall back to root if it exists
-		std::string root;
-		if (getOwnRoot(root)) {
-			// Create a new LocationConfig with the ServerConfig (this) as the parent
-			utils::shared_ptr<ServerConfig> thisPtr(this);	// Create a shared_ptr to 'this'
-			utils::shared_ptr<LocationConfig> rootLocation(new LocationConfig(thisPtr));
-
-			std::vector<std::string> index;
-			if (getOwnIndex(index)) {
-				rootLocation->setDirectives("root", std::vector<std::string>(1, root));
-				rootLocation->setDirectives("index", index);
-			}
-			// No need to set _parent here, as it's already set by the constructor
-			return rootLocation;
-		} else {
-			// Handle the case where there is no root defined
-			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
-										  "No matching location found and no root is set.");
-		}
 	}
+
+	// If no match is found, try to match with the server's root.
+	if (reqPath == "/" || reqPath.compare(0, this->getOwnRoot().length(), this->getOwnRoot()) == 0) {
+		if (_locations.find(this->getOwnRoot()) == _locations.end()) {
+			// Only insert if not already present
+			setLocations(this->getOwnRoot(),
+						 utils::shared_ptr<LocationConfig>(new LocationConfig(utils::shared_ptr<ServerConfig>(this))));
+		}
+		std::cout << "out2" << std::endl;
+		return _locations[this->getOwnRoot()];
+	}
+
+	std::cout << "out3" << std::endl;
+	return utils::shared_ptr<LocationConfig>();
+}
+
+std::string ServerConfig::getMimeTypes(const std::string& extension) const {
+	return this->_parent.get()->getMimeTypes(extension);
 }

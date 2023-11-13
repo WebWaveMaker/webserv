@@ -1,6 +1,5 @@
 // ConfigParser.cpp
 #include "ConfigParser.hpp"
-#include "HttpConfig.hpp"
 
 ConfigParser::ConfigParser() {}
 
@@ -18,7 +17,14 @@ std::string ConfigParser::parser(const std::string& filename) {
 
 bool ConfigParser::httpConfigParser(const HttpBlock& http, HttpConfig* httpConfig) {
 	for (std::vector<Directive>::const_iterator it = http.directives.begin(); it != http.directives.end(); ++it) {
-		httpConfig->setDirectives(it->name, it->parameters);
+		if (it->name == "include" && it->parameters.front() == "conf/mime.types") {
+			// Instantiate Mime class and parse the file
+			utils::shared_ptr<Mime> mimeTypes(new Mime());
+			parseMimeTypes("conf/mime.types", mimeTypes);
+			httpConfig->setMimeTypes(mimeTypes);
+		} else {
+			httpConfig->setDirectives(it->name, it->parameters);
+		}
 	}
 	return true;
 }
@@ -103,29 +109,43 @@ bool ConfigParser::match(const std::string& content, size_t& position, const std
 bool ConfigParser::directiveTokenizer(const std::string& content, size_t& position, Directive& directive) {
 	this->skipWhitespace(content, position);
 
-	while (position < content.size() && std::isspace(content[position]) == false && content[position] != ';') {
-		directive.name.push_back(content[position]);
-		position++;
+	// Get the directive name
+	while (position < content.size() && std::isspace(content[position]) == false && content[position] != ';' &&
+		   content[position] != '{') {
+		directive.name.push_back(content[position++]);
 	}
 
 	this->skipWhitespace(content, position);
 
-	while (position < content.size() && content[position] != ';') {
-		std::string parameter;
-
-		while (position < content.size() && std::isspace(content[position]) == false && content[position] != ';') {
-			parameter.push_back(content[position]);
-			position++;
+	// Get the directive parameters
+	while (position < content.size() && content[position] != ';' && content[position] != '{') {
+		if (content[position] == '\n' || content[position] == '}') {
+			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+										  "Missing semicolon at the end of the directive: " + directive.name);
 		}
 
-		if (parameter.empty() == false) {
+		std::string parameter;
+		while (position < content.size() && std::isspace(content[position]) == false && content[position] != ';' &&
+			   content[position] != '{') {
+			parameter.push_back(content[position++]);
+		}
+
+		if (!parameter.empty()) {
 			directive.parameters.push_back(parameter);
 		}
 
 		this->skipWhitespace(content, position);
 	}
 
-	return this->match(content, position, ";");
+	// Check for the semicolon at the end of the directive
+	if (position < content.size() && content[position] != ';') {
+		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+									  "Expected ';' at the end of the directive: " + directive.name);
+	} else if (position < content.size() && content[position] == ';') {
+		position++;	 // Move past the semicolon
+	}
+
+	return true;
 }
 
 bool ConfigParser::locationBlockTokenizer(const std::string& content, size_t& position, LocationBlock& locationBlock) {
@@ -213,4 +233,31 @@ bool ConfigParser::httpBlockTokenizer(const std::string& content, size_t& positi
 		}
 	}
 	throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Expected '}' at position: " + utils::itos(position));
+}
+
+void ConfigParser::parseMimeTypes(const std::string& filename, utils::shared_ptr<Mime> mimeTypes) {
+	std::ifstream infile(filename.c_str());
+	if (!infile) {
+		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Could not open MIME types file: " + filename);
+	}
+
+	std::string line;
+	while (std::getline(infile, line)) {
+		// Ignore lines that do not end with a semicolon
+		if (line.empty() || *line.rbegin() != ';') {
+			continue;
+		}
+
+		// Erase the semicolon from the end
+		line.erase(line.length() - 1);
+
+		std::istringstream iss(line);
+		std::string mimeType;
+		iss >> mimeType;
+
+		std::string extension;
+		while (iss >> extension) {
+			mimeTypes->setMimeTypes(extension, mimeType);
+		}
+	}
 }
