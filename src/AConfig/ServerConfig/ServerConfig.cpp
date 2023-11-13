@@ -102,8 +102,8 @@ std::string ServerConfig::getErrorPage(unsigned int error_code) const {
 ConfigValue ServerConfig::getDirectives(Directives method) const {
 	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(method);
 	if (it == _directives.end()) {
-		if (_parent.get() == u::nullptr_t)
-			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid error code");
+		// if (_parent.get() == u::nullptr_t)
+		// throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid error code");
 		if (method == SENDFILE) {
 			return _parent.get()->getDirectives(SENDFILE);
 		} else if (method == KEEPALIVE_TIMEOUT) {
@@ -173,35 +173,43 @@ bool ServerConfig::getOwnConfirmedMethods(Directives method) const {
 }
 
 utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::string& reqPath) {
+	std::cout << "path:" << reqPath << std::endl;
 	size_t longestMatch = 0;
-	std::string bestMatch = ".";
+	utils::shared_ptr<LocationConfig> bestMatch;
 
 	for (std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = _locations.begin();
 		 it != _locations.end(); ++it) {
-		std::string fullLocationPath = it->first;
+		const std::string& locationPath = it->first;
+		std::cout << "locationPath:" << locationPath << std::endl;
 
-		// 완전한 경로를 만듦
-		fullLocationPath = fullLocationPath.empty() ? "" : "/" + fullLocationPath;
-
-		// reqPath가 fullLocationPath로 시작하는지 확인
-		if (reqPath.compare(0, fullLocationPath.length(), fullLocationPath) == 0) {
-			if (fullLocationPath.length() > longestMatch) {
-				longestMatch = fullLocationPath.length();
-				bestMatch = fullLocationPath;
+		// Check if reqPath matches locationPath from the beginning
+		if (reqPath.compare(0, locationPath.length(), locationPath) == 0) {
+			// Also ensure that the match is either the exact string or followed by a '/' (subdirectory)
+			if (locationPath.length() > longestMatch &&
+				(reqPath.length() == locationPath.length() || reqPath[locationPath.length()] == '/')) {
+				longestMatch = locationPath.length();
+				bestMatch = it->second;
 			}
 		}
 	}
 
-	if (bestMatch != ".") {
-		return _locations[bestMatch];
+	if (bestMatch.get() != NULL) {
+		std::cout << "out1" << std::endl;
+		return bestMatch;
 	}
 
-	if (reqPath.compare(0, this->getOwnRoot().length(), this->getOwnRoot()) == 0) {
-		setLocations(this->getOwnRoot(),
-					 utils::shared_ptr<LocationConfig>(new LocationConfig(utils::shared_ptr<ServerConfig>(this))));
+	// If no match is found, try to match with the server's root.
+	if (reqPath == "/" || reqPath.compare(0, this->getOwnRoot().length(), this->getOwnRoot()) == 0) {
+		if (_locations.find(this->getOwnRoot()) == _locations.end()) {
+			// Only insert if not already present
+			setLocations(this->getOwnRoot(),
+						 utils::shared_ptr<LocationConfig>(new LocationConfig(utils::shared_ptr<ServerConfig>(this))));
+		}
+		std::cout << "out2" << std::endl;
 		return _locations[this->getOwnRoot()];
 	}
 
+	std::cout << "out3" << std::endl;
 	return utils::shared_ptr<LocationConfig>();
 }
 

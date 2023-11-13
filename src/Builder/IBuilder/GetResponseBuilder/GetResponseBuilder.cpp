@@ -28,8 +28,8 @@ void GetResponseBuilder::setStartLine() {
 
 void GetResponseBuilder::setHeader() {
 	struct stat fileInfo;
-	// const std::string path = this->_locationConfig.get()->getDirectives(ROOT).asString();
-	const std::string path = "/Users/jgo/webserv/var/www/index.html";
+	const std::string path = this->_locationConfig.get()->getDirectives(ROOT).asString();
+	// const std::string path = "/Users/jgo/webserv/var/www/index.html";
 
 	// cgi 처리는 다르게 해야함.
 	if (access(path.c_str(), R_OK) == -1)
@@ -69,8 +69,9 @@ bool GetResponseBuilder::build() {
 	return this->setBody();
 }
 void GetResponseBuilder::prepare() {
-	// const std::string path = this->_locationConfig.get()->getDirectives(ROOT).asString();
-	const std::string path = "/Users/jgo/webserv/var/www/index.html";
+	const std::string path = this->_locationConfig.get()->getOwnRoot() + this->_locationConfig.get()->getOwnIndex()[0];
+	std::cout << "path: " << path << std::endl;
+	// const std::string path = "/Users/jgo/webserv/var/www/index.html";
 	const fd_t fd = utils::makeFd(path.c_str(), "r");
 
 	this->setStartLine();
