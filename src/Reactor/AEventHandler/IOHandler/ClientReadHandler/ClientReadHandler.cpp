@@ -5,16 +5,14 @@ reactor::ClientReadHandler::ClientReadHandler(sharedData_t& sharedData) : AEvent
 reactor::ClientReadHandler::~ClientReadHandler() {}
 
 void reactor::ClientReadHandler::handleEvent() {
+	std::cout << "hi i'm Client read Handler" << std::endl;
 	if (this->getState() == TERMINATE)
 		return;
 	std::vector<char> buffer(BUFFER_SIZE);
 	int readByte = recv(this->getHandle(), buffer.data(), buffer.size() - 1, 0);
 
-	if (readByte == -1) {
-		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "recv fail");
-		this->setState(TERMINATE);
+	if (readByte == -1)
 		return;
-	}
 	if (readByte == 0) {
 		this->setState(TERMINATE);
 		return;

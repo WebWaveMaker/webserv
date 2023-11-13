@@ -62,9 +62,6 @@ fd_t ErrorResponseBuilder::findReadFile() {
 	// 	"." + this->_locationConfig.get()->getOwnRoot(ROOT).asString() +  // 나중에 getOwnRoot바뀔 예정.
 	// 	this->_locationConfig.get()->getErrorPage(this->_errorCode);
 
-	this->_path = "/Users/jgo/Programming/devjgo/webserv/var/error.html";
-	return utils::makeFd(this->_path.c_str(), "r");
-
 	return -1;
 }
 

@@ -11,6 +11,7 @@ namespace reactor {
 		const utils::shared_ptr<ServerConfig> _serverConfig;
 		const utils::shared_ptr<LocationConfig> _locationConfig;
 		Director<sharedData_t> _director;
+		bool _registered;
 
 		utils::shared_ptr<IBuilder<sharedData_t> > chooseBuilder();
 

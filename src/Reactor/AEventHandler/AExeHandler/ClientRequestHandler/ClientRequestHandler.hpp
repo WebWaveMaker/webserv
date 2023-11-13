@@ -9,6 +9,7 @@ namespace reactor {
 	class ClientRequestHandler : public AExeHandler {
 	   private:
 		RequestParser _request;
+		sharedData_t _writeData;
 
 	   public:
 		ClientRequestHandler(sharedData_t& sharedData, va_list args);

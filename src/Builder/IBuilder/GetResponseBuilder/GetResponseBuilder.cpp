@@ -7,10 +7,8 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _request(request),
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
+	  _removed(false),
 	  _readSharedData() {
-	if (this->_request.get()->first == ERROR)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(400, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	if (_locationConfig.get() == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
@@ -24,7 +22,7 @@ GetResponseBuilder::~GetResponseBuilder() {
 }
 
 reactor::sharedData_t GetResponseBuilder::getProduct() {
-	return this->_sharedData;
+	return this->_readSharedData;
 }
 
 void GetResponseBuilder::setStartLine() {
@@ -47,17 +45,19 @@ void GetResponseBuilder::setHeader() {
 }
 
 bool GetResponseBuilder::setBody() {
-	if (this->_readSharedData.get()->getBuffer().empty())
+	if (this->_readSharedData.get() == u::nullptr_t)
 		return false;
 	this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().end(),
 												this->_readSharedData.get()->getBuffer().begin(),
 												this->_readSharedData.get()->getBuffer().end());
-	if (this->_readSharedData.get()->getState() == RESOLVE) {
+	this->_readSharedData.get()->getBuffer().clear();
+	if (this->_readSharedData.get()->getState() == RESOLVE && this->_removed == false) {
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData.get()->getFd(),
 															this->_readSharedData.get()->getType());
+		this->_removed = true;
 		return true;
 	}
-	return false;
+	return true;
 }
 
 void GetResponseBuilder::reset() {
@@ -88,7 +88,7 @@ fd_t GetResponseBuilder::findReadFile() {
 	return -1;
 }
 
-void GetResponseBuilder::prepare() {
+void GetResponseBuilder::fileProcessing() {
 	this->_fd = this->findReadFile();
 	if (this->_fd == -1)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
@@ -97,11 +97,18 @@ void GetResponseBuilder::prepare() {
 	this->setHeader();
 	const std::string raw = this->_response.getRawStr();
 	this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().begin(), raw.begin(), raw.end());
-	// if (this->_locationConfig.get()->isCgi())
-	// 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::PipeReadHandlerFactory>(this->_readSharedData);
-	// else {
 	this->_readSharedData =
-		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(_fd, EVENT_READ, std::vector<char>()));
+		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(this->_fd, EVENT_READ, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileReadHandlerFactory>(this->_readSharedData);
-	// }
+}
+
+void GetResponseBuilder::cgiProcessing() {
+	// cgi 처리
+}
+
+void GetResponseBuilder::prepare() {
+	if (this->_locationConfig.get()->isCgi())
+		this->cgiProcessing();
+	else
+		this->fileProcessing();
 }

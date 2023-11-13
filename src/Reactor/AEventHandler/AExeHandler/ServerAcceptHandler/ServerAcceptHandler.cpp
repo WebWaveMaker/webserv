@@ -29,7 +29,7 @@ namespace reactor {
 			throw;
 		}
 		if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0) {
-			// this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
+			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 			throw;
 		}
 		Dispatcher::getInstance()->registerExeHandler<ClientRequestHandlerFactory>(
