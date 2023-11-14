@@ -136,6 +136,7 @@ void ServerConfig::setLocations(std::string identifier, utils::shared_ptr<Locati
 	// 이미 존재하는 경우 덮어씌우지 않음
 	if (_locations.find(identifier) != _locations.end())
 		return;
+	location.get()->setPath(identifier);
 	_locations[identifier] = location;
 }
 

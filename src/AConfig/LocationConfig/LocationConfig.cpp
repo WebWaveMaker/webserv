@@ -4,7 +4,8 @@ LocationConfig::LocationConfig() : _parent(NULL) {}
 
 LocationConfig::LocationConfig(utils::shared_ptr<ServerConfig> parent) : _parent(parent) {}
 
-LocationConfig::LocationConfig(const LocationConfig& other) : AConfig(other), _parent(other._parent) {}
+LocationConfig::LocationConfig(const LocationConfig& other)
+	: AConfig(other), _parent(other._parent), _path(other._path) {}
 
 LocationConfig::~LocationConfig() {}
 
@@ -12,6 +13,7 @@ LocationConfig& LocationConfig::operator=(const LocationConfig& other) {
 	if (this != &other) {
 		AConfig::operator=(other);
 		_parent = other._parent;
+		_path = other._path;
 	}
 	return *this;
 }
@@ -165,4 +167,12 @@ utils::shared_ptr<ServerConfig> LocationConfig::getParent() {
 
 std::string LocationConfig::getMimeTypes(const std::string& extension) const {
 	return this->_parent.get()->getMimeTypes(extension);
+}
+
+std::string LocationConfig::getPath() const {
+	return _path;
+}
+
+void LocationConfig::setPath(const std::string& path) {
+	_path = path;
 }
