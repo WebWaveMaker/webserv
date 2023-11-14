@@ -13,6 +13,7 @@ class ServerConfig;
 class LocationConfig : public AConfig {
    private:
 	utils::shared_ptr<ServerConfig> _parent;
+	std::string _path;
 
    public:
 	LocationConfig();
@@ -32,6 +33,8 @@ class LocationConfig : public AConfig {
 	bool isCgi();
 	bool isRedirect();
 	std::string getMimeTypes(const std::string& extension) const;
+	std::string getPath() const;
+	void setPath(const std::string& path);
 };
 
 #endif	// LOCATIONCONFIG_HPP

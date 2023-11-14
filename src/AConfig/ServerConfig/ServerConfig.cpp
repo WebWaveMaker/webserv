@@ -129,7 +129,6 @@ ConfigValue ServerConfig::getDirectives(Directives method) const {
 		}
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid directive");
 	}
-	std::cerr << "finded" << std::endl;
 	return it->second;
 }
 
@@ -137,6 +136,7 @@ void ServerConfig::setLocations(std::string identifier, utils::shared_ptr<Locati
 	// 이미 존재하는 경우 덮어씌우지 않음
 	if (_locations.find(identifier) != _locations.end())
 		return;
+	location.get()->setPath(identifier);
 	_locations[identifier] = location;
 }
 
@@ -182,9 +182,7 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::str
 		const std::string& locationPath = it->first;
 		std::cout << "locationPath:" << locationPath << std::endl;
 
-		// Check if reqPath matches locationPath from the beginning
 		if (reqPath.compare(0, locationPath.length(), locationPath) == 0) {
-			// Also ensure that the match is either the exact string or followed by a '/' (subdirectory)
 			if (locationPath.length() > longestMatch &&
 				(reqPath.length() == locationPath.length() || reqPath[locationPath.length()] == '/')) {
 				longestMatch = locationPath.length();
@@ -194,23 +192,13 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::str
 	}
 
 	if (bestMatch.get() != NULL) {
-		std::cout << "out1" << std::endl;
 		return bestMatch;
 	}
 
-	// If no match is found, try to match with the server's root.
-	if (reqPath == "/" || reqPath.compare(0, this->getOwnRoot().length(), this->getOwnRoot()) == 0) {
-		if (_locations.find(this->getOwnRoot()) == _locations.end()) {
-			// Only insert if not already present
-			setLocations(this->getOwnRoot(),
-						 utils::shared_ptr<LocationConfig>(new LocationConfig(utils::shared_ptr<ServerConfig>(this))));
-		}
-		std::cout << "out2" << std::endl;
-		return _locations[this->getOwnRoot()];
+	if (_locations.find("/") == _locations.end()) {
+		return utils::shared_ptr<LocationConfig>();
 	}
-
-	std::cout << "out3" << std::endl;
-	return utils::shared_ptr<LocationConfig>();
+	return _locations["/"];
 }
 
 std::string ServerConfig::getMimeTypes(const std::string& extension) const {
