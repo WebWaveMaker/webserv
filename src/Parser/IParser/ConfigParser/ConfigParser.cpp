@@ -17,10 +17,9 @@ std::string ConfigParser::parser(const std::string& filename) {
 
 bool ConfigParser::httpConfigParser(const HttpBlock& http, HttpConfig* httpConfig) {
 	for (std::vector<Directive>::const_iterator it = http.directives.begin(); it != http.directives.end(); ++it) {
-		if (it->name == "include" && it->parameters.front() == "conf/mime.types") {
-			// Instantiate Mime class and parse the file
+		if (it->name == "include" && it->parameters.front().empty() == false) {
 			utils::shared_ptr<Mime> mimeTypes(new Mime());
-			parseMimeTypes("conf/mime.types", mimeTypes);
+			parseMimeTypes(it->parameters.front(), mimeTypes);
 			httpConfig->setMimeTypes(mimeTypes);
 		} else {
 			httpConfig->setDirectives(it->name, it->parameters);
