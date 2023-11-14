@@ -123,6 +123,11 @@ bool RequestParser::parserBody(std::string& buf) {
 request_t RequestParser::parse(const std::string& content) {
 	if (content.size() == 0)
 		return this->pop();
+	if (this->_msgs.empty()) {
+		_msgs.push(utils::shared_ptr<std::pair<enum HttpMessageState, HttpMessage> >(
+			new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
+		_curMsg = &_msgs.back();
+	}
 	std::string buf(content);
 
 	while (buf.empty() == false) {

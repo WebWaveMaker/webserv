@@ -11,9 +11,12 @@ void reactor::ClientReadHandler::handleEvent() {
 	std::vector<char> buffer(BUFFER_SIZE);
 	int readByte = recv(this->getHandle(), buffer.data(), buffer.size() - 1, 0);
 
-	if (readByte == -1)
+	if (readByte == -1) {
+		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		return;
+	}
 	if (readByte == 0) {
+		std::cout << "readHandler terminated" << std::endl;
 		this->setState(TERMINATE);
 		return;
 	}

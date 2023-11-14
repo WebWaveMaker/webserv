@@ -19,8 +19,6 @@ namespace reactor {
 
 		size_t index = this->_handlerIndices[handler];
 
-		if (this->_ioHandlers[fd].empty())
-			return;
 		if (index != this->_ioHandlers[fd].size() - 1) {
 			std::swap(this->_ioHandlers[fd][index], this->_ioHandlers[fd].back());
 			this->_handlerIndices[this->_ioHandlers[fd][index]] = index;

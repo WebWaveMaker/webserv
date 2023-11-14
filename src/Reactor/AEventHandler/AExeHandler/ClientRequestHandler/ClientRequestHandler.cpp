@@ -20,12 +20,11 @@ namespace reactor {
 		if (this->removeHandlerIfNecessary() || this->getBuffer().empty())
 			return;
 		if (this->_writeData.get()->getState() == RESOLVE) {
-			this->setState(TERMINATE);
+			this->_writeData.get()->clear();
 			return;
 		}
 		request_t request = this->_request.parse(this->getBuffer().data());
 		this->getBuffer().clear();
-		std::cout << "this?" << std::endl;
 		if (request.get()) {
 			Dispatcher::getInstance()->registerExeHandler<ClientResponseHandlerFactory>(this->_writeData, &request);
 		}

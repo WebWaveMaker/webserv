@@ -24,8 +24,11 @@ namespace reactor {
 		try {
 			if (this->_director.buildProduct() == false)  // may be throw ErrorReponseBuilder
 				return;
-			if (this->getBuffer().empty() && this->_director.getBuilderReadState() == RESOLVE)
-				this->setState(TERMINATE);
+			if (this->getBuffer().empty() && this->_director.getBuilderReadState() == RESOLVE) {
+				Dispatcher::getInstance()->removeIOHandler(this->getHandle(), this->getType());
+				Dispatcher::getInstance()->removeExeHandler(this);
+			}
+
 		} catch (const utils::shared_ptr<IBuilder<sharedData_t> >& e) {
 			this->_director.setBuilder(e);
 		}

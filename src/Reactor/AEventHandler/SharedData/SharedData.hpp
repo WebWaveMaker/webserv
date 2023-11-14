@@ -24,6 +24,10 @@ namespace reactor {
 		std::vector<char>& getBuffer() { return this->_buffer; };
 		enum AsyncState getState() const { return this->_state; };
 		void setState(const enum AsyncState state) { this->_state = state; };
+		void clear() {
+			this->_buffer.clear();
+			this->_state = PENDING;
+		};
 	};
 
 	typedef utils::shared_ptr<SharedData> sharedData_t;
