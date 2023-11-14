@@ -12,6 +12,7 @@ std::string ConfigParser::parser(const std::string& filename) {
 	}
 
 	const std::string content((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
+	infile.close();
 	return content;
 }
 
@@ -259,4 +260,5 @@ void ConfigParser::parseMimeTypes(const std::string& filename, utils::shared_ptr
 			mimeTypes->setMimeTypes(extension, mimeType);
 		}
 	}
+	infile.close();
 }
