@@ -4,7 +4,8 @@
 
 ServerManager::ServerManager() : _configParser(), _servers() {}
 
-void ServerManager::init(const std::string path) {
+void ServerManager::init(const std::string path, char** envp) {
+	this->_envp = envp;
 	this->_serverConfigs = this->_configParser.parse(path);
 	try {
 		this->registerTimeoutEvent();
@@ -100,4 +101,8 @@ utils::shared_ptr<std::vector<fd_t> > ServerManager::getClientFds() {
 		std::copy(serverClients->begin(), serverClients->end(), std::back_inserter(*(clientFds.get())));
 	}
 	return (clientFds);
+}
+
+char** ServerManager::getEnvp() const {
+	return (this->_envp);
 }
