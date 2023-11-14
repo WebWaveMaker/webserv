@@ -11,9 +11,12 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _readSharedData() {
 	if (_locationConfig.get() == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	// if (this->_locationConfig.get()->isRedirect())
-	//	throw RedirectResponseBuilder(); // throw utils::shared_ptr<IBuilder<sharedData_t> >(ErrorResponseBuilder(301) 301 moved permanently
+			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	if (this->_locationConfig.get()->isRedirect()) {
+		// return 자료형 확인한 후에 처리.
+		// throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		// 	RedirectResponseBuilder(, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	}
 	this->prepare();
 }
 
@@ -26,7 +29,7 @@ reactor::sharedData_t GetResponseBuilder::getProduct() {
 }
 
 void GetResponseBuilder::setStartLine() {
-	this->_response.setStartLine(DefaultResponseBuilder::getInstance()->setDefaultStartLine(200));
+	this->_response.setStartLine(DefaultResponseBuilder::getInstance()->setDefaultStartLine(OK));
 }
 
 void GetResponseBuilder::setHeader() {
@@ -34,10 +37,14 @@ void GetResponseBuilder::setHeader() {
 
 	// cgi 처리는 다르게 해야함.
 	if (stat(this->_path.c_str(), &fileInfo) == -1) {
-		throw std::runtime_error(
-			"stat error");	// throw utils::shared_ptr<IBuilder<sharedData_t> >(ErrorResponseBuilder(500) internal server error later
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	}
-
+	if (fileInfo.st_size == 0) {
+		close(this->_fd);
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	}
 	std::map<std::string, std::string> headers =
 		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig);
 	headers["Content-Length"] = utils::lltos(fileInfo.st_size);
@@ -92,7 +99,7 @@ void GetResponseBuilder::fileProcessing() {
 	this->_fd = this->findReadFile();
 	if (this->_fd == -1)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	this->setStartLine();
 	this->setHeader();
 	const std::string raw = this->_response.getRawStr();

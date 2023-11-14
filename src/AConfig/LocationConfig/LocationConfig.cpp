@@ -22,7 +22,6 @@ void LocationConfig::setDirectives(const std::string& directive, const std::vect
 	if (values.empty())
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
 									  "LocationConfig :Invalid number of parameters for " + directive);
-
 	if (directive == "sendfile") {
 		_directives.insert(std::make_pair(SENDFILE, addBooleanValue(values[0])));
 	} else if (directive == "return") {

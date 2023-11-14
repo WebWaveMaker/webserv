@@ -24,7 +24,7 @@
 #define DEF_AUTOINDEX bool(false)
 #define DEF_INDEX "index.html"
 #define DEF_ERROR_PAGE "error.html"
-#define DEF_ERROR_CODE static_cast<unsigned int>(500)
+#define DEF_ERROR_CODE static_cast<unsigned int>(INTERNAL_SERVER_ERROR)
 
 struct Directive {
 	std::string name;

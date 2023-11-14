@@ -38,6 +38,7 @@ bool ErrorResponseBuilder::setBody() {
 	this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().end(),
 												this->_readSharedData.get()->getBuffer().begin(),
 												this->_readSharedData.get()->getBuffer().end());
+	this->_readSharedData.get()->getBuffer().clear();
 	if (this->_readSharedData.get()->getState() == RESOLVE) {
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData.get()->getFd(),
 															this->_readSharedData.get()->getType());
@@ -68,7 +69,7 @@ fd_t ErrorResponseBuilder::findReadFile() {
 void ErrorResponseBuilder::prepare() {
 	this->_fd = this->findReadFile();
 	if (this->_fd == -1) {
-		this->_errorCode = 404;
+		this->_errorCode = NOT_FOUND;
 		this->_path = "./var/error.html";
 		this->_fd = utils::makeFd(this->_path.c_str(), "r");
 	}

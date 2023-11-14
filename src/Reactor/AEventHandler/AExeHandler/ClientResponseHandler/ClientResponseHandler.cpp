@@ -22,13 +22,13 @@ namespace reactor {
 			this->_registered = true;
 		}
 		try {
-			if (this->_director.buildProduct() == false)  // may be throw ErrorReponseBuilder
-				return;
 			if (this->getBuffer().empty() && this->_director.getBuilderReadState() == RESOLVE) {
 				Dispatcher::getInstance()->removeIOHandler(this->getHandle(), this->getType());
 				Dispatcher::getInstance()->removeExeHandler(this);
+				return;
 			}
-
+			if (this->_director.buildProduct() == false)  // may be throw ErrorReponseBuilder
+				return;
 		} catch (const utils::shared_ptr<IBuilder<sharedData_t> >& e) {
 			this->_director.setBuilder(e);
 		}
@@ -50,11 +50,10 @@ namespace reactor {
 		} catch (utils::shared_ptr<IBuilder<sharedData_t> >& e) {
 			return e;
 		} catch (...) {
-			return utils::shared_ptr<IBuilder<sharedData_t> >(
-				new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			return utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
+				INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 		}
-		return utils::shared_ptr<IBuilder<sharedData_t> >(
-			new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		return utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
+			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	}
-
 }  // namespace reactor
