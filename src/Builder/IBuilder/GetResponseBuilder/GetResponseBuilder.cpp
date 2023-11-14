@@ -13,7 +13,7 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	// if (this->_locationConfig.get()->isRedirect())
-	//	throw RedirectResponseBuilder(); // throw utils::shared_ptr<IBuilder<sharedData_t> >(ErrorResponseBuilder(301) 301 moved permanently
+	// 	throw Error // throw utils::shared_ptr<IBuilder<sharedData_t> >(ErrorResponseBuilder(301) 301 moved permanently
 	this->prepare();
 }
 

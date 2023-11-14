@@ -25,7 +25,7 @@ enum HttpMethods { GET, POST, DELETE, PUT, UNKNOWN };
 
 enum AsyncState { PENDING, RESOLVE, TERMINATE, ACCEPT, NONE };
 
-enum HttpMessageState { DONE, ERROR, START_LINE, HEADER, BODY };
+enum HttpMessageState { DONE, ERROR, START_LINE, HEADER, BODY, CHUNKED };
 
 enum EventType {
 	EVENT_READ = -1,

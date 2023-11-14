@@ -76,6 +76,10 @@ void HttpMessage::setBody(const std::string& body) {
 	this->_body = body;
 }
 
+void HttpMessage::setChunkedBody(const std::string& body) {
+	this->_body += body;
+}
+
 void HttpMessage::reset() {
 	this->_startLine[0].clear();
 	this->_startLine[1].clear();

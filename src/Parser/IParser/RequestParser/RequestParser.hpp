@@ -15,6 +15,7 @@ class RequestParser : public IParser<request_t> {
 	bool parseStartLine(std::string& buf);
 	bool parseHeader(std::string& buf);
 	bool parserBody(std::string& buf);
+	bool parserChunked(std::string& buf);
 	RequestParser(const RequestParser& obj);
 	RequestParser& operator=(const RequestParser& obj);
 	request_t pop(void);

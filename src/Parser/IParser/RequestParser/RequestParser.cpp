@@ -81,14 +81,18 @@ bool RequestParser::parseHeader(std::string& buf) {
 
 		headers[key] = val;	 // 중복은 어떻게 처리? 우선은 overwrite
 	}
-	if (_curMsg->get()->second.getMethod() == POST && headers.count("Content-Length") == 0) {
+	if (_curMsg->get()->second.getMethod() == POST && headers.count("Content-Length") == 0 &&
+		headers["Transfer-Encoding"] != "chunked") {
 		_curMsg->get()->first = ERROR;
 		_curMsg->get()->second.setErrorCode(411);  // Length Required
 		return false;
 	}
 
 	_curMsg->get()->second.setHeaders(headers);
-	_curMsg->get()->first = BODY;
+	if (headers["Transfer-Encoding"] == "chunked")
+		_curMsg->get()->first = CHUNKED;
+	else
+		_curMsg->get()->first = BODY;
 	return true;
 }
 
@@ -119,6 +123,19 @@ bool RequestParser::parserBody(std::string& buf) {
 	return true;
 }
 
+bool RequestParser::parserChunked(std::string& buf) {
+	unsigned int contentLength = utils::stoui(this->findAndSubstr(buf, CRLF));
+	if (contentLength == 0) {
+		_curMsg->get()->first = DONE;
+		buf.clear();
+		return true;
+	}
+	const std::string str = buf.substr(0, contentLength - 1);
+	buf.erase(0, contentLength - 1);
+	_curMsg->get()->second.setChunkedBody(str);
+	return true;
+}
+
 // 비 정상적일때 에러처리를 어떻게 할 것인가.
 request_t RequestParser::parse(const std::string& content) {
 	if (content.size() == 0)
@@ -140,6 +157,9 @@ request_t RequestParser::parse(const std::string& content) {
 				break;
 			case BODY:
 				this->parserBody(buf);
+				break;
+			case CHUNKED:
+				this->parserChunked(buf);
 				break;
 			case ERROR:
 				buf.clear();
