@@ -12,7 +12,7 @@ DeleteResponseBuilder::DeleteResponseBuilder(reactor::sharedData_t sharedData, r
 
 DeleteResponseBuilder::~DeleteResponseBuilder() {}
 
-std::vector<std::string> split(const std::string& str, char delim) {
+std::vector<std::string> DeleteResponseBuilder::split(const std::string& str, char delim) {
 	std::vector<std::string> tokens;
 	std::stringstream ss(str);
 	std::string token;
@@ -24,7 +24,7 @@ std::vector<std::string> split(const std::string& str, char delim) {
 	return tokens;
 }
 
-std::string mergePaths(const std::string& serverRoot, const std::string& reqPath) {
+std::string DeleteResponseBuilder::mergePaths(const std::string& serverRoot, const std::string& reqPath) {
 	std::vector<std::string> rootTokens = split(serverRoot, '/');
 	std::vector<std::string> pathTokens = split(reqPath, '/');
 
@@ -58,26 +58,32 @@ void DeleteResponseBuilder::deleteFile() {
 		"." + this->_serverConfig.get()->getDirectives(ROOT).asString() + this->_locationConfig.get()->getPath(),
 		this->_request.get()->second.getRequestTarget());
 
-	struct stat fileInfo;
-	if (stat(locRoot.c_str(), &fileInfo) == 0) {
-		if (S_ISDIR(fileInfo.st_mode)) {
+	switch (checkFileMode(locRoot)) {
+		case MODE_FILE:
+			remove(locRoot.c_str());
+			this->_path = locRoot;
+			return;
+		case MODE_DIRECTORY:
 			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-				new ErrorResponseBuilder(400, this->_sharedData, this->_serverConfig, this->_locationConfig));
-		}
-		if (unlink(locRoot.c_str()) == -1) {
-			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-				new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
-		}
-	} else if (stat(serverRoot.c_str(), &fileInfo) == 0) {
-		if (S_ISDIR(fileInfo.st_mode)) {
-			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-				new ErrorResponseBuilder(400, this->_sharedData, this->_serverConfig, this->_locationConfig));
-		}
-		if (unlink(serverRoot.c_str()) == -1) {
-			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-				new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
-		}
+				new ErrorResponseBuilder(403, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			break;
+		default:
+			break;
 	}
+	switch (checkFileMode(serverRoot)) {
+		case MODE_FILE:
+			remove(serverRoot.c_str());
+			this->_path = serverRoot;
+			return;
+		case MODE_DIRECTORY:
+			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+				new ErrorResponseBuilder(403, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			break;
+		default:
+			break;
+	}
+	throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
 }
 
 reactor::sharedData_t DeleteResponseBuilder::getProduct() {
@@ -90,31 +96,31 @@ void DeleteResponseBuilder::setStartLine() {
 
 void DeleteResponseBuilder::setHeader() {
 	std::map<std::string, std::string> headers =
-		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig);
+		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
 	this->_response.setHeaders(headers);
 }
 
 bool DeleteResponseBuilder::setBody() {
-	this->_response.setBody("delete success");
-	return true;
-}
-
-bool DeleteResponseBuilder::build() {
-	this->deleteFile();
+	if (this->_sharedData.get() == u::nullptr_t)
+		return false;
 	this->setStartLine();
 	this->setHeader();
-	this->setBody();
-
-	const std::string raw = this->_response.getRawStr();
+	const std::string raw = this->_response.getRawStr() + CRLF + "Delete Success" + CRLF;
 	this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().end(), raw.begin(), raw.end());
 	return true;
 }
 
+bool DeleteResponseBuilder::build() {
+	this->setBody();
+	this->_sharedData.get()->getBuffer().clear();
+	this->_sharedData.get()->setState(PENDING);
+	return true;
+}
+
 void DeleteResponseBuilder::reset() {
-	this->_response = HttpMessage();
+	this->_response.reset();
 }
 
 void DeleteResponseBuilder::prepare() {
-	this->build();
-	this->reset();
+	this->deleteFile();
 }
