@@ -8,7 +8,10 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
 	  _removed(false),
-	  _readSharedData() {
+	  _readSharedData(),
+	  _response(),
+	  _path(),
+	  _fd(-1) {
 	if (_locationConfig.get() == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
@@ -110,7 +113,7 @@ fd_t GetResponseBuilder::findReadFile() {
 
 void GetResponseBuilder::fileProcessing() {
 	this->_fd = this->findReadFile();
-	// if (this->_fd == -1 && this->_locationConfig.get()->isAutoIndex()) // 디렉토리 리스팅 구현. 
+	// if (this->_fd == -1 && this->_locationConfig.get()->isAutoIndex()) // 디렉토리 리스팅 구현.
 	if (this->_fd == -1)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));

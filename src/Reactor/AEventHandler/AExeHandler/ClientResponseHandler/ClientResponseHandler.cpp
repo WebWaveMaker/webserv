@@ -40,13 +40,33 @@ namespace reactor {
 				throw utils::shared_ptr<IBuilder<sharedData_t> >(
 					new ErrorResponseBuilder(this->_request.get()->second.getErrorCode(), this->_sharedData,
 											 this->_serverConfig, this->_locationConfig));
-			// std::vector<enum HttpMethods> methods = this->_serverConfig.get()->getDirectives(LIMIT_EXCEPT).asMedVec();
-			// if (std::find(methods.begin(), methods.end(), this->_request.get()->second.getMethod()) == methods.end())
-			// 	throw utils::shared_ptr<IBuilder<sharedData_t> >(
-			// new ErrorResponseBuilder(405, this->_sharedData, this->_serverConfig, this->_locationConfig));
-			if (this->_request.get()->second.getMethod() == GET)
-				return utils::shared_ptr<IBuilder<sharedData_t> >(new GetResponseBuilder(
-					this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
+			std::vector<enum HttpMethods> methods = this->_serverConfig.get()->getDirectives(LIMIT_EXCEPT).asMedVec();
+
+			if (std::find(methods.begin(), methods.end(), this->_request.get()->second.getMethod()) == methods.end())
+				throw utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
+					METHOD_NOT_ALLOWED, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			switch (this->_request.get()->second.getMethod()) {
+				case GET:
+					return utils::shared_ptr<IBuilder<sharedData_t> >(new GetResponseBuilder(
+						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
+				case POST:
+					// return utils::shared_ptr<IBuilder<sharedData_t> >(new PostResponseBuilder(
+					// 	this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
+				case DELETE:
+					return utils::shared_ptr<IBuilder<sharedData_t> >(new DeleteResponseBuilder(
+						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
+				case PUT:
+					// return utils::shared_ptr<IBuilder<sharedData_t> >(new PutResponseBuilder(
+					// 	this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
+				case UNKNOWN:
+					return utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
+						METHOD_NOT_ALLOWED, this->_sharedData, this->_serverConfig, this->_locationConfig));
+				default:
+					return utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
+						METHOD_NOT_ALLOWED, this->_sharedData, this->_serverConfig, this->_locationConfig));
+					break;
+			}
+
 		} catch (utils::shared_ptr<IBuilder<sharedData_t> >& e) {
 			return e;
 		} catch (...) {

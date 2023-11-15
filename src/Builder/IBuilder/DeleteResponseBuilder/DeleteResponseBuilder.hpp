@@ -9,9 +9,11 @@ class DeleteResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	reactor::sharedData_t _sharedData;
 	const request_t _request;
 	const utils::shared_ptr<ServerConfig> _serverConfig;
-	const utils::shared_ptr<LocationConfig> _locationConfig;  // may be needed?
+	const utils::shared_ptr<LocationConfig> _locationConfig;
+	reactor::sharedData_t _readSharedData;
 
 	HttpMessage _response;
+	std::string _path;
 
    public:
 	DeleteResponseBuilder(reactor::sharedData_t sharedData, request_t request,
@@ -19,9 +21,10 @@ class DeleteResponseBuilder : public IBuilder<reactor::sharedData_t> {
 						  const utils::shared_ptr<LocationConfig>& locationConfig);
 	~DeleteResponseBuilder();
 
+	bool implDeleteFile(const std::string& path);
 	void deleteFile();
-	virtual enum AsyncState getReadState() const { return this->_sharedData.get()->getState(); }
-	virtual void setReadState(enum AsyncState state) { this->_sharedData.get()->setState(state); }
+	virtual enum AsyncState getReadState() const { return this->_readSharedData.get()->getState(); }
+	virtual void setReadState(enum AsyncState state) { this->_readSharedData.get()->setState(state); }
 	virtual reactor::sharedData_t getProduct();
 	virtual void setStartLine();
 	virtual void setHeader();
