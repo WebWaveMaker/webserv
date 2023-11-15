@@ -46,7 +46,7 @@ void GetResponseBuilder::setHeader() {
 			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	}
 	std::map<std::string, std::string> headers =
-		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig);
+		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
 	headers["Content-Length"] = utils::lltos(fileInfo.st_size);
 	this->_response.setHeaders(headers);
 }
@@ -80,6 +80,19 @@ fd_t GetResponseBuilder::findReadFile() {
 	const std::string locPath = "." + this->_locationConfig.get()->getDirectives(ROOT).asString();
 	const std::string serverPath = "." + this->_serverConfig.get()->getDirectives(ROOT).asString();
 	const std::vector<std::string> indexVec = this->_locationConfig.get()->getDirectives(INDEX).asStrVec();
+	const std::string requestTarget = this->_request.get()->second.getRequestTarget();
+	const std::string uri = requestTarget.substr(requestTarget.find_last_of('/') + 1);
+
+	if (uri != "") {
+		this->_path = locPath + uri;
+		if (access(this->_path.c_str(), R_OK) == 0)
+			return utils::makeFd(this->_path.c_str(), "r");
+		this->_path = serverPath + uri;
+		if (access(this->_path.c_str(), R_OK) == 0)
+			return utils::makeFd(this->_path.c_str(), "r");
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	}
 
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {
 		this->_path = locPath + *cit;

@@ -15,7 +15,8 @@ class DefaultResponseBuilder : public utils::TSingleton<DefaultResponseBuilder> 
 	~DefaultResponseBuilder();
 
 	std::vector<std::string> setDefaultStartLine(const int statusCode);
-	std::map<std::string, std::string> setDefaultHeader(const utils::shared_ptr<ServerConfig>& serverConfig);
+	std::map<std::string, std::string> setDefaultHeader(const utils::shared_ptr<ServerConfig>& serverConfig,
+														const std::string& path);
 };
 
 #endif

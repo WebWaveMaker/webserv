@@ -27,7 +27,7 @@ void ErrorResponseBuilder::setHeader() {
 	}
 
 	std::map<std::string, std::string> headers =
-		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig);
+		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
 	headers["Content-Length"] = utils::lltos(fileInfo.st_size);
 	this->_response.setHeaders(headers);
 }

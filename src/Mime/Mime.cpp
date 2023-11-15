@@ -14,7 +14,7 @@ Mime& Mime::operator=(const Mime& other) {
 	}
 	return *this;
 }
-//extension = .html mimeType = text/html
+//extension = html mimeType = text/html
 void Mime::setMimeTypes(std::string extension, std::string mimeType) {
 	//remove the dot
 	if (extension[0] == '.') {
@@ -28,5 +28,5 @@ std::string Mime::getMimeType(const std::string& extension) const {
 	if (it != _mimeTypes.end()) {
 		return it->second;
 	}
-	return NULL;
+	return "application/octet-stream";
 }
