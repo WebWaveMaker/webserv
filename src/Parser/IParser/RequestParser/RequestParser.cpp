@@ -38,7 +38,7 @@ request_t RequestParser::pop(void) {
 	request_t elem;
 	if (this->_msgs.empty())
 		return elem;
-	if (this->_msgs.front().get()->first == DONE || this->_msgs.front().get()->first == ERROR) {
+	if (this->_msgs.front().get()->first == DONE || this->_msgs.front().get()->first == HTTP_ERROR) {
 		elem = this->_msgs.front();
 		this->_msgs.pop();
 	}
@@ -54,7 +54,7 @@ bool RequestParser::parseStartLine(std::string& buf) {
 
 	ss >> startLine[0] >> startLine[1] >> startLine[2];
 	if (startLine[0].empty() || startLine[1].empty() || startLine[2].empty()) {
-		_curMsg->get()->first = ERROR;
+		_curMsg->get()->first = HTTP_ERROR;
 		_curMsg->get()->second.setErrorCode(400);
 		return false;
 	}
@@ -82,7 +82,7 @@ bool RequestParser::parseHeader(std::string& buf) {
 		headers[key] = val;	 // 중복은 어떻게 처리? 우선은 overwrite
 	}
 	if (_curMsg->get()->second.getMethod() == POST && headers.count("Content-Length") == 0) {
-		_curMsg->get()->first = ERROR;
+		_curMsg->get()->first = HTTP_ERROR;
 		_curMsg->get()->second.setErrorCode(411);  // Length Required
 		return false;
 	}
@@ -102,7 +102,7 @@ bool RequestParser::parserBody(std::string& buf) {
 	const unsigned int bodyLimit = _serverConfig.get()->getDirectives(CLIENT_MAX_BODY_SIZE).asUint();
 
 	if (contentLength > bodyLimit) {
-		_curMsg->get()->first = ERROR;
+		_curMsg->get()->first = HTTP_ERROR;
 		_curMsg->get()->second.setErrorCode(413);  // Payload Too large
 		return false;
 	};
@@ -112,7 +112,7 @@ bool RequestParser::parserBody(std::string& buf) {
 		_curMsg->get()->second.setBody(str);
 	} catch (const std::out_of_range& ex) {
 		ErrorLogger::parseError(__FILE__, __LINE__, __func__, "content-length too large compared of body");
-		_curMsg->get()->first = ERROR;
+		_curMsg->get()->first = HTTP_ERROR;
 		_curMsg->get()->second.setErrorCode(400);
 		return false;
 	}
@@ -141,7 +141,7 @@ request_t RequestParser::parse(const std::string& content) {
 			case BODY:
 				this->parserBody(buf);
 				break;
-			case ERROR:
+			case HTTP_ERROR:
 				buf.clear();
 			default:
 				break;

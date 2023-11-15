@@ -36,7 +36,7 @@ namespace reactor {
 
 	utils::shared_ptr<IBuilder<sharedData_t> > ClientResponseHandler::chooseBuilder() {
 		try {
-			if (this->_request.get()->first == ERROR)
+			if (this->_request.get()->first == HTTP_ERROR)
 				throw utils::shared_ptr<IBuilder<sharedData_t> >(
 					new ErrorResponseBuilder(this->_request.get()->second.getErrorCode(), this->_sharedData,
 											 this->_serverConfig, this->_locationConfig));

@@ -64,7 +64,9 @@ enum HttpMethods { GET, POST, DELETE, PUT, UNKNOWN };
 
 enum AsyncState { PENDING, RESOLVE, TERMINATE, ACCEPT, NONE };
 
-enum HttpMessageState { DONE, ERROR, START_LINE, HEADER, BODY };
+enum HttpMessageState { DONE, HTTP_ERROR, START_LINE, HEADER, BODY };
+
+enum FileMode { MODE_ERROR, MODE_FILE, MODE_DIRECTORY };
 
 enum EventType {
 	EVENT_READ = -1,
