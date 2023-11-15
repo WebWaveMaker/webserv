@@ -21,6 +21,18 @@ class IBuilder {
 		return MODE_ERROR;
 	}
 
+	/**
+	 * @brief / 이 들어있으면 directory, 그 외에는 file
+	 * 
+	 * @param path 
+	 * @return enum FileMode 
+	 */
+	enum FileMode checkOurFileMode(const std::string& path) {
+		if (path.find_last_of('/') == std::string::npos)
+			return MODE_DIRECTORY;
+		return MODE_FILE;
+	}
+
    public:
 	virtual ~IBuilder(){};
 	virtual enum AsyncState getReadState() const = 0;

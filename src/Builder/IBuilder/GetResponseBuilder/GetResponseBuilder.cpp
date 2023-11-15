@@ -8,14 +8,18 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
 	  _removed(false),
-	  _readSharedData() {
+	  _path(),
+	  _fd(-1),
+	  _readSharedData(),
+	  _response() {
 	if (_locationConfig.get() == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	if (this->_locationConfig.get()->isRedirect()) {
-		// return 자료형 확인한 후에 처리.
-		// throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-		// 	RedirectResponseBuilder(, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	if (this->_locationConfig->isRedirect()) {
+		std::vector<std::string> rv = this->_locationConfig->getDirectives(RETURN).asStrVec();
+
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new RedirectResponseBuilder(
+			utils::stoui(rv[0]), rv[1], this->_sharedData, this->_serverConfig, this->_locationConfig));
 	}
 	this->prepare();
 }
@@ -54,13 +58,13 @@ void GetResponseBuilder::setHeader() {
 bool GetResponseBuilder::setBody() {
 	if (this->_readSharedData.get() == u::nullptr_t)
 		return false;
-	this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().end(),
-												this->_readSharedData.get()->getBuffer().begin(),
-												this->_readSharedData.get()->getBuffer().end());
-	this->_readSharedData.get()->getBuffer().clear();
-	if (this->_readSharedData.get()->getState() == RESOLVE && this->_removed == false) {
-		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData.get()->getFd(),
-															this->_readSharedData.get()->getType());
+	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().end(),
+										  this->_readSharedData->getBuffer().begin(),
+										  this->_readSharedData->getBuffer().end());
+	this->_readSharedData->getBuffer().clear();
+	if (this->_readSharedData->getState() == RESOLVE && this->_removed == false) {
+		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData->getFd(),
+															this->_readSharedData->getType());
 		this->_removed = true;
 		return true;
 	}
@@ -69,18 +73,18 @@ bool GetResponseBuilder::setBody() {
 
 void GetResponseBuilder::reset() {
 	this->_response.reset();
-	this->_sharedData.get()->getBuffer().clear();
-	this->_readSharedData.get()->getBuffer().clear();
+	this->_sharedData->getBuffer().clear();
+	this->_readSharedData->getBuffer().clear();
 }
 bool GetResponseBuilder::build() {
 	return this->setBody();
 }
 
 fd_t GetResponseBuilder::findReadFile() {
-	const std::string locPath = "." + this->_locationConfig.get()->getDirectives(ROOT).asString();
-	const std::string serverPath = "." + this->_serverConfig.get()->getDirectives(ROOT).asString();
-	const std::vector<std::string> indexVec = this->_locationConfig.get()->getDirectives(INDEX).asStrVec();
-	const std::string requestTarget = this->_request.get()->second.getRequestTarget();
+	const std::string locPath = "." + this->_locationConfig->getDirectives(ROOT).asString();
+	const std::string serverPath = "." + this->_serverConfig->getDirectives(ROOT).asString();
+	const std::vector<std::string> indexVec = this->_locationConfig->getDirectives(INDEX).asStrVec();
+	const std::string requestTarget = this->_request->second.getRequestTarget();
 	const std::string uri = requestTarget.substr(requestTarget.find_last_of('/') + 1);
 
 	if (uri != "") {
@@ -109,27 +113,37 @@ fd_t GetResponseBuilder::findReadFile() {
 }
 
 void GetResponseBuilder::fileProcessing() {
+	if (this->checkFileMode("." + this->_locationConfig->getDirectives(ROOT).asString()) == MODE_DIRECTORY)
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+			new RedirectResponseBuilder(MOVED_PERMANENTLY, this->_request->second.getRequestTarget() + "/",
+										this->_sharedData, this->_serverConfig, this->_locationConfig));
 	this->_fd = this->findReadFile();
-	// if (this->_fd == -1 && this->_locationConfig.get()->isAutoIndex()) // 디렉토리 리스팅 구현. 
 	if (this->_fd == -1)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	this->setStartLine();
 	this->setHeader();
 	const std::string raw = this->_response.getRawStr();
-	this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().begin(), raw.begin(), raw.end());
+	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
 	this->_readSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(this->_fd, EVENT_READ, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileReadHandlerFactory>(this->_readSharedData);
 }
 
-void GetResponseBuilder::cgiProcessing() {
-	// cgi 처리
+void GetResponseBuilder::directoryProcessing() {}
+
+void GetResponseBuilder::cgiProcessing() {}
+
+void GetResponseBuilder::regularProcessing() {
+	if (this->checkOurFileMode(this->_request->second.getRequestTarget()) == MODE_FILE)
+		this->fileProcessing();
+	else
+		this->directoryProcessing();
 }
 
 void GetResponseBuilder::prepare() {
-	if (this->_locationConfig.get()->isCgi())
+	if (this->_locationConfig->isCgi())
 		this->cgiProcessing();
 	else
-		this->fileProcessing();
+		this->regularProcessing();
 }

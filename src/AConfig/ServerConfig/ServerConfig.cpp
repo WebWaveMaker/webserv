@@ -94,7 +94,7 @@ std::string ServerConfig::getErrorPage(unsigned int error_code) const {
 	if (it == _errorPages.end()) {
 		if (_parent.get() == u::nullptr_t)
 			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid error code");
-		return _parent.get()->getErrorPage(error_code);
+		return _parent->getErrorPage(error_code);
 	}
 	return it->second;
 }
@@ -105,27 +105,27 @@ ConfigValue ServerConfig::getDirectives(Directives method) const {
 		// if (_parent.get() == u::nullptr_t)
 		// throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid error code");
 		if (method == SENDFILE) {
-			return _parent.get()->getDirectives(SENDFILE);
+			return _parent->getDirectives(SENDFILE);
 		} else if (method == KEEPALIVE_TIMEOUT) {
-			return _parent.get()->getDirectives(KEEPALIVE_TIMEOUT);
+			return _parent->getDirectives(KEEPALIVE_TIMEOUT);
 		} else if (method == DEFAULT_TYPE) {
-			return _parent.get()->getDirectives(DEFAULT_TYPE);
+			return _parent->getDirectives(DEFAULT_TYPE);
 		} else if (method == ERROR_LOG) {
-			return _parent.get()->getDirectives(ERROR_LOG);
+			return _parent->getDirectives(ERROR_LOG);
 		} else if (method == CLIENT_MAX_BODY_SIZE) {
-			return _parent.get()->getDirectives(CLIENT_MAX_BODY_SIZE);
+			return _parent->getDirectives(CLIENT_MAX_BODY_SIZE);
 		} else if (method == LIMIT_EXCEPT) {
-			return _parent.get()->getDirectives(LIMIT_EXCEPT);
+			return _parent->getDirectives(LIMIT_EXCEPT);
 		} else if (method == LISTEN) {
-			return _parent.get()->getDirectives(LISTEN);
+			return _parent->getDirectives(LISTEN);
 		} else if (method == SERVER_NAME) {
-			return _parent.get()->getDirectives(SERVER_NAME);
+			return _parent->getDirectives(SERVER_NAME);
 		} else if (method == ROOT) {
-			return _parent.get()->getDirectives(ROOT);
+			return _parent->getDirectives(ROOT);
 		} else if (method == AUTOINDEX) {
-			return _parent.get()->getDirectives(AUTOINDEX);
+			return _parent->getDirectives(AUTOINDEX);
 		} else if (method == INDEX) {
-			return _parent.get()->getDirectives(INDEX);
+			return _parent->getDirectives(INDEX);
 		}
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid directive");
 	}
@@ -136,7 +136,7 @@ void ServerConfig::setLocations(std::string identifier, utils::shared_ptr<Locati
 	// 이미 존재하는 경우 덮어씌우지 않음
 	if (_locations.find(identifier) != _locations.end())
 		return;
-	location.get()->setPath(identifier);
+	location->setPath(identifier);
 	_locations[identifier] = location;
 }
 
@@ -202,5 +202,5 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::str
 }
 
 std::string ServerConfig::getMimeTypes(const std::string& extension) const {
-	return this->_parent.get()->getMimeTypes(extension);
+	return this->_parent->getMimeTypes(extension);
 }

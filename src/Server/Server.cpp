@@ -32,7 +32,7 @@ void Server::bindListen() {
 	std::memset(&this->_serverAddr, 0, sizeof(this->_serverAddr));
 	this->_serverAddr.sin_family = AF_INET;
 	this->_serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	this->_serverAddr.sin_port = htons(this->_serverConfig.get()->getDirectives(LISTEN).asUint());
+	this->_serverAddr.sin_port = htons(this->_serverConfig->getDirectives(LISTEN).asUint());
 
 	if (bind(this->_fd, (struct sockaddr*)&this->_serverAddr, sizeof(this->_serverAddr)) < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
@@ -62,7 +62,7 @@ void Server::makeSocket() {
 
 void Server::mallocParameter() {
 
-	std::pair<std::string, LogLevels> errorLog = this->_serverConfig.get()->getDirectives(ERROR_LOG).asLog();
+	std::pair<std::string, LogLevels> errorLog = this->_serverConfig->getDirectives(ERROR_LOG).asLog();
 	const int errorFd = utils::makeFd(errorLog.first.c_str(), "w");
 
 	this->_clients =

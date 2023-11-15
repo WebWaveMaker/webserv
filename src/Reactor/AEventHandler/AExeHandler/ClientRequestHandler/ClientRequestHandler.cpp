@@ -4,7 +4,7 @@
 namespace reactor {
 	ClientRequestHandler::ClientRequestHandler(sharedData_t& sharedData, va_list args)
 		: AExeHandler(sharedData),
-		  _request(ServerManager::getInstance()->getServerConfig(sharedData.get()->getFd())),
+		  _request(ServerManager::getInstance()->getServerConfig(sharedData->getFd())),
 		  _writeData(new SharedData(this->getHandle(), EVENT_WRITE, std::vector<char>())) {
 		Dispatcher::getInstance()->registerIOHandler<ClientReadHandlerFactory>(sharedData);
 		va_end(args);
@@ -19,8 +19,8 @@ namespace reactor {
 	void ClientRequestHandler::handleEvent() {
 		if (this->removeHandlerIfNecessary() || this->getBuffer().empty())
 			return;
-		if (this->_writeData.get()->getState() == RESOLVE) {
-			this->_writeData.get()->clear();
+		if (this->_writeData->getState() == RESOLVE) {
+			this->_writeData->clear();
 			return;
 		}
 		request_t request = this->_request.parse(this->getBuffer().data());

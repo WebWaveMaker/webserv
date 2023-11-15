@@ -3,5 +3,6 @@
 #define REDIRECTRESPONSEBUILDER_H
 
 #include "IBuilder.hpp"
+#include "RequestParser.h"
 
 #endif

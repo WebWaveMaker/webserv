@@ -33,15 +33,15 @@ void ErrorResponseBuilder::setHeader() {
 }
 
 bool ErrorResponseBuilder::setBody() {
-	if (this->_readSharedData.get()->getBuffer().empty())
+	if (this->_readSharedData->getBuffer().empty())
 		return false;
-	this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().end(),
-												this->_readSharedData.get()->getBuffer().begin(),
-												this->_readSharedData.get()->getBuffer().end());
-	this->_readSharedData.get()->getBuffer().clear();
-	if (this->_readSharedData.get()->getState() == RESOLVE) {
-		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData.get()->getFd(),
-															this->_readSharedData.get()->getType());
+	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().end(),
+										  this->_readSharedData->getBuffer().begin(),
+										  this->_readSharedData->getBuffer().end());
+	this->_readSharedData->getBuffer().clear();
+	if (this->_readSharedData->getState() == RESOLVE) {
+		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData->getFd(),
+															this->_readSharedData->getType());
 		return true;
 	}
 	return false;
@@ -50,8 +50,8 @@ bool ErrorResponseBuilder::setBody() {
 void ErrorResponseBuilder::reset() {
 	this->_response.reset();
 	if (this->_readSharedData.get())
-		this->_readSharedData.get()->getBuffer().clear();
-	this->_sharedData.get()->getBuffer().clear();
+		this->_readSharedData->getBuffer().clear();
+	this->_sharedData->getBuffer().clear();
 }
 
 bool ErrorResponseBuilder::build() {
@@ -60,8 +60,8 @@ bool ErrorResponseBuilder::build() {
 
 fd_t ErrorResponseBuilder::findReadFile() {
 	// const std::string locPath =
-	// 	"." + this->_locationConfig.get()->getOwnRoot(ROOT).asString() +  // 나중에 getOwnRoot바뀔 예정.
-	// 	this->_locationConfig.get()->getErrorPage(this->_errorCode);
+	// 	"." + this->_locationConfig->getOwnRoot(ROOT).asString() +  // 나중에 getOwnRoot바뀔 예정.
+	// 	this->_locationConfig->getErrorPage(this->_errorCode);
 
 	return -1;
 }
@@ -76,7 +76,7 @@ void ErrorResponseBuilder::prepare() {
 	this->setStartLine();
 	this->setHeader();
 	const std::string raw = this->_response.getRawStr();
-	this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().end(), raw.begin(), raw.end());
+	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().end(), raw.begin(), raw.end());
 	if (this->_fd == -1)
 		return;
 	this->_readSharedData =

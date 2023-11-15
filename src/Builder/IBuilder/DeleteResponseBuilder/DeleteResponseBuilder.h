@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GETRESPONSEBUILDER_H
-#define GETRESPONSEBUILDER_H
+#ifndef DELETE_RESPONSE_BUILDER_H
+#define DELETE_RESPONSE_BUILDER_H
 
 #include "DefaultResponseBuilder.hpp"
 #include "ErrorResponseBuilder.hpp"
@@ -8,7 +8,6 @@
 #include "HttpMessage.hpp"
 #include "IBuilder.hpp"
 #include "PipeReadHandlerFactory.hpp"
-#include "RedirectResponseBuilder.hpp"
 #include "RequestParser.h"
 #include "ServerConfig.hpp"
 #include "SharedData.hpp"
