@@ -5,6 +5,7 @@
 #include <cstdarg>
 #include "AExeHandler.hpp"
 #include "ClientWriteHandlerFactory.hpp"
+#include "DeleteResponseBuilder.hpp"
 #include "Director.hpp"
 #include "Dispatcher.hpp"
 #include "ErrorResponseBuilder.hpp"
