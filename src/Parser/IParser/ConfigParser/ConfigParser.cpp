@@ -32,7 +32,7 @@ bool ConfigParser::httpConfigParser(const HttpBlock& http, HttpConfig* httpConfi
 bool ConfigParser::serverConfigParser(const ServerBlock& serverBlock, utils::shared_ptr<ServerConfig> serverConfig) {
 	for (std::vector<Directive>::const_iterator it = serverBlock.directives.begin(); it != serverBlock.directives.end();
 		 ++it) {
-		serverConfig.get()->setDirectives(it->name, it->parameters);
+		serverConfig->setDirectives(it->name, it->parameters);
 	}
 
 	for (std::vector<LocationBlock>::const_iterator lit = serverBlock.locations.begin();
@@ -41,7 +41,7 @@ bool ConfigParser::serverConfigParser(const ServerBlock& serverBlock, utils::sha
 		if (locationConfigParser(*lit, locationConfig) == false) {
 			return false;
 		}
-		serverConfig.get()->setLocations(lit->identifier, locationConfig);
+		serverConfig->setLocations(lit->identifier, locationConfig);
 	}
 
 	return true;
@@ -51,7 +51,7 @@ bool ConfigParser::locationConfigParser(const LocationBlock& locationBlock,
 										utils::shared_ptr<LocationConfig> locationConfig) {
 	for (std::vector<Directive>::const_iterator it = locationBlock.directives.begin();
 		 it != locationBlock.directives.end(); ++it) {
-		locationConfig.get()->setDirectives(it->name, it->parameters);
+		locationConfig->setDirectives(it->name, it->parameters);
 	}
 	return true;
 }

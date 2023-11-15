@@ -20,7 +20,10 @@ class GetResponseBuilder : public IBuilder<reactor::sharedData_t> {
 
 	fd_t findReadFile();
 
+	void regularProcessing();
+
 	void fileProcessing();
+	void directoryProcessing();
 	void cgiProcessing();
 
    public:
@@ -30,8 +33,8 @@ class GetResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	~GetResponseBuilder();
 
 	// fileread RESOLVE, write empty
-	virtual enum AsyncState getReadState() const { return this->_readSharedData.get()->getState(); }
-	virtual void setReadState(enum AsyncState state) { this->_readSharedData.get()->setState(state); }
+	virtual enum AsyncState getReadState() const { return this->_readSharedData->getState(); }
+	virtual void setReadState(enum AsyncState state) { this->_readSharedData->setState(state); }
 	virtual reactor::sharedData_t getProduct();
 	virtual void setStartLine();
 	virtual void setHeader();

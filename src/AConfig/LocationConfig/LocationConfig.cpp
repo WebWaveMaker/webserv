@@ -77,7 +77,7 @@ void LocationConfig::setErrorPage(const std::vector<std::string>& values) {
 std::string LocationConfig::getErrorPage(unsigned int error_code) const {
 	std::map<unsigned int, std::string>::const_iterator it = _errorPages.find(error_code);
 	if (it == _errorPages.end()) {
-		return _parent.get()->getErrorPage(error_code);
+		return _parent->getErrorPage(error_code);
 	}
 	return it->second;
 }
@@ -86,31 +86,31 @@ ConfigValue LocationConfig::getDirectives(Directives method) const {
 	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(method);
 	if (it == _directives.end()) {
 		if (method == SENDFILE) {
-			return _parent.get()->getDirectives(SENDFILE);
+			return _parent->getDirectives(SENDFILE);
 		} else if (method == KEEPALIVE_TIMEOUT) {
-			return _parent.get()->getDirectives(KEEPALIVE_TIMEOUT);
+			return _parent->getDirectives(KEEPALIVE_TIMEOUT);
 		} else if (method == DEFAULT_TYPE) {
-			return _parent.get()->getDirectives(DEFAULT_TYPE);
+			return _parent->getDirectives(DEFAULT_TYPE);
 		} else if (method == ERROR_LOG) {
-			return _parent.get()->getDirectives(ERROR_LOG);
+			return _parent->getDirectives(ERROR_LOG);
 		} else if (method == CLIENT_MAX_BODY_SIZE) {
-			return _parent.get()->getDirectives(CLIENT_MAX_BODY_SIZE);
+			return _parent->getDirectives(CLIENT_MAX_BODY_SIZE);
 		} else if (method == LIMIT_EXCEPT) {
-			return _parent.get()->getDirectives(LIMIT_EXCEPT);
+			return _parent->getDirectives(LIMIT_EXCEPT);
 		} else if (method == LISTEN) {
-			return _parent.get()->getDirectives(LISTEN);
+			return _parent->getDirectives(LISTEN);
 		} else if (method == SERVER_NAME) {
-			return _parent.get()->getDirectives(SERVER_NAME);
+			return _parent->getDirectives(SERVER_NAME);
 		} else if (method == ROOT) {
-			return _parent.get()->getDirectives(ROOT);
+			return _parent->getDirectives(ROOT);
 		} else if (method == AUTOINDEX) {
-			return _parent.get()->getDirectives(AUTOINDEX);
+			return _parent->getDirectives(AUTOINDEX);
 		} else if (method == INDEX) {
-			return _parent.get()->getDirectives(INDEX);
+			return _parent->getDirectives(INDEX);
 		} else if (method == RETURN) {
-			return _parent.get()->getDirectives(RETURN);
+			return _parent->getDirectives(RETURN);
 		} else if (method == CGI_INDEX) {
-			return _parent.get()->getDirectives(CGI_INDEX);
+			return _parent->getDirectives(CGI_INDEX);
 		}
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "LocationConfig :Invalid directive");
 	}
@@ -165,7 +165,7 @@ utils::shared_ptr<ServerConfig> LocationConfig::getParent() {
 }
 
 std::string LocationConfig::getMimeTypes(const std::string& extension) const {
-	return this->_parent.get()->getMimeTypes(extension);
+	return this->_parent->getMimeTypes(extension);
 }
 
 std::string LocationConfig::getPath() const {

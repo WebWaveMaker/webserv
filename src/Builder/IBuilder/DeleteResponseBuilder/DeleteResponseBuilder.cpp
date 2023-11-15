@@ -37,10 +37,10 @@ bool DeleteResponseBuilder::implDeleteFile(const std::string& path) {
 }
 
 void DeleteResponseBuilder::deleteFile() {
-	const std::string locPath = "." + this->_locationConfig.get()->getDirectives(ROOT).asString() + "/" +
-								this->_request.get()->second.getTargetFile();  // slash는 임시로 추가 이후수정
+	const std::string locPath = "." + this->_locationConfig->getDirectives(ROOT).asString() + "/" +
+								this->_request->second.getTargetFile();	 // slash는 임시로 추가 이후수정
 	const std::string serverPath =
-		"." + this->_serverConfig.get()->getDirectives(ROOT).asString() + this->_request.get()->second.getTargetFile();
+		"." + this->_serverConfig->getDirectives(ROOT).asString() + this->_request->second.getTargetFile();
 
 	if (this->implDeleteFile(locPath))
 		return;
@@ -84,6 +84,6 @@ void DeleteResponseBuilder::prepare() {
 	this->setStartLine();
 	this->setHeader();
 	const std::string raw = this->_response.getRawStr() + CRLF;
-	this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().begin(), raw.begin(), raw.end());
-	this->_readSharedData.get()->setState(RESOLVE);
+	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
+	this->_readSharedData->setState(RESOLVE);
 }

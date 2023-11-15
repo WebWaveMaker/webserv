@@ -23,8 +23,8 @@ class DeleteResponseBuilder : public IBuilder<reactor::sharedData_t> {
 
 	bool implDeleteFile(const std::string& path);
 	void deleteFile();
-	virtual enum AsyncState getReadState() const { return this->_readSharedData.get()->getState(); }
-	virtual void setReadState(enum AsyncState state) { this->_readSharedData.get()->setState(state); }
+	virtual enum AsyncState getReadState() const { return this->_readSharedData->getState(); }
+	virtual void setReadState(enum AsyncState state) { this->_readSharedData->setState(state); }
 	virtual reactor::sharedData_t getProduct();
 	virtual void setStartLine();
 	virtual void setHeader();

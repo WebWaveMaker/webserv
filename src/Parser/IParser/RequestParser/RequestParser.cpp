@@ -38,7 +38,7 @@ request_t RequestParser::pop(void) {
 	request_t elem;
 	if (this->_msgs.empty())
 		return elem;
-	if (this->_msgs.front().get()->first == DONE || this->_msgs.front().get()->first == HTTP_ERROR) {
+	if (this->_msgs.front()->first == DONE || this->_msgs.front()->first == HTTP_ERROR) {
 		elem = this->_msgs.front();
 		this->_msgs.pop();
 	}
@@ -99,7 +99,7 @@ bool RequestParser::parserBody(std::string& buf) {
 	if (headers.count("Content-Length") == 0)
 		return true;
 	const unsigned int contentLength = utils::stoui(headers.at("Content-Length"));
-	const unsigned int bodyLimit = _serverConfig.get()->getDirectives(CLIENT_MAX_BODY_SIZE).asUint();
+	const unsigned int bodyLimit = _serverConfig->getDirectives(CLIENT_MAX_BODY_SIZE).asUint();
 
 	if (contentLength > bodyLimit) {
 		_curMsg->get()->first = HTTP_ERROR;
@@ -131,7 +131,7 @@ request_t RequestParser::parse(const std::string& content) {
 	std::string buf(content);
 
 	while (buf.empty() == false) {
-		switch (this->_msgs.back().get()->first) {
+		switch (this->_msgs.back()->first) {
 			case START_LINE:
 				this->parseStartLine(buf);
 				break;
@@ -146,7 +146,7 @@ request_t RequestParser::parse(const std::string& content) {
 			default:
 				break;
 		}
-		if (this->_msgs.back().get()->first == DONE && buf.empty() == false) {
+		if (this->_msgs.back()->first == DONE && buf.empty() == false) {
 			_msgs.push(utils::shared_ptr<std::pair<enum HttpMessageState, HttpMessage> >(
 				new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 			_curMsg = &_msgs.back();
