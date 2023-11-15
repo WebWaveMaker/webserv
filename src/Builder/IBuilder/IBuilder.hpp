@@ -9,6 +9,18 @@ class IBuilder {
    protected:
 	IBuilder() {}
 
+	enum FileMode checkFileMode(const std::string& path) {
+		struct stat fileStat;
+
+		if (stat(path.c_str(), &fileStat) == -1)
+			return MODE_ERROR;
+		if (S_ISREG(fileStat.st_mode))
+			return MODE_FILE;
+		if (S_ISDIR(fileStat.st_mode))
+			return MODE_DIRECTORY;
+		return MODE_ERROR;
+	}
+
    public:
 	virtual ~IBuilder(){};
 	virtual enum AsyncState getReadState() const = 0;

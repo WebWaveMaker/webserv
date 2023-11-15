@@ -50,12 +50,12 @@ std::vector<std::string> DefaultResponseBuilder::setDefaultStartLine(const int s
 }
 
 std::map<std::string, std::string> DefaultResponseBuilder::setDefaultHeader(
-	const utils::shared_ptr<ServerConfig>& serverConfig) {
+	const utils::shared_ptr<ServerConfig>& serverConfig, const std::string& path) {
 	std::map<std::string, std::string> headers;
 
 	headers["Server"] = serverConfig.get()->getDirectives(SERVER_NAME).asString();
 	headers["Date"] = utils::getCurTime(logTimeFormat::UTCtimeFormat);
+	headers["Content-Type"] = serverConfig.get()->getMimeTypes(path.substr(path.find_last_of('.') + 1));
 
 	return headers;
-	// headers["Content-Type"] =  // 보낼 파일의 맨끝 .(온점)이후 mime type확인 후 없으면 default type 사용.
 }

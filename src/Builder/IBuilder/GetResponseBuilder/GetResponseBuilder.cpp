@@ -11,9 +11,12 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _readSharedData() {
 	if (_locationConfig.get() == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	// if (this->_locationConfig.get()->isRedirect())
-	//	throw RedirectResponseBuilder(); // throw utils::shared_ptr<IBuilder<sharedData_t> >(ErrorResponseBuilder(301) 301 moved permanently
+			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	if (this->_locationConfig.get()->isRedirect()) {
+		// return 자료형 확인한 후에 처리.
+		// throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		// 	RedirectResponseBuilder(, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	}
 	this->prepare();
 }
 
@@ -26,7 +29,7 @@ reactor::sharedData_t GetResponseBuilder::getProduct() {
 }
 
 void GetResponseBuilder::setStartLine() {
-	this->_response.setStartLine(DefaultResponseBuilder::getInstance()->setDefaultStartLine(200));
+	this->_response.setStartLine(DefaultResponseBuilder::getInstance()->setDefaultStartLine(OK));
 }
 
 void GetResponseBuilder::setHeader() {
@@ -34,12 +37,16 @@ void GetResponseBuilder::setHeader() {
 
 	// cgi 처리는 다르게 해야함.
 	if (stat(this->_path.c_str(), &fileInfo) == -1) {
-		throw std::runtime_error(
-			"stat error");	// throw utils::shared_ptr<IBuilder<sharedData_t> >(ErrorResponseBuilder(500) internal server error later
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	}
-
+	if (fileInfo.st_size == 0) {
+		close(this->_fd);
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	}
 	std::map<std::string, std::string> headers =
-		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig);
+		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
 	headers["Content-Length"] = utils::lltos(fileInfo.st_size);
 	this->_response.setHeaders(headers);
 }
@@ -73,6 +80,19 @@ fd_t GetResponseBuilder::findReadFile() {
 	const std::string locPath = "." + this->_locationConfig.get()->getDirectives(ROOT).asString();
 	const std::string serverPath = "." + this->_serverConfig.get()->getDirectives(ROOT).asString();
 	const std::vector<std::string> indexVec = this->_locationConfig.get()->getDirectives(INDEX).asStrVec();
+	const std::string requestTarget = this->_request.get()->second.getRequestTarget();
+	const std::string uri = requestTarget.substr(requestTarget.find_last_of('/') + 1);
+
+	if (uri != "") {
+		this->_path = locPath + uri;
+		if (access(this->_path.c_str(), R_OK) == 0)
+			return utils::makeFd(this->_path.c_str(), "r");
+		this->_path = serverPath + uri;
+		if (access(this->_path.c_str(), R_OK) == 0)
+			return utils::makeFd(this->_path.c_str(), "r");
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	}
 
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {
 		this->_path = locPath + *cit;
@@ -90,9 +110,10 @@ fd_t GetResponseBuilder::findReadFile() {
 
 void GetResponseBuilder::fileProcessing() {
 	this->_fd = this->findReadFile();
+	// if (this->_fd == -1 && this->_locationConfig.get()->isAutoIndex()) // 디렉토리 리스팅 구현. 
 	if (this->_fd == -1)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	this->setStartLine();
 	this->setHeader();
 	const std::string raw = this->_response.getRawStr();
