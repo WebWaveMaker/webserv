@@ -10,6 +10,7 @@ include $(TOPDIR)/config/makefile/common.mk
 
 DIRS := DefaultResponseBuilder \
 		ErrorResponseBuilder \
-		GetResponseBuilder
+		GetResponseBuilder \
+		DeleteResponseBuilder
 
 include $(TOPDIR)/config/makefile/objRecipes.mk
