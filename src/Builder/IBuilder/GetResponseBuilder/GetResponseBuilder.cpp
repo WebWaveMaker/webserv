@@ -102,8 +102,42 @@ void GetResponseBuilder::fileProcessing() {
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileReadHandlerFactory>(this->_readSharedData);
 }
 
-void GetResponseBuilder::cgiProcessing() {
-	// cgi 처리
+// 해당 함수에서 cgi실행의 유효성을 검사해서 넘어간다.
+void GetResponseBuilder::cgiProcessing() {}
+
+std::string GetResponseBuilder::makeCgiPath() {
+	const std::string locPath = "." + this->_locationConfig.get()->getDirectives(ROOT).asString();
+	const std::string serverPath = "." + this->_serverConfig.get()->getDirectives(ROOT).asString();
+	const std::vector<std::string> cgiIndex = this->_locationConfig.get()->getDirectives(CGI_INDEX).asStrVec();
+	const std::string uriPath = this->_request->second.getRequestTarget().erase(0, locPath.size());
+	const std::string locationPath = this->_locationConfig.get()->getPath();
+
+	// 먼저 .확장자가 존재하는지 찾는다. 있으면 /전까지 편집, 없으면 location만 제거하고 cgi실행
+	size_t dotPos = uriPath.find('.');
+	if (dotPos == std::string::npos) {
+		for (std::vector<std::string>::iterator it = cgiIndex.begin(); it != cgiIndex.end(); ++i) {
+			std::string cgiFullPath = locPath + *cgiIndex;
+			if (access(cgiFullPath.c_str(), X_OK) == 0)
+				return cgiFullPath;
+		}
+
+		for (std::vector<std::string>::iterator it = cgiIndex.begin(); it != cgiIndex.end(); ++i) {
+			std::string cgiFullPath = serverPath + *cgiIndex;
+			if (access(cgiFullPath.c_str(), X_OK) == 0)
+				return cgiFullPath;
+		}
+		return NULL;
+	} else {
+		size_t slashPos = uriPath.find('/', dotPos);
+		if (slashPos != std::string::npos)
+			std::string cgiFullpath = uriPath.substr(0, slashPos - 1);
+		else
+			std::string cgiFullpath = uriPath.substr(0);
+	}
+	// uri의 앞에 locationPath를 제거한다.
+	// 제거한 uri앞에 root의 path를 연결한다.
+	// cgi_index암페 root를 연결한다.
+	// 2개의 문자열을 비교한다.
 }
 
 void GetResponseBuilder::prepare() {

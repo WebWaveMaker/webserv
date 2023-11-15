@@ -16,4 +16,11 @@ namespace reactor {
 
 		va_end(args);
 	}
+
+	bool CgiExecuteHandler::validCgiPath() {
+		const std::string locPath = "." + this->_locationConfig.get()->getDirectives(ROOT).asString();
+		const std::string serverPath = "." + this->_serverConfig.get()->getDirectives(ROOT).asString();
+		const std::vector<std::string> cgiIndex = "." + this->_locationConfig.get()->getDirectives(CGI_INDEX)
+	}
+
 }  // namespace reactor
