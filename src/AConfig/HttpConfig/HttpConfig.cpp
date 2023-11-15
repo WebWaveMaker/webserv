@@ -15,6 +15,7 @@ HttpConfig& HttpConfig::operator=(const HttpConfig& other) {
 }
 
 void HttpConfig::setDirectives(const std::string& directive, const std::vector<std::string>& values) {
+	ConfigSyntax::checkSyntax(directive, values);
 	if (directive == "sendfile") {
 		_directives.insert(std::make_pair(SENDFILE, addBooleanValue(values[0])));
 	} else if (directive == "keepalive_timeout") {

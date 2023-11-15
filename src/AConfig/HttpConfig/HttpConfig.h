@@ -3,6 +3,7 @@
 #define HTTPCONFIG_H
 
 #include "AConfig.hpp"
+#include "ConfigSyntax.h"
 #include "ErrorLogger.hpp"
 #include "Mime.hpp"
 #include "Parser.h"

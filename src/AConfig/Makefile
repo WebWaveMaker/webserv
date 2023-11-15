@@ -6,7 +6,8 @@ include $(TOPDIR)/config/makefile/common.mk
 
 DIRS := HttpConfig \
 		LocationConfig \
-		ServerConfig
+		ServerConfig \
+		ConfigSyntax 
 
 SRCS := AConfig.cpp
 

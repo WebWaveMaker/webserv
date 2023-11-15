@@ -20,6 +20,10 @@ bool ConfigParser::httpConfigParser(const HttpBlock& http, HttpConfig* httpConfi
 	for (std::vector<Directive>::const_iterator it = http.directives.begin(); it != http.directives.end(); ++it) {
 		if (it->name == "include" && it->parameters.front().empty() == false) {
 			utils::shared_ptr<Mime> mimeTypes(new Mime());
+			if (ConfigSyntax::isSlashFront(it->parameters.front()) == false) {
+				throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+											  "Invalid include: " + it->parameters.front());
+			}
 			parseMimeTypes(it->parameters.front(), mimeTypes);
 			httpConfig->setMimeTypes(mimeTypes);
 		} else {
@@ -236,19 +240,17 @@ bool ConfigParser::httpBlockTokenizer(const std::string& content, size_t& positi
 }
 
 void ConfigParser::parseMimeTypes(const std::string& filename, utils::shared_ptr<Mime> mimeTypes) {
-	std::ifstream infile(filename.c_str());
+	std::string filenameWithoutSlash = filename.substr(1);
+	std::ifstream infile(filenameWithoutSlash.c_str());
 	if (!infile) {
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Could not open MIME types file: " + filename);
 	}
 
 	std::string line;
 	while (std::getline(infile, line)) {
-		// Ignore lines that do not end with a semicolon
 		if (line.empty() || *line.rbegin() != ';') {
 			continue;
 		}
-
-		// Erase the semicolon from the end
 		line.erase(line.length() - 1);
 
 		std::istringstream iss(line);
