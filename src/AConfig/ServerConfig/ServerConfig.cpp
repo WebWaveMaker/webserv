@@ -173,32 +173,23 @@ bool ServerConfig::getOwnConfirmedMethods(Directives method) const {
 }
 
 utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::string& reqPath) {
-	std::cout << "path:" << reqPath << std::endl;
+	std::string bestMatchKey;
 	size_t longestMatch = 0;
-	utils::shared_ptr<LocationConfig> bestMatch;
 
-	for (std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = _locations.begin();
-		 it != _locations.end(); ++it) {
-		const std::string& locationPath = it->first;
-		std::cout << "locationPath:" << locationPath << std::endl;
-
-		if (reqPath.compare(0, locationPath.length(), locationPath) == 0) {
-			if (locationPath.length() > longestMatch &&
-				(reqPath.length() == locationPath.length() || reqPath[locationPath.length()] == '/')) {
-				longestMatch = locationPath.length();
-				bestMatch = it->second;
-			}
+	for (std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = this->_locations.begin();
+		 it != this->_locations.end(); ++it) {
+		const std::string& key = it->first;
+		if (reqPath.compare(0, key.length(), key) == 0 && key.length() > longestMatch) {
+			bestMatchKey = key;
+			longestMatch = key.length();
 		}
 	}
 
-	if (bestMatch.get() != NULL) {
-		return bestMatch;
-	}
-
-	if (_locations.find("/") == _locations.end()) {
+	if (longestMatch > 0) {
+		return this->_locations.find(bestMatchKey)->second;
+	} else {
 		return utils::shared_ptr<LocationConfig>();
 	}
-	return _locations["/"];
 }
 
 std::string ServerConfig::getMimeTypes(const std::string& extension) const {
