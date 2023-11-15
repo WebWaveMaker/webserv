@@ -18,7 +18,6 @@ class ServerManager : public u::TSingleton<ServerManager> {
 
    public:
 	ServerManager();
-	ServerManager();
 	void init(const std::string path, char** envp);
 	void handleSigPipe();
 	void createServer(config_t& serverConfigs);
