@@ -111,3 +111,11 @@ ConfigValue AConfig::addMedVecValue(const std::vector<HttpMethods>& value) {
 ConfigValue AConfig::addStrVecValue(const std::vector<std::string>& value) {
 	return ConfigValue(value);
 }
+
+bool AConfig::isDirective(Directives method) const {
+	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(method);
+	if (it == _directives.end()) {
+		return false;  // 지시어를 찾을 수 없음
+	}
+	return true;
+}
