@@ -27,6 +27,7 @@ class HttpMessage {
 	std::string getRequestTarget(void) const;
 	std::map<std::string, std::string>& getHeaders(void);
 	std::string getRawStr(void);
+	std::string getBody(void) const;
 	void reset();
 };
 

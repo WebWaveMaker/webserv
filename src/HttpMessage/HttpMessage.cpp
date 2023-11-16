@@ -83,3 +83,7 @@ void HttpMessage::reset() {
 	this->_headers.clear();
 	this->_body.clear();
 }
+
+std::string HttpMessage::getBody() const {
+	return this->_body;
+}
