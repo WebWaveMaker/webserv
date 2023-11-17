@@ -11,6 +11,7 @@
 
 #define FD_ERROR -1
 #define FD_LISTING -2
+#define FD_ZERO_ -3
 #define SYSTEMCALL_ERROR -1
 
 #endif

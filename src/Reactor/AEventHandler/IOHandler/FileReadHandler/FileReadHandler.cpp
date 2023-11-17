@@ -15,6 +15,7 @@ namespace reactor {
 	}
 
 	void FileReadHandler::handleEvent() {
+		std::cout << "hi i'm FilereadHandler" << std::endl;
 		if (this->getState() == TERMINATE || this->getState() == RESOLVE)
 			return;
 		std::vector<char> buffer(BUFFER_SIZE);

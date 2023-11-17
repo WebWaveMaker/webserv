@@ -39,15 +39,13 @@ void GetResponseBuilder::setStartLine() {
 void GetResponseBuilder::setHeader() {
 	struct stat fileInfo;
 
-	// cgi 처리는 다르게 해야함.
 	if (stat(this->_path.c_str(), &fileInfo) == SYSTEMCALL_ERROR) {
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	}
 	if (fileInfo.st_size == 0) {
 		close(this->_fd);
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		this->_fd = FD_ZERO_;
 	}
 	std::map<std::string, std::string> headers =
 		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
@@ -210,5 +208,12 @@ void GetResponseBuilder::prepare() {
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
 	this->_readSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(this->_fd, EVENT_READ, std::vector<char>()));
+	if (this->_fd == FD_ZERO_) {
+		this->setReadState(RESOLVE);
+		this->_removed = true;
+		this->getProduct()->getBuffer().push_back('\r');
+		this->getProduct()->getBuffer().push_back('\n');
+		return;
+	}
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileReadHandlerFactory>(this->_readSharedData);
 }
