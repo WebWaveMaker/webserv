@@ -9,7 +9,7 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _locationConfig(locationConfig),
 	  _removed(false),
 	  _path(),
-	  _fd(-1),
+	  _fd(FD_ERROR),
 	  _readSharedData(),
 	  _response() {
 	if (_locationConfig.get() == u::nullptr_t)
@@ -19,7 +19,7 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 		std::vector<std::string> rv = this->_locationConfig->getDirectives(RETURN).asStrVec();
 
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new RedirectResponseBuilder(
-			utils::stoui(rv[0]), rv[1], this->_sharedData, this->_serverConfig, this->_locationConfig));
+			utils::stoui(rv[0]), rv[1], this->_sharedData, this->_request, this->_serverConfig));
 	}
 	this->prepare();
 }
@@ -40,7 +40,7 @@ void GetResponseBuilder::setHeader() {
 	struct stat fileInfo;
 
 	// cgi 처리는 다르게 해야함.
-	if (stat(this->_path.c_str(), &fileInfo) == -1) {
+	if (stat(this->_path.c_str(), &fileInfo) == SYSTEMCALL_ERROR) {
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	}
@@ -83,44 +83,127 @@ bool GetResponseBuilder::build() {
 fd_t GetResponseBuilder::findReadFile() {
 	const std::string locPath = "." + this->_locationConfig->getDirectives(ROOT).asString();
 	const std::string serverPath = "." + this->_serverConfig->getDirectives(ROOT).asString();
-	const std::vector<std::string> indexVec = this->_locationConfig->getDirectives(INDEX).asStrVec();
-	const std::string requestTarget = this->_request->second.getRequestTarget();
-	const std::string uri = requestTarget.substr(requestTarget.find_last_of('/') + 1);
+	const std::string targetFile = this->_request->second.getTargetFile();
 
-	if (uri != "") {
-		this->_path = locPath + uri;
-		if (access(this->_path.c_str(), R_OK) == 0)
-			return utils::makeFd(this->_path.c_str(), "r");
-		this->_path = serverPath + uri;
-		if (access(this->_path.c_str(), R_OK) == 0)
-			return utils::makeFd(this->_path.c_str(), "r");
+	this->_path = locPath + targetFile;
+	if (access(this->_path.c_str(), R_OK) == 0)
+		return utils::makeFd(this->_path.c_str(), "r");
+	this->_path = serverPath + targetFile;
+	if (access(this->_path.c_str(), R_OK) == 0)
+		return utils::makeFd(this->_path.c_str(), "r");
+	return FD_ERROR;
+}
+
+fd_t GetResponseBuilder::fileProcessing() {
+	if (this->checkFileMode("." + this->_locationConfig->getDirectives(ROOT).asString() +
+							this->_request->second.getTargetFile()) == MODE_DIRECTORY)
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+			new RedirectResponseBuilder(MOVED_PERMANENTLY, this->_request->second.getRequestTarget() + "/",
+										this->_sharedData, this->_request, this->_serverConfig));
+	return this->findReadFile();
+}
+
+std::vector<std::string> GetResponseBuilder::readDir(const std::string& path) {
+	DIR* dirp;
+	struct dirent* dp;
+
+	if ((dirp = opendir(path.c_str())) == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	dp = readdir(dirp);	 // skip current directory
+	dp = readdir(dirp);	 // skip parent directory
+	if (dp == u::nullptr_t)
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	std::vector<std::string> dirVec;
+	while ((dp = readdir(dirp)) != u::nullptr_t) {
+		if (dp == u::nullptr_t)
+			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+				INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		dirVec.push_back(dp->d_name);
 	}
+	closedir(dirp);
+	return dirVec;
+};
+
+void GetResponseBuilder::makeListHtml(const std::string& path, const std::vector<std::string>& dirVec) {
+	const std::string requestTarget = this->_request->second.getRequestTarget();
+	struct stat fileStat;
+
+	std::string html = LIST_HTML_HEADER(requestTarget);
+
+	for (std::vector<std::string>::const_iterator cit = dirVec.begin(); cit != dirVec.end(); ++cit) {
+		if (stat((path + "/" + *cit).c_str(), &fileStat) == SYSTEMCALL_ERROR)
+			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+				INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		if (S_ISDIR(fileStat.st_mode))
+			html += "<a href=\"" + *cit + "\"/>" + *cit + "/</a>";
+		else
+			html += "<a href=\"" + *cit + "\">" + *cit + "</a>";
+		html += "                                               " +
+				utils::formatTime(fileStat.st_birthtimespec.tv_sec, logTimeFormat::dirListFormat) +
+				"                   " + (S_ISDIR(fileStat.st_mode) ? "-" : utils::lltos(fileStat.st_size)) + "\r\n";
+	}
+	html += "</pre><hr></body>\r\n</html>";
+	this->setStartLine();
+	std::map<std::string, std::string> headers =
+		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig);
+	headers["Content-Length"] = utils::lltos(html.size());
+	headers["Content-Type"] = "text/html";
+	this->_response.setHeaders(headers);
+	const std::string raw = this->_response.getRawStr();
+	this->_readSharedData = utils::shared_ptr<reactor::SharedData>(
+		new reactor::SharedData(FD_LISTING, EVENT_READ, std::vector<char>(html.begin(), html.end())));
+	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
+	this->setReadState(RESOLVE);
+	this->_removed = true;
+}
+
+fd_t GetResponseBuilder::directoryListing() {
+	std::cout << "directory listing" << std::endl;
+	if (this->_locationConfig->getDirectives(AUTOINDEX).asBool() == false)
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+			new ErrorResponseBuilder(FORBIDDEN, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	const std::string path = "." + this->_locationConfig->getOwnRoot();
+	const std::vector<std::string> dirVec = this->readDir(path);
+	makeListHtml(path, dirVec);
+
+	return FD_LISTING;
+}
+
+fd_t GetResponseBuilder::directoryProcessing() {
+	if (this->checkFileMode("." + this->_locationConfig->getDirectives(ROOT).asString() +
+							this->_request->second.getTargetFile()) == MODE_FILE)
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	if (this->_locationConfig->getOwnIndex().empty())
+		return this->directoryListing();
+	const std::string locPath = "." + this->_locationConfig->getDirectives(ROOT).asString();
+	const std::string serverPath = "." + this->_serverConfig->getDirectives(ROOT).asString();
+	const std::vector<std::string> indexVec = this->_locationConfig->getDirectives(INDEX).asStrVec();
 
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {
 		this->_path = locPath + *cit;
 		if (access(this->_path.c_str(), R_OK) == 0)
 			return utils::makeFd(this->_path.c_str(), "r");
 	}
-
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {
 		this->_path = serverPath + *cit;
 		if (access(this->_path.c_str(), R_OK) == 0)
 			return utils::makeFd(this->_path.c_str(), "r");
 	}
-	return -1;
+	return FD_ERROR;
 }
 
-void GetResponseBuilder::fileProcessing() {
-	if (this->checkFileMode("." + this->_locationConfig->getDirectives(ROOT).asString()) == MODE_DIRECTORY)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new RedirectResponseBuilder(MOVED_PERMANENTLY, this->_request->second.getRequestTarget() + "/",
-										this->_sharedData, this->_serverConfig, this->_locationConfig));
-	this->_fd = this->findReadFile();
-	if (this->_fd == -1)
+void GetResponseBuilder::prepare() {
+	this->_fd = this->checkOurFileMode(this->_request->second.getRequestTarget()) == MODE_FILE
+					? this->fileProcessing()
+					: this->directoryProcessing();
+	if (this->_fd == FD_ERROR)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	if (this->_fd == FD_LISTING)
+		return;
 	this->setStartLine();
 	this->setHeader();
 	const std::string raw = this->_response.getRawStr();
@@ -128,22 +211,4 @@ void GetResponseBuilder::fileProcessing() {
 	this->_readSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(this->_fd, EVENT_READ, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileReadHandlerFactory>(this->_readSharedData);
-}
-
-void GetResponseBuilder::directoryProcessing() {}
-
-void GetResponseBuilder::cgiProcessing() {}
-
-void GetResponseBuilder::regularProcessing() {
-	if (this->checkOurFileMode(this->_request->second.getRequestTarget()) == MODE_FILE)
-		this->fileProcessing();
-	else
-		this->directoryProcessing();
-}
-
-void GetResponseBuilder::prepare() {
-	if (this->_locationConfig->isCgi())
-		this->cgiProcessing();
-	else
-		this->regularProcessing();
 }

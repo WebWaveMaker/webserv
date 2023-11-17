@@ -11,7 +11,7 @@ void reactor::ClientReadHandler::handleEvent() {
 	std::vector<char> buffer(BUFFER_SIZE);
 	int readByte = recv(this->getHandle(), buffer.data(), buffer.size() - 1, 0);
 
-	if (readByte == -1) {
+	if (readByte == SYSTEMCALL_ERROR) {
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		return;
 	}
@@ -20,9 +20,6 @@ void reactor::ClientReadHandler::handleEvent() {
 		this->setState(TERMINATE);
 		return;
 	}
-	std::cout << "readByte: " << readByte << std::endl;
-	std::cout << buffer.data() << std::endl;
-
 	if (readByte && readByte < BUFFER_SIZE) {
 		this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
 		this->getBuffer().push_back('\0');

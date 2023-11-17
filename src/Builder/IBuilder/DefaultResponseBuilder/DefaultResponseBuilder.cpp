@@ -54,8 +54,18 @@ std::map<std::string, std::string> DefaultResponseBuilder::setDefaultHeader(
 	std::map<std::string, std::string> headers;
 
 	headers["Server"] = serverConfig->getDirectives(SERVER_NAME).asString();
-	headers["Date"] = utils::getCurTime(logTimeFormat::UTCtimeFormat);
+	headers["Date"] = utils::getCurTime(logTimeFormat::GMTtimeFormat);
 	headers["Content-Type"] = serverConfig->getMimeTypes(path.substr(path.find_last_of('.') + 1));
+
+	return headers;
+}
+
+std::map<std::string, std::string> DefaultResponseBuilder::setDefaultHeader(
+	const utils::shared_ptr<ServerConfig>& serverConfig) {
+	std::map<std::string, std::string> headers;
+
+	headers["Server"] = serverConfig->getDirectives(SERVER_NAME).asString();
+	headers["Date"] = utils::getCurTime(logTimeFormat::GMTtimeFormat);
 
 	return headers;
 }

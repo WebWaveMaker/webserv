@@ -20,11 +20,13 @@ class GetResponseBuilder : public IBuilder<reactor::sharedData_t> {
 
 	fd_t findReadFile();
 
-	void regularProcessing();
+	fd_t fileProcessing();
 
-	void fileProcessing();
-	void directoryProcessing();
-	void cgiProcessing();
+	void makeListHtml(const std::string& path, const std::vector<std::string>& dirVec);
+	std::vector<std::string> readDir(const std::string& path);
+	fd_t directoryListing();
+
+	fd_t directoryProcessing();
 
    public:
 	GetResponseBuilder(reactor::sharedData_t sharedData, request_t request,

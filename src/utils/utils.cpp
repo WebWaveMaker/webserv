@@ -5,6 +5,7 @@ const char* logTimeFormat::errorTimeFormat = " %Y/%m/%d %H:%M:%S ";
 const char* logTimeFormat::systemTimeFormat = " %a, %d %b %Y %H:%M:%S ";
 const char* logTimeFormat::GMTtimeFormat = "%a, %d %b %Y %H:%M:%S GMT";
 const char* logTimeFormat::UTCtimeFormat = "%Y-%m-%dT%H:%M:%SZ";
+const char* logTimeFormat::dirListFormat = "%d-%b-%Y %H:%M";
 
 namespace utils {
 
@@ -55,6 +56,15 @@ namespace utils {
 		return std::string(buf);
 	}
 
+	std::string formatTime(const std::time_t t, const char* format) {
+		const std::tm* localTime = std::localtime(&t);
+
+		char buf[42];
+		std::strftime(buf, sizeof(buf), format, localTime);
+
+		return std::string(buf);
+	}
+
 	unsigned int stoui(const std::string s) {
 		unsigned int i;
 		std::istringstream(s) >> i;
@@ -94,7 +104,7 @@ namespace utils {
 	fd_t makeFd(const char* path, const char* option) {
 		FILE* file = fopen(path, option);
 		if (file == NULL)
-			return -1;
+			return FD_ERROR;
 		const fd_t fileFd = fileno(file);
 		return (fileFd);
 	}

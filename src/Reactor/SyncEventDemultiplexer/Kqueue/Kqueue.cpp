@@ -1,7 +1,7 @@
 #include "Kqueue.hpp"
 
 Kqueue::Kqueue() : _fd(kqueue()), _kEventList(8), _changeList() {
-	if (this->_fd == -1)
+	if (this->_fd == SYSTEMCALL_ERROR)
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 }
 
@@ -14,7 +14,7 @@ void Kqueue::registerEvent(const uintptr_t ident, const int16_t filter, const ui
 	struct kevent event;
 
 	EV_SET(&event, ident, filter, flags, fflags, data, udata);
-	if (kevent(this->_fd, &event, 1, u::nullptr_t, 0, u::nullptr_t) == -1)
+	if (kevent(this->_fd, &event, 1, u::nullptr_t, 0, u::nullptr_t) == SYSTEMCALL_ERROR)
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 };
 

@@ -7,7 +7,7 @@ DeleteResponseBuilder::DeleteResponseBuilder(reactor::sharedData_t sharedData, r
 	  _request(request),
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
-	  _readSharedData(new reactor::SharedData(-1, EVENT_READ, std::vector<char>())),
+	  _readSharedData(new reactor::SharedData(FD_ERROR, EVENT_READ, std::vector<char>())),
 	  _response(),
 	  _path() {
 	if (_locationConfig.get() == u::nullptr_t)
@@ -21,7 +21,7 @@ DeleteResponseBuilder::~DeleteResponseBuilder() {}
 bool DeleteResponseBuilder::implDeleteFile(const std::string& path) {
 	switch (checkFileMode(path)) {
 		case MODE_FILE:
-			if (std::remove(path.c_str()) == -1)
+			if (std::remove(path.c_str()) == SYSTEMCALL_ERROR)
 				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 					INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 			this->_path = path;
@@ -61,6 +61,8 @@ void DeleteResponseBuilder::setStartLine() {
 void DeleteResponseBuilder::setHeader() {
 	std::map<std::string, std::string> headers =
 		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
+
+	headers.erase("Content-Type");
 	headers["Content-Length"] = "0";
 	this->_response.setHeaders(headers);
 }

@@ -40,7 +40,7 @@ namespace reactor {
 		const int eventNum =
 			kevent(this->_kq->getFd(), &this->_kq->getChangeList()[0], this->_kq->getChangeList().size(),
 				   &this->_kq->getkEventList()[0], this->_kq->getkEventList().size(), u::nullptr_t);
-		if (eventNum == -1)
+		if (eventNum == SYSTEMCALL_ERROR)
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		this->_kq->getChangeList().clear();
 		for (int i = 0; i < eventNum; ++i) {

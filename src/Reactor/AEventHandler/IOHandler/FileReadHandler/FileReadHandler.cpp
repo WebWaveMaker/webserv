@@ -25,8 +25,6 @@ namespace reactor {
 			this->setState(TERMINATE);
 			return;
 		}
-		std::cout << "readByte: " << readByte << std::endl;
-		std::cout << "buffer: " << buffer.data() << std::endl;
 		if (feof(this->_fp)) {
 			this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
 			this->setState(RESOLVE);

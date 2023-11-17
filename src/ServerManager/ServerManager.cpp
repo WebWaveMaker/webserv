@@ -75,8 +75,6 @@ utils::shared_ptr<ServerConfig> ServerManager::getServerConfig(const int clientF
 }
 
 ServerManager::~ServerManager() {
-	std::cout << "ServerManager Destructor called\n";
-
 	for (std::map<int, Server*>::iterator it = this->_servers.begin(); it != this->_servers.end(); ++it)
 		delete it->second;
 	this->_servers.clear();

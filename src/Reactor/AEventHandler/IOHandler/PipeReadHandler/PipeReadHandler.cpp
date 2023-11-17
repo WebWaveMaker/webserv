@@ -8,7 +8,7 @@ namespace reactor {
 			return;
 		std::vector<char> buffer(BUFFER_SIZE);
 		ssize_t readByte = read(this->getHandle(), buffer.data(), buffer.size() - 1);
-		if (readByte == -1) {
+		if (readByte == SYSTEMCALL_ERROR) {
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "read fail");
 			this->setState(TERMINATE);
 			return;

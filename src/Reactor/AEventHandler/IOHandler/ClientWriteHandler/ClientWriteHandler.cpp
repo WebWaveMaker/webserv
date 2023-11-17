@@ -10,7 +10,7 @@ namespace reactor {
 			return;
 		std::vector<char>& buffer = this->getBuffer();
 		ssize_t numberOfBytes = send(this->getHandle(), buffer.data(), this->getBuffer().size(), 0);
-		if (numberOfBytes == -1)
+		if (numberOfBytes == SYSTEMCALL_ERROR)
 			return;
 		buffer.erase(buffer.begin(), buffer.begin() + numberOfBytes);
 	}

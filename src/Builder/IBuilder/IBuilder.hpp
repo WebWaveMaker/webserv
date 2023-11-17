@@ -12,7 +12,7 @@ class IBuilder {
 	enum FileMode checkFileMode(const std::string& path) {
 		struct stat fileStat;
 
-		if (stat(path.c_str(), &fileStat) == -1)
+		if (stat(path.c_str(), &fileStat) == SYSTEMCALL_ERROR)
 			return MODE_ERROR;
 		if (S_ISREG(fileStat.st_mode))
 			return MODE_FILE;
@@ -28,7 +28,7 @@ class IBuilder {
 	 * @return enum FileMode 
 	 */
 	enum FileMode checkOurFileMode(const std::string& path) {
-		if (path.find_last_of('/') == std::string::npos)
+		if (path.find_last_of('/') == path.size() - 1)
 			return MODE_DIRECTORY;
 		return MODE_FILE;
 	}

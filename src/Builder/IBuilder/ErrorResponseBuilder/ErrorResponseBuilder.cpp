@@ -22,8 +22,9 @@ void ErrorResponseBuilder::setStartLine() {
 void ErrorResponseBuilder::setHeader() {
 	struct stat fileInfo;
 
-	if (stat(this->_path.c_str(), &fileInfo) == -1) {
-		throw std::runtime_error("stat error");	 // 500 internal server error
+	if (stat(this->_path.c_str(), &fileInfo) == SYSTEMCALL_ERROR) {
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	}
 
 	std::map<std::string, std::string> headers =
@@ -63,12 +64,12 @@ fd_t ErrorResponseBuilder::findReadFile() {
 	// 	"." + this->_locationConfig->getOwnRoot(ROOT).asString() +  // 나중에 getOwnRoot바뀔 예정.
 	// 	this->_locationConfig->getErrorPage(this->_errorCode);
 
-	return -1;
+	return FD_ERROR;
 }
 
 void ErrorResponseBuilder::prepare() {
 	this->_fd = this->findReadFile();
-	if (this->_fd == -1) {
+	if (this->_fd == FD_ERROR) {
 		this->_errorCode = NOT_FOUND;
 		this->_path = "./var/error.html";
 		this->_fd = utils::makeFd(this->_path.c_str(), "r");
@@ -77,8 +78,6 @@ void ErrorResponseBuilder::prepare() {
 	this->setHeader();
 	const std::string raw = this->_response.getRawStr();
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().end(), raw.begin(), raw.end());
-	if (this->_fd == -1)
-		return;
 	this->_readSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(_fd, EVENT_READ, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileReadHandlerFactory>(this->_readSharedData);

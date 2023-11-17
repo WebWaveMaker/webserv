@@ -28,5 +28,5 @@ std::string Mime::getMimeType(const std::string& extension) const {
 	if (it != _mimeTypes.end()) {
 		return it->second;
 	}
-	return "application/octet-stream";
+	return "";
 }

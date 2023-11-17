@@ -6,5 +6,6 @@
 #include <cerrno>
 #include "ALogger.hpp"
 #include "enum.h"
+#include "const.h"
 
 #endif

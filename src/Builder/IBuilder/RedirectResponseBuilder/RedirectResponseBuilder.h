@@ -4,5 +4,6 @@
 
 #include "IBuilder.hpp"
 #include "RequestParser.h"
+#include "DefaultResponseBuilder.hpp"
 
 #endif

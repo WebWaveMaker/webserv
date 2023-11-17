@@ -99,7 +99,8 @@ ConfigValue HttpConfig::getDirectives(Directives method) const {
 }
 
 std::string HttpConfig::getMimeTypes(const std::string& extension) const {
-	return this->_mimeTypes->getMimeType(extension);
+	return this->_mimeTypes->getMimeType(extension) == "" ? this->getDirectives(DEFAULT_TYPE).asString()
+														  : this->_mimeTypes->getMimeType(extension);
 }
 
 void HttpConfig::setMimeTypes(utils::shared_ptr<Mime> mimeTypes) {
