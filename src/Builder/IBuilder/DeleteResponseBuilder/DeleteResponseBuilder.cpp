@@ -37,10 +37,10 @@ bool DeleteResponseBuilder::implDeleteFile(const std::string& path) {
 }
 
 void DeleteResponseBuilder::deleteFile() {
-	const std::string locPath = "." + this->_locationConfig->getDirectives(ROOT).asString() + "/" +
+	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString() + "/" +
 								this->_request->second.getTargetFile();	 // slash는 임시로 추가 이후수정
 	const std::string serverPath =
-		"." + this->_serverConfig->getDirectives(ROOT).asString() + this->_request->second.getTargetFile();
+		this->_serverConfig->getDirectives(ROOT).asString() + this->_request->second.getTargetFile();
 
 	if (this->implDeleteFile(locPath))
 		return;

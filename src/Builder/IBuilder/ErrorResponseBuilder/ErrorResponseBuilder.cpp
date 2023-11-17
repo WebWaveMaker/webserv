@@ -60,8 +60,8 @@ bool ErrorResponseBuilder::build() {
 }
 
 fd_t ErrorResponseBuilder::findReadFile() {
-	const std::string locPath = "." + this->_locationConfig->getDirectives(ROOT).asString();
-	const std::string serverPath = "." + this->_serverConfig->getDirectives(ROOT).asString();
+	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString();
+	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString();
 	std::string errorPage = this->_locationConfig->getErrorPage(this->_errorCode);
 
 	this->_path = locPath + errorPage;

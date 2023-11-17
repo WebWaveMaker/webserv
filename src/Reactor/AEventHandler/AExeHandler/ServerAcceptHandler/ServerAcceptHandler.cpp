@@ -26,7 +26,7 @@ namespace reactor {
 			close(clientFd);
 			return;
 		}
-		if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0) {
+		if (fcntl(clientFd, F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
 			std::cout << clientFd << std::endl;
 			ServerManager::getInstance()->eraseClient(clientFd);
 			close(clientFd);
