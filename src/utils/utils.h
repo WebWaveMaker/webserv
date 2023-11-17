@@ -9,9 +9,9 @@
 #include <vector>
 #include "TSingleton.hpp"
 #include "color.h"
+#include "const.h"
 #include "nullptr_t.hpp"
 #include "types.h"
-#include "const.h"
 
 class logTimeFormat {
    public:
