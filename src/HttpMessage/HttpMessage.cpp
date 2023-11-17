@@ -64,6 +64,10 @@ enum HttpMethods HttpMessage::getMethod(void) const {
 	return UNKNOWN;
 }
 
+std::string HttpMessage::getMethodStr(void) const {
+	return (this->_headers[0]);
+}
+
 std::string HttpMessage::getRequestTarget(void) const {
 	return this->_startLine[1];
 }
