@@ -29,6 +29,7 @@ class ServerManager : public u::TSingleton<ServerManager> {
 	utils::shared_ptr<std::vector<fd_t> > getClientFds();
 	void registerReadEvent(fd_t fd);
 	void registerTimeoutEvent();
+	std::string getClientIp(fd_t fd);
 	char** getEnvp() const;
 	~ServerManager();
 };

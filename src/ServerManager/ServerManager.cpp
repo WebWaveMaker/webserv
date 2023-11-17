@@ -106,3 +106,12 @@ utils::shared_ptr<std::vector<fd_t> > ServerManager::getClientFds() {
 char** ServerManager::getEnvp() const {
 	return (this->_envp);
 }
+
+std::string ServerManager::getClientIp(fd_t fd) {
+	for (std::map<int, Server*>::iterator it = this->_servers.begin(); it != this->_servers.end(); ++it) {
+		if (it->second->hasClient(fd)) {
+			return std::string(it->second->getClientIP(fd));
+		}
+	}
+	return std::string("");
+}

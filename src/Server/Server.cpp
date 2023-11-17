@@ -129,6 +129,13 @@ utils::shared_ptr<std::vector<fd_t> > Server::getClientFds() {
 	return (clientFds);
 }
 
+std::string Server::getClientIP(fd_t fd) {
+	if (this->hasClient(fd)) {
+		char* clientIP = inet_ntoa((*this->_clients.get())[fd].get()->getAddr().sin_addr);
+		return std::string(clientIP);
+	}
+}
+
 Server::~Server() {
 	std::cout << "Server destructor called\n";
 
