@@ -26,6 +26,7 @@ class HttpMessage {
 	enum HttpMethods getMethod(void) const;
 	std::string getRequestTarget(void) const;
 	std::string getTargetFile(void) const;
+	std::string& getBody(void);
 	std::map<std::string, std::string>& getHeaders(void);
 	std::string getRawStr(void);
 	void reset();

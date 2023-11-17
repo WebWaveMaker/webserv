@@ -12,6 +12,7 @@ DIRS := DefaultResponseBuilder \
 		ErrorResponseBuilder \
 		GetResponseBuilder \
 		DeleteResponseBuilder \
+		PostResponseBuilder \
 		RedirectResponseBuilder
 
 include $(TOPDIR)/config/makefile/objRecipes.mk

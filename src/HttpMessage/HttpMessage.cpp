@@ -74,6 +74,10 @@ std::string HttpMessage::getTargetFile(void) const {
 	return this->_startLine[1].substr(pos + 1);
 }
 
+std::string& HttpMessage::getBody(void) {
+	return this->_body;
+}
+
 void HttpMessage::setHeaders(const std::map<std::string, std::string>& headers) {
 	this->_headers = headers;
 }

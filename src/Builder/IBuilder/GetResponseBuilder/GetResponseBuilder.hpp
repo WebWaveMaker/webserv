@@ -9,7 +9,7 @@ class GetResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	reactor::sharedData_t _sharedData;
 	const request_t _request;
 	const utils::shared_ptr<ServerConfig> _serverConfig;
-	const utils::shared_ptr<LocationConfig> _locationConfig;  // may be needed?
+	const utils::shared_ptr<LocationConfig> _locationConfig;
 	bool _removed;
 
 	std::string _path;
