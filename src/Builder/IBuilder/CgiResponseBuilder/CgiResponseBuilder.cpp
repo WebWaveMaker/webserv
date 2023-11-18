@@ -7,7 +7,8 @@ CgiResponseBuilder::CgiResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _request(request),
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
-	  _cgiReadSharedData() {
+	  _cgiReadSharedData(),
+	  _startLineState(false) {
 	if (_locationConfig.get() == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
@@ -20,11 +21,17 @@ bool CgiResponseBuilder::setBody() {
 		return false;
 
 	// cgi로 부터 받은 status: 200 ok 부분을 startline형식으로 변경해야함
-	this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().end(),
-												this->_cgiReadSharedData.get()->getBuffer().begin(),
-												this->_cgiReadSharedData.get()->getBuffer().end());
-	this->_cgiReadSharedData.get()->getBuffer().clear();
-	if (this->_cgiReadSharedData.get()->getState() == TERMINATE && this->_removed == false) {
+	// cgi에 대한 read이벤트를 삭제합니다.
+	if (this->_startLineState == false)
+		this->replaceStartLine();
+	else {
+		this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().end(),
+													this->_cgiReadSharedData.get()->getBuffer().begin(),
+													this->_cgiReadSharedData.get()->getBuffer().end());
+
+		this->_cgiReadSharedData.get()->getBuffer().clear();
+	}
+	if (this->_cgiReadSharedData.get()->getState() == TERMINATE && this->_cgiWriteSharedData->getState() == RESOLVE) {
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData.get()->getFd(),
 															this->_cgiReadSharedData.get()->getType());
 		return true;
@@ -32,7 +39,49 @@ bool CgiResponseBuilder::setBody() {
 	return true;
 }
 
-void CgiResponseBuilder::replaceStartLine() {}
+void CgiResponseBuilder::cgiStartLineInsert() {
+	const std::string delimiter = "\r\n";
+	std::vector<char>& readBuffer = this->_cgiReadSharedData->getBuffer();
+	std::vector<char>::iterator it =
+		std::search(readBuffer.begin(), readBuffer.end(), delimiter.begin(), delimiter.end());
+
+	if (it != readBuffer.end()) {
+		readBuffer.erase(readBuffer.begin(), it + delimiter.size());
+		std::string startLine = this->_startLine[0] + this->_startLine[1] + this->_startLine[2];
+		readBuffer.insert(readBuffer.begin(), startLine.begin(), startLine.end());
+		this->_startLineState = true;
+	}
+}
+
+void CgiResponseBuilder::replaceStartLine() {
+	std::vector<char>& readBuffer = this->_cgiReadSharedData->getBuffer();
+	std::string msg;
+	size_t crlf = readBuffer.find("/r/n");
+	if (crlf == std::string::npos)
+		return;
+
+	for (size_t i = 0; i < crlf; ++i) {
+		msg.push_back(readBuffer[i]);
+	}
+	std::stringstream ss(msg);
+	ss >> this->_startLine[0] >> this->_startLine[1] >> this->_startLine[2];
+	if (this->_startLine[0].empty() || this->_startLine[1].empty() || this->_startLine[2].empty()) {
+		this->_startLine->clear();
+		return;
+	}
+	if (this->_startLine[0].compare("Status:") == 0) {
+		this->_startLine[0] = "HTTP/1.1";
+	} else {
+		this->_startLine[0] = "HTTP/1.1";
+		this->_startLine[1] = "200";
+		this->_startLine[2] = "OK";
+		std::string startLine = this->_startLine[0] + this->_startLine[1] + this->_startLine[2] + "/r/n";
+		readBuffer.insert(readBuffer.begin(), startLine.begin(), startLine.end());
+		this->_startLineState = true;
+		return;
+	}
+	this->cgiStartLineInsert();
+}
 
 void CgiResponseBuilder::inItInterpreterMap() {
 	this->_interpreterMap["pl"] = "perl";
@@ -49,9 +98,14 @@ void CgiResponseBuilder::setStartLine() {
 	this->_response.setStartLine(DefaultResponseBuilder::getInstance()->setDefaultStartLine(200));
 }
 
+// handleEvent에서 여기가 호출된다.
 bool CgiResponseBuilder::build() {
-	// handleEvent에서 여기가 호출된다.
-	// cgi write가 resolve가 먼저 -> read resolve 가능 -> CGI read와 write는 여기서 삭제 해야함
+	// cgi에 대한 WriteHandler를 삭제합니다.
+	if (this->_cgiWriteSharedData->getBuffer().size() == 0) {
+		this->_cgiWriteSharedData->setState(RESOLVE);
+		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
+															this->_cgiWriteSharedData->getType());
+	}
 
 	return this->setBody();
 }
@@ -304,6 +358,7 @@ void CgiResponseBuilder::prepare() {
 			new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	this->makeWriteSharedData();
 	this->doFork();
+	close(this->_sv[1]);
 	// CGI 프로세스에개 write
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::ClientWriteHandlerFactory>(
 		this->_cgiWriteSharedData);

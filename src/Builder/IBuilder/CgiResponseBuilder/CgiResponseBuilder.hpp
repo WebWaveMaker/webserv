@@ -19,6 +19,8 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	reactor::sharedData_t _cgiWriteSharedData;
 	reactor::sharedData_t _cgiReadSharedData;
 	HttpMessage _response;
+	std::vector<std::string> _startLine;
+	bool _startLineState;
 
 	CgiResponseBuilder(const CgiResponseBuilder& obj);
 	CgiResponseBuilder& operator=(const CgiResponseBuilder& obj);
@@ -52,6 +54,7 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	std::vector<std::string> parsPathEnvp();
 	void inItInterpreterMap();
 	void replaceStartLine();
+	void cgiStartLineInsert();
 	void addCgiEnvp(std::vector<std::string>& cgiEnvpVec, const std::string& key, const std::string& value);
 };
 
