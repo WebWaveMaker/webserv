@@ -80,7 +80,8 @@ namespace utils {
 			rv.push_back(token);
 			input.erase(0, pos + delimiter.length());
 		}
-
+		if (input.size() > 0)
+			rv.push_back(input);
 		return rv;
 	}
 

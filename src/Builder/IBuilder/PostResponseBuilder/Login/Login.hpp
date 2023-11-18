@@ -2,18 +2,16 @@
 #ifndef LOGIN_HPP
 #define LOGIN_HPP
 
-class Login {
+#include "Login.h"
+
+class PostResponseBuilder::Login {
    private:
+
+   void login();
+   
    public:
 	Login();
-	Login(const Login& obj);
 	~Login();
-	Login& operator=(const Login& obj);
 };
 
 #endif
-
-Login::Login() {}
-Login::Login(const Login& obj) {}
-Login::~Login() {}
-Login& Login::operator=(const Login& obj) {}

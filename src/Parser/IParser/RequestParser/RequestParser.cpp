@@ -81,7 +81,8 @@ bool RequestParser::parseHeader(std::string& buf) {
 
 		headers[key] = val;	 // 중복은 어떻게 처리? 우선은 overwrite
 	}
-	if (_curMsg->get()->second.getMethod() == POST && headers.count("Content-Length") == 0) {
+	if ((_curMsg->get()->second.getMethod() == POST || _curMsg->get()->second.getMethod() == POST) &&
+		headers["Content-Length"] == "0") {
 		_curMsg->get()->first = HTTP_ERROR;
 		_curMsg->get()->second.setErrorCode(411);  // Length Required
 		return false;
@@ -152,7 +153,8 @@ request_t RequestParser::parse(const std::string& content) {
 			_curMsg = &_msgs.back();
 		}
 	}
-	if (this->_curMsg->get()->first == BODY && this->_curMsg->get()->second.getHeaders().count("Content-Length") == 0)
+	if (this->_curMsg->get()->first == BODY && (this->_curMsg->get()->second.getHeaders()["Content-Length"] == "0" ||
+												this->_curMsg->get()->second.getHeaders()["Content-Length"] == ""))
 		this->_curMsg->get()->first = DONE;
 	return this->pop();
 }

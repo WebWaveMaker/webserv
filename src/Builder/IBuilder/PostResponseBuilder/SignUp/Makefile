@@ -1,17 +1,14 @@
 ifndef TOPDIR
-	TOPDIR := $(abspath ../../../../)
+	TOPDIR := $(abspath ../../../../../)
 endif
 
 ifndef DSTDIR
-	DSTDIR := $(abspath ../../)
+	DSTDIR := $(abspath ../../../)
 endif
 
 include $(TOPDIR)/config/makefile/common.mk
 
-DIRS := Login \
-		SignUp
-
-SRCS := $(addprefix $(DSTDIR)/objs/, PostResponseBuilder.cpp)
+SRCS := $(addprefix $(DSTDIR)/objs/, SignUp.cpp)
 
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)

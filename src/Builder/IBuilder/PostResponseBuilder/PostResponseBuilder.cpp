@@ -1,4 +1,6 @@
 #include "PostResponseBuilder.hpp"
+#include "Login.hpp"
+#include "SignUp.hpp"
 
 PostResponseBuilder::PostResponseBuilder(reactor::sharedData_t sharedData, request_t request,
 										 const utils::shared_ptr<ServerConfig>& serverConfig,
@@ -9,9 +11,10 @@ PostResponseBuilder::PostResponseBuilder(reactor::sharedData_t sharedData, reque
 	  _locationConfig(locationConfig),
 	  _response(),
 	  _readSharedData() {
-	if (request->second.getBody().empty())
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(BAD_REQUEST, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	std::cout << "PostResponseBuilder constructor" << std::endl;
+	// if (request->second.getBody().empty())
+	// 	throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+	// 		new ErrorResponseBuilder(BAD_REQUEST, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	this->prepare();
 };
 
@@ -25,11 +28,12 @@ void PostResponseBuilder::divideEntryPoint() {
 	std::string targetTarget = this->_request->second.getRequestTarget();
 
 	if (targetTarget == "/signup")
-
-	if (targetTarget == "/login")
-
-	throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-		new ErrorResponseBuilder(BAD_REQUEST, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		SignUp(this);
+	else if (targetTarget == "/login")
+		Login();
+	else
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+			new ErrorResponseBuilder(BAD_REQUEST, this->_sharedData, this->_serverConfig, this->_locationConfig));
 }
 
 void PostResponseBuilder::setStartLine() {}
