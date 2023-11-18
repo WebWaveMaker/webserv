@@ -56,8 +56,8 @@ namespace reactor {
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new DeleteResponseBuilder(
 						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 				case PUT:
-					// return utils::shared_ptr<IBuilder<sharedData_t> >(new PutResponseBuilder(
-					// 	this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
+					return utils::shared_ptr<IBuilder<sharedData_t> >(new PutResponseBuilder(
+						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 				case UNKNOWN:
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
 						METHOD_NOT_ALLOWED, this->_sharedData, this->_serverConfig, this->_locationConfig));

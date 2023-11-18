@@ -152,7 +152,7 @@ request_t RequestParser::parse(const std::string& content) {
 			_curMsg = &_msgs.back();
 		}
 	}
-	if (this->_curMsg->get()->first == BODY && this->_curMsg->get()->second.getHeaders().count("Content-Length") == 0)
+	if (this->_curMsg->get()->first == BODY && this->_curMsg->get()->second.getHeaders().at("Content-Length") == "0")
 		this->_curMsg->get()->first = DONE;
 	return this->pop();
 }

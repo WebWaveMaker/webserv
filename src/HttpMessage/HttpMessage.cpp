@@ -32,6 +32,10 @@ std::string HttpMessage::getRawStr(void) {
 	return startLine + headers;
 }
 
+std::string& HttpMessage::getBody(void) {
+	return this->_body;
+}
+
 void HttpMessage::setErrorCode(const int errorCode) {
 	this->_errorCode = errorCode;
 }
