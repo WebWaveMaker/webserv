@@ -46,19 +46,41 @@
         button:hover {
             background-color: #0056b3;
         }
+
+        .error-message {
+            color: #cc0000;
+            font-size: 12px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 
 <body>
     <div class="signup-container">
         <h2>Sign Up</h2>
-        <form action="/signup" method="post">
+        <form action="/signup" method="post" onsubmit="return validateForm()">
             <input type="text" placeholder="Username" name="username">
-            <input type="password" placeholder="Password" name="password">
-            <input type="password" placeholder="Confirm Password" name="confirmpassword">
+            <input type="password" placeholder="Password" id="password" name="password">
+            <input type="password" placeholder="Confirm Password" id="confirmPassword" name="confirmpassword">
+            <p class="error-message" id="error-message"></p>
             <button type="submit">Sign Up</button>
         </form>
     </div>
+    <script>
+        function validateForm() {
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+            const errorMessage = document.getElementById("error-message");
+
+            if (password !== confirmPassword) {
+                errorMessage.textContent = "Passwords do not match!";
+                return false;
+            } else {
+                errorMessage.textContent = "";
+                return true;
+            }
+        }
+    </script>
 </body>
 
 </html>

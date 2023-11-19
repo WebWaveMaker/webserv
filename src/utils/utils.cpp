@@ -110,4 +110,20 @@ namespace utils {
 		return (fileFd);
 	}
 
+	std::string generateRandomString() {
+		static const char alphanum[] =
+			"0123456789"
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			"abcdefghijklmnopqrstuvwxyz";
+
+		std::string randomString;
+		srand(static_cast<unsigned int>(time(NULL)));
+
+		for (int i = 0; i < 32; ++i) {
+			randomString += alphanum[rand() % (sizeof(alphanum) - 1)];
+		}
+
+		return randomString;
+	}
+
 }  // namespace utils

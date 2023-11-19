@@ -14,4 +14,6 @@
 #define FD_ZERO_ -3
 #define SYSTEMCALL_ERROR -1
 
+#define SESSION_EXPIRED_TIME 60
+
 #endif

@@ -4,7 +4,7 @@
 
 #include "PostResponseBuilder.h"
 
-// 여기에서 세션과 쿠키를 적용해야 겠다. 그리고 이걸로 회원가입과 로그인을 구현해야 한다. 
+// 여기에서 세션과 쿠키를 적용해야 겠다. 그리고 이걸로 회원가입과 로그인을 구현해야 한다.
 class PostResponseBuilder : public IBuilder<reactor::sharedData_t> {
    private:
 	reactor::sharedData_t _sharedData;
@@ -15,6 +15,7 @@ class PostResponseBuilder : public IBuilder<reactor::sharedData_t> {
 
 	reactor::sharedData_t _readSharedData;
 
+	void doDefaultBehavior();
 	void divideEntryPoint();
 
 	class SignUp;

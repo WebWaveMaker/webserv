@@ -6,9 +6,8 @@
 
 class PostResponseBuilder::Login {
    private:
+	void login();
 
-   void login();
-   
    public:
 	Login();
 	~Login();
