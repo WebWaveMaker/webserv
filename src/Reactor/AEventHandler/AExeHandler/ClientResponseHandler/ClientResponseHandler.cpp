@@ -28,9 +28,14 @@ namespace reactor {
 				Dispatcher::getInstance()->removeIOHandler(this->getHandle(), this->getType());
 				Dispatcher::getInstance()->removeExeHandler(this);
 			}
-
-		} catch (const utils::shared_ptr<IBuilder<sharedData_t> >& e) {
-			this->_director.setBuilder(e);
+		} catch (...) {
+			// build 도중 에러가 발생하면 ClientWriteHandler와 자신을 삭제하고 clientFd를 연결종료에 등록합니다.
+			// builder는 에러르 throw하기전에 자신이 사용중이던 handler와 자원들을 적절히 정리하고 throw해야합니다.
+			this->setHandler(TERMINATE);
+			this->_director.setBuilderReadState(TERMINATE);
+			Dispatcher::getInstance()->removeIOHandler(this->getHandle(), this->getType());
+			Dispatcher::getInstance()->removeExeHandler(this);
+			Dispatcher::getInstance()->removeFdToClose(this->getHandle());
 		}
 	}
 
