@@ -15,6 +15,7 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	std::string _cgiFullPath;
 	std::map<std::string, std::string> _interpreterMap;
 	int _sv[2];
+	pid_t _cgidPid;
 
 	reactor::sharedData_t _cgiWriteSharedData;
 	reactor::sharedData_t _cgiReadSharedData;

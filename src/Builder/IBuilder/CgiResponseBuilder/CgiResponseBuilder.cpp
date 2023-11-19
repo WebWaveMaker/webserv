@@ -16,6 +16,24 @@ CgiResponseBuilder::CgiResponseBuilder(reactor::sharedData_t sharedData, const r
 	this->prepare();
 }
 
+// handleEvent에서 여기가 호출된다.
+bool CgiResponseBuilder::build() {
+	// cgi에 대한 WriteHandler를 삭제합니다.
+	int status;
+	if (waitpid(this->_cgidPid, &status, WNOHANG) > 0) {
+		if (WIFEXITED(status) == false) {
+			reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
+																this->_cgiWriteSharedData->getType());
+		}
+	}
+	if (this->_cgiWriteSharedData->getBuffer().size() == 0) {
+		this->_cgiWriteSharedData->setState(RESOLVE);
+		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
+															this->_cgiWriteSharedData->getType());
+	}
+	return this->setBody();
+}
+
 bool CgiResponseBuilder::setBody() {
 	if (this->_cgiReadSharedData.get() == u::nullptr_t)
 		return false;
@@ -34,6 +52,7 @@ bool CgiResponseBuilder::setBody() {
 	if (this->_cgiReadSharedData.get()->getState() == TERMINATE && this->_cgiWriteSharedData->getState() == RESOLVE) {
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData.get()->getFd(),
 															this->_cgiReadSharedData.get()->getType());
+		this->_cgiReadSharedData->setState(RESOLVE);
 		return true;
 	}
 	return true;
@@ -96,18 +115,6 @@ reactor::sharedData_t CgiResponseBuilder::getProduct() {
 
 void CgiResponseBuilder::setStartLine() {
 	this->_response.setStartLine(DefaultResponseBuilder::getInstance()->setDefaultStartLine(200));
-}
-
-// handleEvent에서 여기가 호출된다.
-bool CgiResponseBuilder::build() {
-	// cgi에 대한 WriteHandler를 삭제합니다.
-	if (this->_cgiWriteSharedData->getBuffer().size() == 0) {
-		this->_cgiWriteSharedData->setState(RESOLVE);
-		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
-															this->_cgiWriteSharedData->getType());
-	}
-
-	return this->setBody();
 }
 
 std::string CgiResponseBuilder::makeCgiFullPath() {
@@ -216,10 +223,10 @@ std::string CgiResponseBuilder::makePathInfo() {
 }
 
 bool CgiResponseBuilder::doFork() {
-	pid_t pid = fork();
-	if (pid == -1)
+	this->_cgidPid = fork();
+	if (this->_cgidPid == -1)
 		return false;
-	if (pid == 0) {
+	if (this->_cgidPid == 0) {
 		close(this->_sv[0]);
 		char** envp = this->setEnvp();
 		char** args = this->makeArgs();
