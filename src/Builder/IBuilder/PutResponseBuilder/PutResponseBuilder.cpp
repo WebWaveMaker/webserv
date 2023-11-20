@@ -41,8 +41,8 @@ void PutResponseBuilder::setPath() {
 			this->_path = locPath;
 			break;
 		case MODE_DIRECTORY:
-			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-				new ErrorResponseBuilder(FORBIDDEN, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+				UNSUPPORTED_MEDIA_TYPE, this->_sharedData, this->_serverConfig, this->_locationConfig));
 		case MODE_ERROR:
 			switch (serverMode) {
 				case MODE_FILE:
@@ -50,7 +50,7 @@ void PutResponseBuilder::setPath() {
 					break;
 				case MODE_DIRECTORY:
 					throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-						FORBIDDEN, this->_sharedData, this->_serverConfig, this->_locationConfig));
+						UNSUPPORTED_MEDIA_TYPE, this->_sharedData, this->_serverConfig, this->_locationConfig));
 					break;
 				case MODE_ERROR:
 					throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
