@@ -21,6 +21,8 @@ namespace reactor {
 		enum AsyncState getState() const { return this->_sharedData->getState(); };
 		void setState(const enum AsyncState state) { this->_sharedData->setState(state); };
 		void setHandler(const handle_t handle) { this->_sharedData->setFd(handle); };
+		unsigned int getReadByte() const { return this->_sharedData->getReadByte(); };
+		void setReadByte(const unsigned int readByte) { this->_sharedData->setReadByte(readByte); };
 		virtual void handleEvent() = 0;
 	};
 

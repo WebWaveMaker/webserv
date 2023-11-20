@@ -11,6 +11,7 @@ namespace reactor {
 		const enum EventType _type;
 		std::vector<char> _buffer;
 		enum AsyncState _state;
+		unsigned int _readByte;
 
 	   public:
 		SharedData(const fd_t fd, const enum EventType type, std::vector<char> buffer);
@@ -28,6 +29,8 @@ namespace reactor {
 			this->_buffer.clear();
 			this->_state = PENDING;
 		};
+		unsigned int getReadByte() const { return this->_readByte; };
+		void setReadByte(const unsigned int readByte) { this->_readByte = readByte; };
 	};
 
 	typedef utils::shared_ptr<SharedData> sharedData_t;

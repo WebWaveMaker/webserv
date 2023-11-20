@@ -46,10 +46,9 @@ request_t RequestParser::pop(void) {
 	request_t elem;
 	if (this->_msgs.empty())
 		return elem;
-	if (this->_msgs.front()->first == DONE || this->_msgs.front()->first == HTTP_ERROR) {
-		elem = this->_msgs.front();
+	elem = this->_msgs.front();
+	if (this->_msgs.front()->first == DONE || this->_msgs.front()->first == HTTP_ERROR)
 		this->_msgs.pop();
-	}
 	return elem;
 }
 
@@ -101,12 +100,15 @@ bool RequestParser::parseHeader(std::string& buf) {
 	getCurMsg().setHeaders(headers);
 	if (headers[TRANSFER_ENCODING] == "chunked")
 		_curMsg->get()->first = CHUNKED;
+	else if (getCurMsg().getContentLength() > BUFFER_SIZE)
+		_curMsg->get()->first = LONG_BODY;
 	else
 		_curMsg->get()->first = BODY;
+
 	return true;
 }
 
-bool RequestParser::parserBody(std::string& buf) {
+bool RequestParser::parseBody(std::string& buf) {
 	_curMsg->get()->first = DONE;
 	const std::map<std::string, std::string>& headers = getCurMsg().getHeaders();
 	if (this->checkContentLengthZero(headers))
@@ -130,7 +132,7 @@ bool RequestParser::parserBody(std::string& buf) {
 	return true;
 }
 
-bool RequestParser::parserChunked(std::string& buf) {
+bool RequestParser::parseChunked(std::string& buf) {
 	unsigned int contentLength = utils::stoui(this->findAndSubstr(buf, CRLF));
 	if (contentLength == 0) {
 		_curMsg->get()->first = DONE;
@@ -143,8 +145,17 @@ bool RequestParser::parserChunked(std::string& buf) {
 	return true;
 }
 
-// 비 정상적일때 에러처리를 어떻게 할 것인가.
-request_t RequestParser::parse(const std::string& content) {
+bool RequestParser::parseLongBody(std::string& buf) {
+	getCurMsg().setBody(buf);
+	getCurMsg().setContentLengthReceived(getCurMsg().getContentLengthReceived() + buf.size());
+	if (getCurMsg().getContentLength() == getCurMsg().getContentLengthReceived()) {
+		_curMsg->get()->first = DONE;
+	}
+	buf.clear();
+	return true;
+}
+
+request_t RequestParser::parse(std::string& content) {
 	if (content.size() == 0)
 		return this->pop();
 	if (this->_msgs.empty()) {
@@ -152,28 +163,29 @@ request_t RequestParser::parse(const std::string& content) {
 			new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 		_curMsg = &_msgs.back();
 	}
-	std::string buf(content);
-
-	while (buf.empty() == false) {
+	while (content.empty() == false) {
 		switch (this->_msgs.back()->first) {
 			case START_LINE:
-				this->parseStartLine(buf);
+				this->parseStartLine(content);
 				break;
 			case HEADER:
-				this->parseHeader(buf);
+				this->parseHeader(content);
 				break;
 			case BODY:
-				this->parserBody(buf);
+				this->parseBody(content);
 				break;
 			case CHUNKED:
-				this->parserChunked(buf);
+				this->parseChunked(content);
+				break;
+			case LONG_BODY:
+				this->parseLongBody(content);
 				break;
 			case HTTP_ERROR:
-				buf.clear();
+				content.clear();
 			default:
 				break;
 		}
-		if (this->_msgs.back()->first == DONE && buf.empty() == false) {
+		if (this->_msgs.back()->first == DONE && content.empty() == false) {
 			_msgs.push(utils::shared_ptr<std::pair<enum HttpMessageState, HttpMessage> >(
 				new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 			_curMsg = &_msgs.back();

@@ -5,7 +5,7 @@
 
 #include "ConfigParser.h"
 
-class ConfigParser : IParser<config_t> {
+class ConfigParser : IParser<config_t, const std::string> {
    public:
 	ConfigParser();
 	virtual ~ConfigParser();
