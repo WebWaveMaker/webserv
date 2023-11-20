@@ -111,13 +111,10 @@ std::vector<std::string> GetResponseBuilder::readDir(const std::string& path) {
 	if ((dirp = opendir(path.c_str())) == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	dp = readdir(dirp);	 // skip current directory
-	dp = readdir(dirp);	 // skip parent directory
-	if (dp == u::nullptr_t)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	std::vector<std::string> dirVec;
 	while ((dp = readdir(dirp)) != u::nullptr_t) {
+		if (dp->d_name[0] == '.')
+			continue;
 		if (dp == u::nullptr_t)
 			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 				INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));

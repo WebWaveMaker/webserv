@@ -3,5 +3,6 @@
 #define LOGIN_H
 
 #include "PostResponseBuilder.hpp"
+#include "HttpSession.hpp"
 
 #endif

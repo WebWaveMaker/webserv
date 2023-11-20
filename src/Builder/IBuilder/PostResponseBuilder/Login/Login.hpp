@@ -6,10 +6,13 @@
 
 class PostResponseBuilder::Login {
    private:
-	void login();
+	PostResponseBuilder* _builder;	
+
+	void login(const std::string& username, const std::string& password);
+	bool checkPassword(const std::string& username, const std::string& password);
 
    public:
-	Login();
+	Login(PostResponseBuilder* builder);
 	~Login();
 };
 

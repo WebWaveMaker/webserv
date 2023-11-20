@@ -1,8 +1,5 @@
 #include "SignUp.hpp"
 
-const std::string PostResponseBuilder::SignUp::_folderPath = ".signup";
-const std::string PostResponseBuilder::SignUp::_fileForSignup = "for_signup";
-
 void PostResponseBuilder::SignUp::cleanUpFolder(int sig) {
 	if (sig != SIGINT)
 		return;
@@ -19,7 +16,7 @@ void PostResponseBuilder::SignUp::cleanUpFolder(int sig) {
 }
 
 PostResponseBuilder::SignUp::SignUp(PostResponseBuilder* builder) : _builder(builder) {
-	signal(SIGINT, cleanUpFolder);
+	signal(SIGINT, cleanUpFolder);	// on off
 	std::string& body = builder->_request->second.getBody();
 	std::string username;
 	std::string password;
@@ -41,29 +38,6 @@ PostResponseBuilder::SignUp::SignUp(PostResponseBuilder* builder) : _builder(bui
 
 PostResponseBuilder::SignUp::~SignUp() {}
 
-bool PostResponseBuilder::SignUp::findUser(const std::string& username) {
-	DIR* dirp;
-	struct dirent* dp;
-
-	if ((dirp = opendir(_folderPath.c_str())) == u::nullptr_t)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			INTERNAL_SERVER_ERROR, _builder->_sharedData, _builder->_serverConfig, _builder->_locationConfig));
-	dp = readdir(dirp);	 // skip current directory
-	dp = readdir(dirp);	 // skip parent directory
-	dp = readdir(dirp);	 // skip for_signup
-	if (dp == u::nullptr_t)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			INTERNAL_SERVER_ERROR, _builder->_sharedData, _builder->_serverConfig, _builder->_locationConfig));
-	while ((dp = readdir(dirp)) != u::nullptr_t) {
-		if (dp->d_name == username) {
-			closedir(dirp);
-			return true;
-		}
-	}
-	closedir(dirp);
-	return false;
-}
-
 void PostResponseBuilder::SignUp::createUser(const std::string& username, const std::string& password) {
 	const fd_t fd = utils::makeFd((_folderPath + "/" + username).c_str(), "w");
 
@@ -74,7 +48,10 @@ void PostResponseBuilder::SignUp::createUser(const std::string& username, const 
 }
 
 void PostResponseBuilder::SignUp::signup(const std::string& username, const std::string& password) {
-	if (this->findUser(username))
+	if (username == "" || password == "")
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new RedirectResponseBuilder(
+			TEMPORARY_REDIRECT, "/signup.html", _builder->_sharedData, _builder->_request, _builder->_serverConfig));
+	if (_builder->findUser(username))
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new RedirectResponseBuilder(
 			FOUND, "/signup.html", _builder->_sharedData, _builder->_request, _builder->_serverConfig));
 	this->createUser(username, password);

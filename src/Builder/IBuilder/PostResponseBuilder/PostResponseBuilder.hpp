@@ -13,10 +13,14 @@ class PostResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	const utils::shared_ptr<LocationConfig> _locationConfig;
 	HttpMessage _response;
 
+	static const std::string _fileForSignup;
+	static const std::string _folderPath;
+
 	reactor::sharedData_t _readSharedData;
 
 	void doDefaultBehavior();
 	void divideEntryPoint();
+	bool findUser(const std::string& username);
 
 	class SignUp;
 	class Login;

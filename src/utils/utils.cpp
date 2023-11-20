@@ -50,7 +50,7 @@ namespace utils {
 		const std::time_t t = std::time(NULL);
 		const std::tm* localTime = std::localtime(&t);
 
-		char buf[42];
+		char buf[FT];
 		std::strftime(buf, sizeof(buf), format, localTime);
 
 		return std::string(buf);
@@ -59,7 +59,7 @@ namespace utils {
 	std::string formatTime(const std::time_t t, const char* format) {
 		const std::tm* localTime = std::localtime(&t);
 
-		char buf[42];
+		char buf[FT];
 		std::strftime(buf, sizeof(buf), format, localTime);
 
 		return std::string(buf);

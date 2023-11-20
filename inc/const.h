@@ -5,9 +5,9 @@
 #define CRLF "\r\n"
 #define RNRN "\r\n\r\n"
 
-#ifndef BUFFER_SIZE
 #define BUFFER_SIZE 4096
-#endif
+#define FT 42
+
 
 #define FD_ERROR -1
 #define FD_LISTING -2
