@@ -7,6 +7,8 @@ namespace reactor {
 		  _request(ServerManager::getInstance()->getServerConfig(sharedData->getFd())),
 		  _writeData(new SharedData(this->getHandle(), EVENT_WRITE, std::vector<char>())) {
 		Dispatcher::getInstance()->registerIOHandler<ClientReadHandlerFactory>(sharedData);
+		std::cerr << "ClientRequestHandler" << std::endl;
+
 		va_end(args);
 	}
 

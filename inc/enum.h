@@ -16,7 +16,7 @@ enum Directives {
 	INDEX,				   // server, location 	std::vector<string> default : index.html
 	LIMIT_EXCEPT,		   // server, location 	std::vector<enum HttpMethods> default : {GET, POST, DELETE, PUT}
 	RETURN,				   // server, location 	int, string default : empty
-	CGI_INDEX,			   // server, location 	string default : empty
+	CGI_INDEX,			   // server, location 	std::vector<string> default : empty
 };
 
 enum HTTP_STATUS {

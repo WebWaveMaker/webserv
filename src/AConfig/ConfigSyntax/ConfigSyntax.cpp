@@ -36,14 +36,14 @@ void ConfigSyntax::indexSyntax(const std::vector<std::string>& values) {
 	}
 }
 void ConfigSyntax::cgiIndexSyntax(const std::vector<std::string>& values) {
-	try {
-		std::stoi(values[0]);
-	} catch (std::exception& e) {
-		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
-									  "The syntax of the directive's parameter is incorrect: the directive is "
-									  "[cgi_index] and the parameter is " +
-										  values[0]);
-	}
+	// try {
+	// 	std::stoi(values[0]);
+	// } catch (std::exception& e) {
+	// 	throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
+	// 								  "The syntax of the directive's parameter is incorrect: the directive is "
+	// 								  "[cgi_index] and the parameter is " +
+	// 									  values[0]);
+	// }
 	for (std::vector<std::string>::const_iterator it = values.begin() + 1; it != values.end(); ++it) {
 		if (ConfigSyntax::isSlashFront(*it) == false) {
 			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,

@@ -27,8 +27,8 @@ void LocationConfig::setDirectives(const std::string& directive, const std::vect
 		_directives.insert(std::make_pair(SENDFILE, addBooleanValue(values[0])));
 	} else if (directive == "return") {
 		_directives.insert(std::make_pair(RETURN, addStringValue(values[0])));
-	} else if (directive == "cgi_index" && values.size() == 1) {
-		_directives.insert(std::make_pair(CGI_INDEX, addStringValue(values[0])));
+	} else if (directive == "cgi_index") {
+		_directives.insert(std::make_pair(CGI_INDEX, addStrVecValue(values)));
 	} else if (directive == "error_page") {
 		setErrorPage(values);
 	} else if (directive == "root") {
