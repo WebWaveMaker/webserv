@@ -50,6 +50,7 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	bool doFork();
 	char** setEnvp();
 	std::string makeQueryString();
+	std::string makeUriPath();
 	std::string makePathInfo();
 	char** makeArgs();
 	std::string makeInterpreter();

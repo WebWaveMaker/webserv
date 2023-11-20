@@ -107,31 +107,57 @@ bool CgiResponseBuilder::setBody() {
 std::string CgiResponseBuilder::makePathInfo() {
 	std::string pathInfo = this->_request->second.getRequestTarget();
 	std::string locPath = this->_locationConfig.get()->getPath();
+
 	pathInfo.erase(0, locPath.size());
 
 	size_t dotPos = pathInfo.find('.');
 	if (dotPos != std::string::npos) {
 		size_t slashPos = pathInfo.find('/', dotPos);
 		if (slashPos != std::string::npos)
-			pathInfo.erase(slashPos);
+			pathInfo.erase(0, slashPos);
 		size_t questPos = pathInfo.find('?');
 		if (questPos == std::string::npos)
-			return (pathInfo);
+			return pathInfo;
 		pathInfo.erase(questPos);
-		return (pathInfo);
+		return pathInfo;
 	} else {
+		pathInfo = "/" + pathInfo;
 		size_t questPos = pathInfo.find('?');
-		if (questPos != std::string::npos)
-			pathInfo.erase(questPos);
+		if (questPos == std::string::npos)
+			return pathInfo;
+		pathInfo.erase(questPos);
+		return pathInfo;
 	}
-	return (pathInfo);
+}
+
+std::string CgiResponseBuilder::makeUriPath() {
+	std::string uriCgiPath = this->_request->second.getRequestTarget();
+	std::string locPath = this->_locationConfig.get()->getPath();
+	uriCgiPath.erase(0, locPath.size());
+
+	size_t dotPos = uriCgiPath.find('.');
+	if (dotPos != std::string::npos) {
+		size_t slashPos = uriCgiPath.find('/', dotPos);
+		if (slashPos != std::string::npos)
+			uriCgiPath.erase(slashPos);
+		size_t questPos = uriCgiPath.find('?');
+		if (questPos == std::string::npos)
+			return (uriCgiPath);
+		uriCgiPath.erase(questPos);
+		return (uriCgiPath);
+	} else {
+		size_t questPos = uriCgiPath.find('?');
+		if (questPos != std::string::npos)
+			uriCgiPath.erase(questPos);
+	}
+	return (uriCgiPath);
 }
 
 std::string CgiResponseBuilder::makeCgiFullPath() {
 	const std::string locRootPath = this->_locationConfig.get()->getDirectives(ROOT).asString();
 	const std::string serverRootPath = this->_serverConfig.get()->getDirectives(ROOT).asString();
 	const std::vector<std::string> cgiIndex = this->_locationConfig.get()->getDirectives(CGI_INDEX).asStrVec();
-	const std::string uriPath = this->makePathInfo();
+	const std::string uriPath = this->makeUriPath();
 	const std::string locationPath = this->_locationConfig.get()->getPath();
 
 	// 먼저 .확장자가 존재하는지 찾는다. 있으면 /전까지 편집, 없으면 location만 제거하고 cgi실행
@@ -295,6 +321,7 @@ char** CgiResponseBuilder::setEnvp() {
 	if (contentLength.empty())
 		contentLength = "0";
 	std::string remoteAddr = ServerManager::getInstance()->getClientIp(this->_sharedData.get()->getFd());
+	std::string pathInfo = this->makePathInfo();
 
 	this->addCgiEnvp(cgiEnvpVec, "REQUEST_METHOD", method);
 	this->addCgiEnvp(cgiEnvpVec, "SCRIPT_NAME", scriptName);
@@ -306,6 +333,7 @@ char** CgiResponseBuilder::setEnvp() {
 	this->addCgiEnvp(cgiEnvpVec, "CONTENT_TYPE", contentType);
 	this->addCgiEnvp(cgiEnvpVec, "CONTENT_LENGTH", contentLength);
 	this->addCgiEnvp(cgiEnvpVec, "REMOTE_ADDR", remoteAddr);
+	this->addCgiEnvp(cgiEnvpVec, "PATH_INFO", pathInfo);
 
 	int envpLen;
 	for (envpLen = 0; envp[envpLen] != NULL; ++envpLen)
