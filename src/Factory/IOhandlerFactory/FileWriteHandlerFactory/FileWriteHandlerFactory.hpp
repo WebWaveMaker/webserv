@@ -10,7 +10,7 @@ namespace reactor {
 	   public:
 		FileWriteHandlerFactory();
 		~FileWriteHandlerFactory();
-		utils::shared_ptr<AEventHandler> createHandler(sharedData_t& sharedData);
+		utils::shared_ptr<AEventHandler> createIOHandler(sharedData_t& sharedData);
 	};
 }  // namespace reactor
 #endif

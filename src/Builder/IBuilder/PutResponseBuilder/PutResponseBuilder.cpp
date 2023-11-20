@@ -1,4 +1,4 @@
-#include "PutResponseBuilder.h"
+#include "PutResponseBuilder.hpp"
 
 PutResponseBuilder::PutResponseBuilder(reactor::sharedData_t sharedData, request_t request,
 									   const utils::shared_ptr<ServerConfig>& serverConfig,
@@ -7,8 +7,6 @@ PutResponseBuilder::PutResponseBuilder(reactor::sharedData_t sharedData, request
 	  _request(request),
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
-	  _writeSharedData(),
-	  _readSharedData(new reactor::SharedData(FD_ERROR, EVENT_READ, std::vector<char>())),
 	  _response(),
 	  _path() {
 	if (_locationConfig.get() == u::nullptr_t)
@@ -20,11 +18,11 @@ PutResponseBuilder::PutResponseBuilder(reactor::sharedData_t sharedData, request
 PutResponseBuilder::~PutResponseBuilder() {}
 
 bool PutResponseBuilder::updateFile() {
-	std::vector<char> body = this->_request->second.getBody();
-	this->_writeSharedData->get()->getBuffer().insert(this->_writeSharedData->get()->getBuffer().end(), body.begin(),
-													  body.end());
-
-	if (this->_sharedData->getState == DONE && this->_writeSharedData->get()->getBuffer().size() == 0) {
+	this->_writeSharedData->getBuffer().insert(this->_writeSharedData->getBuffer().end(),
+											   this->_request->second.getBody().begin(),
+											   this->_request->second.getBody().end());
+	this->_request->second.getBody().clear();
+	if (this->_request->first == DONE && this->_writeSharedData->getBuffer().empty()) {
 		return true;
 	}
 	return false;
@@ -81,7 +79,7 @@ void PutResponseBuilder::setHeader() {
 }
 
 bool PutResponseBuilder::setBody() {
-	if (this->_writeSharedData->get()->getState() == TERMINATE) {
+	if (this->_writeSharedData->getState() == TERMINATE) {
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 		return false;
@@ -97,8 +95,7 @@ bool PutResponseBuilder::build() {
 	const std::string raw = this->_response.getRawStr() + CRLF;
 	std::cerr << raw << std::endl;
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
-	this->_readSharedData->setState(RESOLVE);
-	this->_writeSharedData->get()->setState(RESOLVE);
+	this->_writeSharedData->setState(RESOLVE);
 	return true;
 }
 
