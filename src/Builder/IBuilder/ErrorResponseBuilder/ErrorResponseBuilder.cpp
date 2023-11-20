@@ -54,6 +54,12 @@ void ErrorResponseBuilder::reset() {
 }
 
 bool ErrorResponseBuilder::build() {
+	if (this->_readSharedData->getState() == TERMINATE) {
+		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData.get()->getFd(),
+															this->_readSharedData.get()->getType());
+		this->_sharedData->setState(TERMINATE);
+		throw false;
+	}
 	return this->setBody();
 }
 

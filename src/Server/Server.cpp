@@ -134,6 +134,7 @@ std::string Server::getClientIP(fd_t fd) {
 		char* clientIP = inet_ntoa((*this->_clients.get())[fd].get()->getAddr().sin_addr);
 		return std::string(clientIP);
 	}
+	return "";
 }
 
 Server::~Server() {

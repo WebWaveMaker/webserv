@@ -66,6 +66,12 @@ void GetResponseBuilder::reset() {
 	this->_readSharedData.get()->getBuffer().clear();
 }
 bool GetResponseBuilder::build() {
+	if (this->_readSharedData->getState() == TERMINATE) {
+		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData.get()->getFd(),
+															this->_readSharedData.get()->getType());
+		this->_sharedData->setState(TERMINATE);
+		throw false;
+	}
 	return this->setBody();
 }
 
