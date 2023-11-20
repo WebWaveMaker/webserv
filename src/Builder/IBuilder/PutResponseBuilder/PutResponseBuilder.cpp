@@ -7,16 +7,20 @@ PutResponseBuilder::PutResponseBuilder(reactor::sharedData_t sharedData, request
 	  _request(request),
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
+	  _writeSharedData(),
+	  _isExist(false),
+	  _isRemoved(false),
 	  _response(),
-	  _path(),
-	  _isExist(false) {
+	  _path() {
 	if (_locationConfig.get() == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	this->prepare();
 }
 
-PutResponseBuilder::~PutResponseBuilder() {}
+PutResponseBuilder::~PutResponseBuilder() {
+	close(this->_fd);
+}
 
 void PutResponseBuilder::setPath(const std::string& target, const std::string targetPath) {
 	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString() + targetPath;
@@ -60,7 +64,8 @@ bool PutResponseBuilder::setBody() {
 											   this->_request->second.getBody().begin(),
 											   this->_request->second.getBody().end());
 	this->_request->second.getBody().clear();
-	if (this->_request->first == DONE && this->_writeSharedData->getBuffer().empty()) {
+	if ((this->_request->first == DONE || this->_request->first == LONG_BODY_DONE) &&
+		this->_writeSharedData->getBuffer().empty() && _isRemoved == false) {
 		this->_writeSharedData->setState(RESOLVE);
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_writeSharedData->getFd(),
 															this->_writeSharedData->getType());
@@ -69,6 +74,7 @@ bool PutResponseBuilder::setBody() {
 		const std::string raw = this->_response.getRawStr();
 		std::cerr << raw << std::endl;
 		this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
+		_isRemoved = true;
 		return true;
 	}
 	return false;
@@ -92,7 +98,8 @@ void PutResponseBuilder::prepare() {
 		this->_isExist = true;
 	else
 		this->_isExist = false;
-	this->_writeSharedData = utils::shared_ptr<reactor::SharedData>(
-		new reactor::SharedData(utils::makeFd(this->_path.c_str(), "w"), EVENT_WRITE, std::vector<char>()));
+	this->_fd = utils::makeFd(this->_path.c_str(), "w");
+	this->_writeSharedData =
+		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(_fd, EVENT_WRITE, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileWriteHandlerFactory>(this->_writeSharedData);
 }

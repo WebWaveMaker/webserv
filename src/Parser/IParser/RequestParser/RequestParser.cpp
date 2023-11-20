@@ -47,7 +47,8 @@ request_t RequestParser::pop(void) {
 	if (this->_msgs.empty())
 		return elem;
 	elem = this->_msgs.front();
-	if (this->_msgs.front()->first == DONE || this->_msgs.front()->first == HTTP_ERROR)
+	if (this->_msgs.front()->first == DONE || this->_msgs.front()->first == HTTP_ERROR ||
+		this->_msgs.front()->first == LONG_BODY_DONE)
 		this->_msgs.pop();
 	return elem;
 }
@@ -101,7 +102,7 @@ bool RequestParser::parseHeader(std::string& buf) {
 	if (headers[TRANSFER_ENCODING] == "chunked")
 		_curMsg->get()->first = CHUNKED;
 	else if (getCurMsg().getContentLength() > BUFFER_SIZE)
-		_curMsg->get()->first = LONG_BODY;
+		_curMsg->get()->first = LONG_FIRST;
 	else
 		_curMsg->get()->first = BODY;
 
@@ -149,7 +150,7 @@ bool RequestParser::parseLongBody(std::string& buf) {
 	getCurMsg().setBody(buf);
 	getCurMsg().setContentLengthReceived(getCurMsg().getContentLengthReceived() + buf.size());
 	if (getCurMsg().getContentLength() == getCurMsg().getContentLengthReceived()) {
-		_curMsg->get()->first = DONE;
+		_curMsg->get()->first = LONG_BODY_DONE;
 	}
 	buf.clear();
 	return true;
@@ -176,6 +177,9 @@ request_t RequestParser::parse(std::string& content) {
 				break;
 			case CHUNKED:
 				this->parseChunked(content);
+				break;
+			case LONG_FIRST:
+				this->parseLongBody(content);
 				break;
 			case LONG_BODY:
 				this->parseLongBody(content);
