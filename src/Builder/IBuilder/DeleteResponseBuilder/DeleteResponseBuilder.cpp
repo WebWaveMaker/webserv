@@ -63,7 +63,7 @@ void DeleteResponseBuilder::setHeader() {
 		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
 
 	headers.erase("Content-Type");
-	headers["Content-Length"] = "0";
+	headers[CONTENT_LENGTH] = "0";
 	this->_response.setHeaders(headers);
 }
 

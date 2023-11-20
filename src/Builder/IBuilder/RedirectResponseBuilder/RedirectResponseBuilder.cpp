@@ -30,7 +30,7 @@ void RedirectResponseBuilder::setHeader() {
 		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
 
 	headers["Location"] = "http://" + this->_request->second.getHeaders()["Host"] + this->_path;
-	headers["Content-Length"] = "0";
+	headers[CONTENT_LENGTH] = "0";
 	headers.erase("Content-Type");	// redirect는 body가 없으므로 Content-Type을 지워준다
 	this->_response.setHeaders(headers);
 }

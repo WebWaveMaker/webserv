@@ -15,9 +15,10 @@ class RequestParser : public IParser<request_t> {
 	bool parseStartLine(std::string& buf);
 	bool parseHeader(std::string& buf);
 	bool parserBody(std::string& buf);
+	bool checkContentLengthZero(const std::map<std::string, std::string> &headers);
 	RequestParser(const RequestParser& obj);
-	RequestParser& operator=(const RequestParser& obj);
 	request_t pop(void);
+	HttpMessage& getCurMsg(void);
 
    public:
 	RequestParser(utils::shared_ptr<ServerConfig> serverConfig);

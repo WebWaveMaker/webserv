@@ -10,6 +10,8 @@ class HttpMessage {
 	std::map<std::string, std::string> _headers;
 	std::string _body;
 	int _errorCode;
+	unsigned int _contentLength;
+	unsigned int _contentLengthReceived;
 
    public:
 	HttpMessage();
@@ -29,6 +31,10 @@ class HttpMessage {
 	std::string& getBody(void);
 	std::map<std::string, std::string>& getHeaders(void);
 	std::string getRawStr(void);
+	unsigned int getContentLength(void) const;
+	void setContentLength(const unsigned int contentLength);
+	unsigned int getContentLengthReceived(void) const;
+	void setContentLengthReceived(const unsigned int contentLengthReceived);
 	void reset();
 };
 

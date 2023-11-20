@@ -66,6 +66,8 @@ namespace utils {
 	}
 
 	unsigned int stoui(const std::string s) {
+		if (s == "")
+			return 0;
 		unsigned int i;
 		std::istringstream(s) >> i;
 		return i;

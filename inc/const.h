@@ -4,6 +4,7 @@
 
 #define CRLF "\r\n"
 #define RNRN "\r\n\r\n"
+#define CONTENT_LENGTH "Content-Length"
 
 #define BUFFER_SIZE 4096
 #define FT 42
