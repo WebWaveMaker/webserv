@@ -11,6 +11,7 @@
 #include "ErrorResponseBuilder.hpp"
 #include "GetResponseBuilder.hpp"
 #include "Kqueue.hpp"
+#include "PostResponseBuilder.hpp"
 #include "RequestParser.h"
 #include "ServerManager.hpp"
 

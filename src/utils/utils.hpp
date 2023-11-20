@@ -15,6 +15,7 @@ namespace utils {
 	std::string join(std::vector<std::string>& elems, std::string delim);
 	std::string trim(const std::string& source);
 	fd_t makeFd(const char* path, const char* option);
+	std::string generateRandomString();
 }  // namespace utils
 
 #endif
