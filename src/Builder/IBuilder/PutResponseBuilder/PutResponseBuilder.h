@@ -4,6 +4,8 @@
 
 #include "DefaultResponseBuilder.hpp"
 #include "ErrorResponseBuilder.hpp"
+#include "FileWriteHandler.hpp"
+#include "FileWriteHandlerFactory.hpp"
 #include "IBuilder.hpp"
 #include "PutResponseBuilder.hpp"
 #include "ServerConfig.hpp"

@@ -10,6 +10,7 @@ class PutResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	const request_t _request;
 	const utils::shared_ptr<ServerConfig> _serverConfig;
 	const utils::shared_ptr<LocationConfig> _locationConfig;
+	utils::shared_ptr<reactor::SharedData> _writeSharedData;
 	reactor::sharedData_t _readSharedData;
 
 	HttpMessage _response;
@@ -21,7 +22,8 @@ class PutResponseBuilder : public IBuilder<reactor::sharedData_t> {
 					   const utils::shared_ptr<LocationConfig>& locationConfig);
 	~PutResponseBuilder();
 
-	bool updateFile(const std::string& path, const std::vector<char>& data);
+	bool updateFile();
+	void setPath();
 	void createOrUpdateFile();
 	virtual enum AsyncState getReadState() const { return this->_readSharedData->getState(); }
 	virtual void setReadState(enum AsyncState state) { this->_readSharedData->setState(state); }
