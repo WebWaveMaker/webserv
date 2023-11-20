@@ -2,19 +2,20 @@
 
 namespace reactor {
 	FileReadHandler::FileReadHandler(sharedData_t& sharedData)
-		: AEventHandler(sharedData), _fp(fdopen(this->getHandle(), "r")) {
+		: AEventHandler(sharedData), _fp(fdopen(this->getHandle(), "r")), _fd(this->getHandle()) {
 		const fd_t fd = fileno(this->_fp);
-		if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0)	 // error
+		if (fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0)	 // error
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "fcntl failed");
 		this->setHandler(fd);
 	}
 
 	FileReadHandler::~FileReadHandler() {
-		if (this->_fp != utils::nullptr_t)
-			fclose(this->_fp);
+		fclose(this->_fp);
+		close(this->_fd);
 	}
 
 	void FileReadHandler::handleEvent() {
+		std::cout << "hi i'm FilereadHandler" << std::endl;
 		if (this->getState() == TERMINATE || this->getState() == RESOLVE)
 			return;
 		std::vector<char> buffer(BUFFER_SIZE);

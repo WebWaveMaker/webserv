@@ -17,7 +17,7 @@ namespace reactor {
 	void ClientResponseHandler::handleEvent() {
 		if (this->removeHandlerIfNecessary())
 			return;
-		if (this->_registered == false && this->_director.getProduct()->getBuffer().size()) {
+		if (this->_registered == false) {
 			Dispatcher::getInstance()->registerIOHandler<ClientWriteHandlerFactory>(this->_sharedData);
 			this->_registered = true;
 		}
@@ -50,8 +50,8 @@ namespace reactor {
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new GetResponseBuilder(
 						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 				case POST:
-					// return utils::shared_ptr<IBuilder<sharedData_t> >(new PostResponseBuilder(
-					// 	this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
+					return utils::shared_ptr<IBuilder<sharedData_t> >(new PostResponseBuilder(
+						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 				case DELETE:
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new DeleteResponseBuilder(
 						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
@@ -60,10 +60,10 @@ namespace reactor {
 						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 				case UNKNOWN:
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
-						METHOD_NOT_ALLOWED, this->_sharedData, this->_serverConfig, this->_locationConfig));
+						BAD_REQUEST, this->_sharedData, this->_serverConfig, this->_locationConfig));
 				default:
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
-						METHOD_NOT_ALLOWED, this->_sharedData, this->_serverConfig, this->_locationConfig));
+						BAD_REQUEST, this->_sharedData, this->_serverConfig, this->_locationConfig));
 					break;
 			}
 

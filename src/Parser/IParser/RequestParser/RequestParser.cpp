@@ -9,6 +9,14 @@ RequestParser::RequestParser(utils::shared_ptr<ServerConfig> serverConfig)
 
 RequestParser::~RequestParser() {}
 
+bool RequestParser::checkContentLengthZero(const std::map<std::string, std::string>& headers) {
+	return headers.count(CONTENT_LENGTH) == 0 || headers.at(CONTENT_LENGTH) == "0";
+}
+
+HttpMessage& RequestParser::getCurMsg(void) {
+	return this->_curMsg->get()->second;
+}
+
 enum AsyncState RequestParser::getState(void) const {
 	return this->_msgs.empty() ? RESOLVE : PENDING;
 }
@@ -38,10 +46,9 @@ request_t RequestParser::pop(void) {
 	request_t elem;
 	if (this->_msgs.empty())
 		return elem;
-	if (this->_msgs.front()->first == DONE || this->_msgs.front()->first == HTTP_ERROR) {
-		elem = this->_msgs.front();
+	elem = this->_msgs.front();
+	if (this->_msgs.front()->first == DONE || this->_msgs.front()->first == HTTP_ERROR)
 		this->_msgs.pop();
-	}
 	return elem;
 }
 
@@ -55,11 +62,10 @@ bool RequestParser::parseStartLine(std::string& buf) {
 	ss >> startLine[0] >> startLine[1] >> startLine[2];
 	if (startLine[0].empty() || startLine[1].empty() || startLine[2].empty()) {
 		_curMsg->get()->first = HTTP_ERROR;
-		_curMsg->get()->second.setErrorCode(400);
+		getCurMsg().setErrorCode(BAD_REQUEST);
 		return false;
 	}
-
-	_curMsg->get()->second.setStartLine(startLine);
+	getCurMsg().setStartLine(startLine);
 	_curMsg->get()->first = HEADER;
 	return true;
 }
@@ -79,48 +85,77 @@ bool RequestParser::parseHeader(std::string& buf) {
 		const std::string key = (*it).substr(0, colonPos);
 		const std::string val = utils::trim((*it).substr(colonPos + 1));
 
-		headers[key] = val;	 // 중복은 어떻게 처리? 우선은 overwrite
+		headers[key] = val;
 	}
-	if (_curMsg->get()->second.getMethod() == POST && headers.count("Content-Length") == 0) {
+	if ((getCurMsg().getMethod() == POST || getCurMsg().getMethod() == PUT) && this->checkContentLengthZero(headers) &&
+		headers[TRANSFER_ENCODING] != "chunked") {
 		_curMsg->get()->first = HTTP_ERROR;
-		_curMsg->get()->second.setErrorCode(411);  // Length Required
+		getCurMsg().setErrorCode(LENGTH_REQUIRED);
 		return false;
 	}
+	if (headers.count(CONTENT_LENGTH) == 1)
+		getCurMsg().setContentLength(utils::stoui(headers[CONTENT_LENGTH]));
+	else
+		headers[CONTENT_LENGTH] = "0";
+	getCurMsg().setHeaders(headers);
+	if (headers[TRANSFER_ENCODING] == "chunked")
+		_curMsg->get()->first = CHUNKED;
+	else if (getCurMsg().getContentLength() > BUFFER_SIZE)
+		_curMsg->get()->first = LONG_BODY;
+	else
+		_curMsg->get()->first = BODY;
 
-	_curMsg->get()->second.setHeaders(headers);
-	_curMsg->get()->first = BODY;
 	return true;
 }
 
-bool RequestParser::parserBody(std::string& buf) {
+bool RequestParser::parseBody(std::string& buf) {
 	_curMsg->get()->first = DONE;
-	const std::map<std::string, std::string>& headers = _curMsg->get()->second.getHeaders();
-
-	if (headers.count("Content-Length") == 0)
+	const std::map<std::string, std::string>& headers = getCurMsg().getHeaders();
+	if (this->checkContentLengthZero(headers))
 		return true;
-	const unsigned int contentLength = utils::stoui(headers.at("Content-Length"));
-	const unsigned int bodyLimit = _serverConfig->getDirectives(CLIENT_MAX_BODY_SIZE).asUint();
-
-	if (contentLength > bodyLimit) {
+	const unsigned int contentLength = getCurMsg().getContentLength();
+	if (contentLength > _serverConfig->getDirectives(CLIENT_MAX_BODY_SIZE).asUint()) {
 		_curMsg->get()->first = HTTP_ERROR;
-		_curMsg->get()->second.setErrorCode(413);  // Payload Too large
+		getCurMsg().setErrorCode(PAYLOAD_TOO_LARGE);
 		return false;
 	};
 	try {
 		const std::string str = buf.substr(0, contentLength);
 		buf.erase(0, contentLength);
-		_curMsg->get()->second.setBody(str);
+		getCurMsg().setBody(str);
 	} catch (const std::out_of_range& ex) {
 		ErrorLogger::parseError(__FILE__, __LINE__, __func__, "content-length too large compared of body");
 		_curMsg->get()->first = HTTP_ERROR;
-		_curMsg->get()->second.setErrorCode(400);
+		getCurMsg().setErrorCode(BAD_REQUEST);
 		return false;
 	}
 	return true;
 }
 
-// 비 정상적일때 에러처리를 어떻게 할 것인가.
-request_t RequestParser::parse(const std::string& content) {
+bool RequestParser::parseChunked(std::string& buf) {
+	unsigned int contentLength = utils::stoui(this->findAndSubstr(buf, CRLF));
+	if (contentLength == 0) {
+		_curMsg->get()->first = DONE;
+		buf.clear();
+		return true;
+	}
+	const std::string str = buf.substr(0, contentLength - 1);
+	buf.erase(0, contentLength - 1);
+	_curMsg->get()->second.setChunkedBody(str);
+	return true;
+}
+
+bool RequestParser::parseLongBody(std::string& buf) {
+	getCurMsg().setBody(buf);
+	getCurMsg().setContentLengthReceived(getCurMsg().getContentLengthReceived() + buf.size());
+	if (getCurMsg().getContentLength() == getCurMsg().getContentLengthReceived()) {
+		_curMsg->get()->first = DONE;
+	}
+	buf.clear();
+	return true;
+}
+
+request_t RequestParser::parse(std::string& content) {
 	if (content.size() == 0)
 		return this->pop();
 	if (this->_msgs.empty()) {
@@ -128,31 +163,36 @@ request_t RequestParser::parse(const std::string& content) {
 			new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 		_curMsg = &_msgs.back();
 	}
-	std::string buf(content);
-
-	while (buf.empty() == false) {
+	while (content.empty() == false) {
 		switch (this->_msgs.back()->first) {
 			case START_LINE:
-				this->parseStartLine(buf);
+				this->parseStartLine(content);
 				break;
 			case HEADER:
-				this->parseHeader(buf);
+				this->parseHeader(content);
 				break;
 			case BODY:
-				this->parserBody(buf);
+				this->parseBody(content);
+				break;
+			case CHUNKED:
+				this->parseChunked(content);
+				break;
+			case LONG_BODY:
+				this->parseLongBody(content);
 				break;
 			case HTTP_ERROR:
-				buf.clear();
+				content.clear();
 			default:
 				break;
 		}
-		if (this->_msgs.back()->first == DONE && buf.empty() == false) {
+		if (this->_msgs.back()->first == DONE && content.empty() == false) {
 			_msgs.push(utils::shared_ptr<std::pair<enum HttpMessageState, HttpMessage> >(
 				new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 			_curMsg = &_msgs.back();
 		}
 	}
-	if (this->_curMsg->get()->first == BODY && this->_curMsg->get()->second.getHeaders().at("Content-Length") == "0")
+	if (this->_curMsg->get()->first == BODY &&
+		(getCurMsg().getHeaders().count(CONTENT_LENGTH) == 0 || getCurMsg().getHeaders().at(CONTENT_LENGTH) == "0"))
 		this->_curMsg->get()->first = DONE;
 	return this->pop();
 }

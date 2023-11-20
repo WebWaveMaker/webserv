@@ -29,7 +29,7 @@ void ErrorResponseBuilder::setHeader() {
 
 	std::map<std::string, std::string> headers =
 		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
-	headers["Content-Length"] = utils::lltos(fileInfo.st_size);
+	headers[CONTENT_LENGTH] = utils::lltos(fileInfo.st_size);
 	this->_response.setHeaders(headers);
 }
 
@@ -60,10 +60,16 @@ bool ErrorResponseBuilder::build() {
 }
 
 fd_t ErrorResponseBuilder::findReadFile() {
-	// const std::string locPath =
-	// 	"." + this->_locationConfig->getOwnRoot(ROOT).asString() +  // 나중에 getOwnRoot바뀔 예정.
-	// 	this->_locationConfig->getErrorPage(this->_errorCode);
+	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString();
+	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString();
+	std::string errorPage = this->_locationConfig->getErrorPage(this->_errorCode);
 
+	this->_path = locPath + errorPage;
+	if (access(this->_path.c_str(), R_OK) == 0)
+		return utils::makeFd(this->_path.c_str(), "r");
+	this->_path = serverPath + errorPage;
+	if (access(this->_path.c_str(), R_OK) == 0)
+		return utils::makeFd(this->_path.c_str(), "r");
 	return FD_ERROR;
 }
 

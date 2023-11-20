@@ -17,19 +17,21 @@ namespace reactor {
 		int clientFd = accept(this->getHandle(), (struct sockaddr*)&clientAddr, &clientAddrLen);
 		if (clientFd < 0) {
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
-			throw;
+			return;
 		}
 
 		try {
 			ServerManager::getInstance()->createClient(this->getHandle(), clientFd, clientAddr);
 		} catch (std::exception& e) {
 			close(clientFd);
-			// this->_errorLogger->log("error in accept", __func__, LOG_ERROR, 0);
-			throw;
+			return;
 		}
-		if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0) {
+		if (fcntl(clientFd, F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
+			std::cout << clientFd << std::endl;
+			ServerManager::getInstance()->eraseClient(clientFd);
+			close(clientFd);
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
-			throw;
+			return;
 		}
 		Dispatcher::getInstance()->registerExeHandler<ClientRequestHandlerFactory>(
 			sharedData_t(new SharedData(clientFd, EVENT_READ, std::vector<char>())));

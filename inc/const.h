@@ -4,13 +4,17 @@
 
 #define CRLF "\r\n"
 #define RNRN "\r\n\r\n"
+#define CONTENT_LENGTH "Content-Length"
+#define TRANSFER_ENCODING "Transfer-Encoding"
 
-#ifndef BUFFER_SIZE
 #define BUFFER_SIZE 4096
-#endif
+#define FT 42
 
 #define FD_ERROR -1
 #define FD_LISTING -2
+#define FD_ZERO_ -3
 #define SYSTEMCALL_ERROR -1
+
+#define SESSION_EXPIRED_TIME 60
 
 #endif

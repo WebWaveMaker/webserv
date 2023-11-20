@@ -50,7 +50,7 @@ namespace utils {
 		const std::time_t t = std::time(NULL);
 		const std::tm* localTime = std::localtime(&t);
 
-		char buf[42];
+		char buf[FT];
 		std::strftime(buf, sizeof(buf), format, localTime);
 
 		return std::string(buf);
@@ -59,13 +59,15 @@ namespace utils {
 	std::string formatTime(const std::time_t t, const char* format) {
 		const std::tm* localTime = std::localtime(&t);
 
-		char buf[42];
+		char buf[FT];
 		std::strftime(buf, sizeof(buf), format, localTime);
 
 		return std::string(buf);
 	}
 
 	unsigned int stoui(const std::string s) {
+		if (s == "")
+			return 0;
 		unsigned int i;
 		std::istringstream(s) >> i;
 		return i;
@@ -80,7 +82,8 @@ namespace utils {
 			rv.push_back(token);
 			input.erase(0, pos + delimiter.length());
 		}
-
+		if (input.size() > 0)
+			rv.push_back(input);
 		return rv;
 	}
 
@@ -107,6 +110,22 @@ namespace utils {
 			return FD_ERROR;
 		const fd_t fileFd = fileno(file);
 		return (fileFd);
+	}
+
+	std::string generateRandomString() {
+		static const char alphanum[] =
+			"0123456789"
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			"abcdefghijklmnopqrstuvwxyz";
+
+		std::string randomString;
+		srand(static_cast<unsigned int>(time(NULL)));
+
+		for (int i = 0; i < 32; ++i) {
+			randomString += alphanum[rand() % (sizeof(alphanum) - 1)];
+		}
+
+		return randomString;
 	}
 
 }  // namespace utils

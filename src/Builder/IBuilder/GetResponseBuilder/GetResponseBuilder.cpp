@@ -39,19 +39,17 @@ void GetResponseBuilder::setStartLine() {
 void GetResponseBuilder::setHeader() {
 	struct stat fileInfo;
 
-	// cgi 처리는 다르게 해야함.
 	if (stat(this->_path.c_str(), &fileInfo) == SYSTEMCALL_ERROR) {
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	}
 	if (fileInfo.st_size == 0) {
 		close(this->_fd);
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		this->_fd = FD_ZERO_;
 	}
 	std::map<std::string, std::string> headers =
 		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
-	headers["Content-Length"] = utils::lltos(fileInfo.st_size);
+	headers[CONTENT_LENGTH] = utils::lltos(fileInfo.st_size);
 	this->_response.setHeaders(headers);
 }
 
@@ -81,8 +79,8 @@ bool GetResponseBuilder::build() {
 }
 
 fd_t GetResponseBuilder::findReadFile() {
-	const std::string locPath = "." + this->_locationConfig->getDirectives(ROOT).asString();
-	const std::string serverPath = "." + this->_serverConfig->getDirectives(ROOT).asString();
+	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString();
+	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString();
 	const std::string targetFile = this->_request->second.getTargetFile();
 
 	this->_path = locPath + targetFile;
@@ -95,7 +93,7 @@ fd_t GetResponseBuilder::findReadFile() {
 }
 
 fd_t GetResponseBuilder::fileProcessing() {
-	if (this->checkFileMode("." + this->_locationConfig->getDirectives(ROOT).asString() +
+	if (this->checkFileMode(this->_locationConfig->getDirectives(ROOT).asString() +
 							this->_request->second.getTargetFile()) == MODE_DIRECTORY)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new RedirectResponseBuilder(MOVED_PERMANENTLY, this->_request->second.getRequestTarget() + "/",
@@ -104,19 +102,19 @@ fd_t GetResponseBuilder::fileProcessing() {
 }
 
 std::vector<std::string> GetResponseBuilder::readDir(const std::string& path) {
+	if (path == "")
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+			new ErrorResponseBuilder(FORBIDDEN, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	DIR* dirp;
 	struct dirent* dp;
 
 	if ((dirp = opendir(path.c_str())) == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	dp = readdir(dirp);	 // skip current directory
-	dp = readdir(dirp);	 // skip parent directory
-	if (dp == u::nullptr_t)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	std::vector<std::string> dirVec;
 	while ((dp = readdir(dirp)) != u::nullptr_t) {
+		if (dp->d_name[0] == '.')
+			continue;
 		if (dp == u::nullptr_t)
 			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 				INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
@@ -148,7 +146,7 @@ void GetResponseBuilder::makeListHtml(const std::string& path, const std::vector
 	this->setStartLine();
 	std::map<std::string, std::string> headers =
 		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig);
-	headers["Content-Length"] = utils::lltos(html.size());
+	headers[CONTENT_LENGTH] = utils::lltos(html.size());
 	headers["Content-Type"] = "text/html";
 	this->_response.setHeaders(headers);
 	const std::string raw = this->_response.getRawStr();
@@ -164,7 +162,9 @@ fd_t GetResponseBuilder::directoryListing() {
 	if (this->_locationConfig->getDirectives(AUTOINDEX).asBool() == false)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(FORBIDDEN, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	const std::string path = "." + this->_locationConfig->getOwnRoot();
+	const std::string path = this->_locationConfig->getPath() == this->_request->second.getRequestTarget()
+								 ? this->_locationConfig->getOwnRoot()
+								 : "";
 	const std::vector<std::string> dirVec = this->readDir(path);
 	makeListHtml(path, dirVec);
 
@@ -172,14 +172,14 @@ fd_t GetResponseBuilder::directoryListing() {
 }
 
 fd_t GetResponseBuilder::directoryProcessing() {
-	if (this->checkFileMode("." + this->_locationConfig->getDirectives(ROOT).asString() +
+	if (this->checkFileMode(this->_locationConfig->getDirectives(ROOT).asString() +
 							this->_request->second.getTargetFile()) == MODE_FILE)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	if (this->_locationConfig->getOwnIndex().empty())
 		return this->directoryListing();
-	const std::string locPath = "." + this->_locationConfig->getDirectives(ROOT).asString();
-	const std::string serverPath = "." + this->_serverConfig->getDirectives(ROOT).asString();
+	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString();
+	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString();
 	const std::vector<std::string> indexVec = this->_locationConfig->getDirectives(INDEX).asStrVec();
 
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {
@@ -210,5 +210,10 @@ void GetResponseBuilder::prepare() {
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
 	this->_readSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(this->_fd, EVENT_READ, std::vector<char>()));
+	if (this->_fd == FD_ZERO_) {
+		this->setReadState(RESOLVE);
+		this->_removed = true;
+		return;
+	}
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileReadHandlerFactory>(this->_readSharedData);
 }
