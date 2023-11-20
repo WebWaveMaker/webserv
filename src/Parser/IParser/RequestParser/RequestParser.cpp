@@ -66,7 +66,6 @@ bool RequestParser::parseStartLine(std::string& buf) {
 		getCurMsg().setErrorCode(BAD_REQUEST);
 		return false;
 	}
-
 	getCurMsg().setStartLine(startLine);
 	_curMsg->get()->first = HEADER;
 	return true;
@@ -89,7 +88,8 @@ bool RequestParser::parseHeader(std::string& buf) {
 
 		headers[key] = val;
 	}
-	if ((getCurMsg().getMethod() == POST || getCurMsg().getMethod() == PUT) && this->checkContentLengthZero(headers)) {
+	if ((getCurMsg().getMethod() == POST || getCurMsg().getMethod() == PUT) && this->checkContentLengthZero(headers) &&
+		headers[TRANSFER_ENCODING] != "chunked") {
 		_curMsg->get()->first = HTTP_ERROR;
 		getCurMsg().setErrorCode(LENGTH_REQUIRED);
 		return false;
@@ -99,7 +99,10 @@ bool RequestParser::parseHeader(std::string& buf) {
 	else
 		headers[CONTENT_LENGTH] = "0";
 	getCurMsg().setHeaders(headers);
-	_curMsg->get()->first = BODY;
+	if (headers[TRANSFER_ENCODING] == "chunked")
+		_curMsg->get()->first = CHUNKED;
+	else
+		_curMsg->get()->first = BODY;
 	return true;
 }
 
@@ -127,6 +130,20 @@ bool RequestParser::parserBody(std::string& buf) {
 	return true;
 }
 
+bool RequestParser::parserChunked(std::string& buf) {
+	unsigned int contentLength = utils::stoui(this->findAndSubstr(buf, CRLF));
+	if (contentLength == 0) {
+		_curMsg->get()->first = DONE;
+		buf.clear();
+		return true;
+	}
+	const std::string str = buf.substr(0, contentLength - 1);
+	buf.erase(0, contentLength - 1);
+	_curMsg->get()->second.setChunkedBody(str);
+	return true;
+}
+
+// 비 정상적일때 에러처리를 어떻게 할 것인가.
 request_t RequestParser::parse(const std::string& content) {
 	if (content.size() == 0)
 		return this->pop();
@@ -147,6 +164,9 @@ request_t RequestParser::parse(const std::string& content) {
 				break;
 			case BODY:
 				this->parserBody(buf);
+				break;
+			case CHUNKED:
+				this->parserChunked(buf);
 				break;
 			case HTTP_ERROR:
 				buf.clear();

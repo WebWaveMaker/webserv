@@ -15,7 +15,8 @@ class RequestParser : public IParser<request_t> {
 	bool parseStartLine(std::string& buf);
 	bool parseHeader(std::string& buf);
 	bool parserBody(std::string& buf);
-	bool checkContentLengthZero(const std::map<std::string, std::string> &headers);
+	bool checkContentLengthZero(const std::map<std::string, std::string>& headers);
+	bool parserChunked(std::string& buf);
 	RequestParser(const RequestParser& obj);
 	request_t pop(void);
 	HttpMessage& getCurMsg(void);

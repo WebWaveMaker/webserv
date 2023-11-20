@@ -24,6 +24,7 @@ class HttpMessage {
 	int getErrorCode(void) const;
 	void setHeaders(const std::map<std::string, std::string>& headers);
 	void setBody(const std::string& body);
+	void setChunkedBody(const std::string& body);
 	std::string combineHeaders(void);
 	enum HttpMethods getMethod(void) const;
 	std::string getRequestTarget(void) const;
