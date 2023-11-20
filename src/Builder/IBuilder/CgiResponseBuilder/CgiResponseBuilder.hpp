@@ -15,13 +15,15 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	std::string _cgiFullPath;
 	std::map<std::string, std::string> _interpreterMap;
 	int _sv[2];
-	pid_t _cgidPid;
+	pid_t _cgiPid;
 
 	reactor::sharedData_t _cgiWriteSharedData;
 	reactor::sharedData_t _cgiReadSharedData;
+	reactor::sharedData_t _cgiExitSharedData;
 	HttpMessage _response;
-	std::vector<std::string> _startLine;
+	std::string _startLine[3];
 	bool _startLineState;
+	std::time_t _cgiTime;
 
 	CgiResponseBuilder(const CgiResponseBuilder& obj);
 	CgiResponseBuilder& operator=(const CgiResponseBuilder& obj);

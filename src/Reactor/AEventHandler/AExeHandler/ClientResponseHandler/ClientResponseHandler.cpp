@@ -15,8 +15,10 @@ namespace reactor {
 	ClientResponseHandler::~ClientResponseHandler() {}
 
 	void ClientResponseHandler::handleEvent() {
-		if (this->removeHandlerIfNecessary())
+		if (this->removeHandlerIfNecessary()) {
+			this->_director.buildProduct();
 			return;
+		}
 		if (this->_registered == false && this->_director.getProduct()->getBuffer().size()) {
 			Dispatcher::getInstance()->registerIOHandler<ClientWriteHandlerFactory>(this->_sharedData);
 			this->_registered = true;

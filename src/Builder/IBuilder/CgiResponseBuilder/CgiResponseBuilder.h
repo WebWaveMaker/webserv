@@ -2,6 +2,7 @@
 #ifndef CGIRESPONSEBUILDER_H
 #define CGIRESPONSEBUILDER_H
 
+#include <signal.h>
 #include "ClientReadHandlerFactory.hpp"
 #include "ClientWriteHandlerFactory.hpp"
 #include "DefaultResponseBuilder.hpp"
