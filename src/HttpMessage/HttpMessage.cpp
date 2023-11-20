@@ -79,6 +79,12 @@ std::string HttpMessage::getTargetFile(void) const {
 	return this->_startLine[1].substr(pos + 1);
 }
 
+std::string HttpMessage::getTargetPath(void) const {
+	std::string::size_type pos = this->_startLine[1].find_last_of('/', this->_startLine[1].length() - 1);
+
+	return this->_startLine[1].substr(0, pos + 1);
+}
+
 void HttpMessage::setHeaders(const std::map<std::string, std::string>& headers) {
 	this->_headers = headers;
 }

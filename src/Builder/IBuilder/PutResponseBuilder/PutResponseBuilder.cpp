@@ -8,7 +8,8 @@ PutResponseBuilder::PutResponseBuilder(reactor::sharedData_t sharedData, request
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
 	  _response(),
-	  _path() {
+	  _path(),
+	  _isExist(false) {
 	if (_locationConfig.get() == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
@@ -17,47 +18,17 @@ PutResponseBuilder::PutResponseBuilder(reactor::sharedData_t sharedData, request
 
 PutResponseBuilder::~PutResponseBuilder() {}
 
-bool PutResponseBuilder::updateFile() {
-	this->_writeSharedData->getBuffer().insert(this->_writeSharedData->getBuffer().end(),
-											   this->_request->second.getBody().begin(),
-											   this->_request->second.getBody().end());
-	this->_request->second.getBody().clear();
-	if (this->_request->first == DONE && this->_writeSharedData->getBuffer().empty()) {
-		return true;
-	}
-	return false;
-}
+void PutResponseBuilder::setPath(const std::string& target, const std::string targetPath) {
+	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString() + targetPath;
+	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString() + targetPath;
 
-void PutResponseBuilder::setPath() {
-	const std::string locPath =
-		this->_locationConfig->getDirectives(ROOT).asString() + "/" + this->_request->second.getTargetFile();
-	const std::string serverPath =
-		this->_serverConfig->getDirectives(ROOT).asString() + "/" + this->_request->second.getTargetFile();
-	enum FileMode locMode = checkFileMode(locPath);
-	enum FileMode serverMode = checkFileMode(serverPath);
-
-	switch (locMode) {
-		case MODE_FILE:
-			this->_path = locPath;
-			break;
-		case MODE_DIRECTORY:
-			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-				UNSUPPORTED_MEDIA_TYPE, this->_sharedData, this->_serverConfig, this->_locationConfig));
-		case MODE_ERROR:
-			switch (serverMode) {
-				case MODE_FILE:
-					this->_path = serverPath;
-					break;
-				case MODE_DIRECTORY:
-					throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-						UNSUPPORTED_MEDIA_TYPE, this->_sharedData, this->_serverConfig, this->_locationConfig));
-					break;
-				case MODE_ERROR:
-					throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-						INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
-					break;
-			}
-			break;
+	if (access(locPath.c_str(), F_OK) == 0) {
+		this->_path = locPath + target;
+	} else if (access(serverPath.c_str(), F_OK) == 0) {
+		this->_path = serverPath + target;
+	} else {
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	}
 }
 
@@ -66,7 +37,7 @@ reactor::sharedData_t PutResponseBuilder::getProduct() {
 }
 
 void PutResponseBuilder::setStartLine() {
-	this->_response.setStartLine(DefaultResponseBuilder::getInstance()->setDefaultStartLine(OK));
+	this->_response.setStartLine(DefaultResponseBuilder::getInstance()->setDefaultStartLine(_isExist ? OK : CREATED));
 }
 
 void PutResponseBuilder::setHeader() {
@@ -80,23 +51,31 @@ void PutResponseBuilder::setHeader() {
 
 bool PutResponseBuilder::setBody() {
 	if (this->_writeSharedData->getState() == TERMINATE) {
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		reactor::Dispatcher::getInstance()->removeIOHandler(this->_writeSharedData->getFd(),
+															this->_writeSharedData->getType());
+		this->_sharedData->setState(TERMINATE);
 		return false;
 	}
-	return this->updateFile();
+	this->_writeSharedData->getBuffer().insert(this->_writeSharedData->getBuffer().end(),
+											   this->_request->second.getBody().begin(),
+											   this->_request->second.getBody().end());
+	this->_request->second.getBody().clear();
+	if (this->_request->first == DONE && this->_writeSharedData->getBuffer().empty()) {
+		this->_writeSharedData->setState(RESOLVE);
+		reactor::Dispatcher::getInstance()->removeIOHandler(this->_writeSharedData->getFd(),
+															this->_writeSharedData->getType());
+		this->setStartLine();
+		this->setHeader();
+		const std::string raw = this->_response.getRawStr();
+		std::cerr << raw << std::endl;
+		this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
+		return true;
+	}
+	return false;
 }
 
 bool PutResponseBuilder::build() {
-	if (this->setBody() == false)
-		return false;
-	this->setStartLine();
-	this->setHeader();
-	const std::string raw = this->_response.getRawStr() + CRLF;
-	std::cerr << raw << std::endl;
-	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
-	this->_writeSharedData->setState(RESOLVE);
-	return true;
+	return this->setBody();
 }
 
 void PutResponseBuilder::reset() {
@@ -104,9 +83,16 @@ void PutResponseBuilder::reset() {
 }
 
 void PutResponseBuilder::prepare() {
-	this->setPath();
+	const std::string& target = this->_request->second.getRequestTarget();
+	if (target[target.size() - 1] == '/')
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			UNSUPPORTED_MEDIA_TYPE, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	this->setPath(target.substr(1), this->_request->second.getTargetPath().substr(1));
+	if (checkFileMode(this->_path) == MODE_FILE)
+		this->_isExist = true;
+	else
+		this->_isExist = false;
 	this->_writeSharedData = utils::shared_ptr<reactor::SharedData>(
 		new reactor::SharedData(utils::makeFd(this->_path.c_str(), "w"), EVENT_WRITE, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileWriteHandlerFactory>(this->_writeSharedData);
-	this->setBody();
 }

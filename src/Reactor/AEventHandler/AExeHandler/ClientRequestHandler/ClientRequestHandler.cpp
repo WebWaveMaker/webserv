@@ -28,8 +28,6 @@ namespace reactor {
 		std::string content = std::string(this->getBuffer().begin(), this->getBuffer().begin() + this->getReadByte());
 		request_t request = this->_request.parse(content);
 		this->getBuffer().clear();
-		request->second.getBody().clear();
-		return;
 		if (request.get()) {
 			Dispatcher::getInstance()->registerExeHandler<ClientResponseHandlerFactory>(this->_writeData, &request);
 		}
