@@ -124,6 +124,3 @@ unsigned int HttpMessage::getContentLengthReceived(void) const {
 void HttpMessage::setContentLengthReceived(const unsigned int contentLengthReceived) {
 	this->_contentLengthReceived = contentLengthReceived;
 }
-std::string HttpMessage::getBody() const {
-	return this->_body;
-}

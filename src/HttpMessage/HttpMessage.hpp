@@ -38,7 +38,6 @@ class HttpMessage {
 	void setContentLength(const unsigned int contentLength);
 	unsigned int getContentLengthReceived(void) const;
 	void setContentLengthReceived(const unsigned int contentLengthReceived);
-	std::string getBody(void) const;
 	void reset();
 };
 

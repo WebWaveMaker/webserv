@@ -18,6 +18,7 @@ namespace reactor {
 		if (this->removeHandlerIfNecessary()) {
 			this->_director.buildProduct();
 			return;
+		}
 		if (this->_registered == false) {
 			Dispatcher::getInstance()->registerIOHandler<ClientWriteHandlerFactory>(this->_sharedData);
 			this->_registered = true;
