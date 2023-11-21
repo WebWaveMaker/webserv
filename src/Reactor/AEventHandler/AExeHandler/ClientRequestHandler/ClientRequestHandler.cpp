@@ -28,14 +28,11 @@ namespace reactor {
 		std::string content = std::string(this->getBuffer().begin(), this->getBuffer().begin() + this->getReadByte());
 		request_t request = this->_request.parse(content);
 		this->getBuffer().clear();
-		if (request.get() &&
-			!(request->first == LONG_BODY || request->first == LONG_BODY_DONE || request->first == LONG_FIRST)) {
+		if (request.get() && !(request->first == LONG_BODY || request->first == LONG_BODY_DONE)) {
+			if (request->first == LONG_FIRST)
+				request->first = LONG_BODY;
 			Dispatcher::getInstance()->registerExeHandler<ClientResponseHandlerFactory>(this->_writeData, &request);
 			return;
-		}
-		if (request.get() && request->first == LONG_FIRST) {
-			request->first = LONG_BODY;
-			Dispatcher::getInstance()->registerExeHandler<ClientResponseHandlerFactory>(this->_writeData, &request);
 		}
 	}
 }  // namespace reactor

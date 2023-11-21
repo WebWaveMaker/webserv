@@ -21,6 +21,12 @@ enum AsyncState RequestParser::getState(void) const {
 	return this->_msgs.empty() ? RESOLVE : PENDING;
 }
 
+bool RequestParser::errorRequest(void) {
+	_curMsg->get()->first = HTTP_ERROR;
+	getCurMsg().setErrorCode(BAD_REQUEST);
+	return false;
+}
+
 std::string RequestParser::findAndSubstr(std::string& buf, std::string delim) {
 	std::string::size_type size = buf.find(delim);
 	if (size == std::string::npos) {
@@ -56,7 +62,7 @@ request_t RequestParser::pop(void) {
 bool RequestParser::parseStartLine(std::string& buf) {
 	std::string str = this->findAndSubstr(buf, CRLF);
 	if (str.size() == 0)
-		return false;
+		return errorRequest();
 	std::stringstream ss(str);
 	std::vector<std::string> startLine(3);
 
@@ -64,7 +70,7 @@ bool RequestParser::parseStartLine(std::string& buf) {
 	if (startLine[0].empty() || startLine[1].empty() || startLine[2].empty()) {
 		_curMsg->get()->first = HTTP_ERROR;
 		getCurMsg().setErrorCode(BAD_REQUEST);
-		return false;
+		return errorRequest();
 	}
 	getCurMsg().setStartLine(startLine);
 	_curMsg->get()->first = HEADER;
@@ -74,7 +80,7 @@ bool RequestParser::parseStartLine(std::string& buf) {
 bool RequestParser::parseHeader(std::string& buf) {
 	std::string str = this->findAndSubstr(buf, RNRN);
 	if (str.size() == 0)
-		return false;
+		return errorRequest();
 	str += CRLF;
 	std::vector<std::string> headerFields = utils::split(str, CRLF);
 	std::map<std::string, std::string> headers;

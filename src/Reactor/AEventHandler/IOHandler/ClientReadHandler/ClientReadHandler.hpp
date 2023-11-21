@@ -8,7 +8,6 @@ namespace reactor {
 
 	class ClientReadHandler : public AEventHandler {
 	   private:
-		unsigned int _totalRead;
 		ClientReadHandler(const ClientReadHandler& obj);
 		ClientReadHandler& operator=(const ClientReadHandler& obj);
 

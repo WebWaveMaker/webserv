@@ -1,6 +1,6 @@
 #include "ClientReadHandler.hpp"
 
-reactor::ClientReadHandler::ClientReadHandler(sharedData_t& sharedData) : AEventHandler(sharedData), _totalRead(0) {}
+reactor::ClientReadHandler::ClientReadHandler(sharedData_t& sharedData) : AEventHandler(sharedData) {}
 
 reactor::ClientReadHandler::~ClientReadHandler() {}
 
@@ -20,9 +20,6 @@ void reactor::ClientReadHandler::handleEvent() {
 		this->setState(TERMINATE);
 		return;
 	}
-	this->_totalRead += readByte;
-	std::cout << "readByte: " << readByte << std::endl;
-	std::cout << "totalRead: " << this->_totalRead << std::endl;
 	this->setReadByte(readByte);
 	this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
 }
