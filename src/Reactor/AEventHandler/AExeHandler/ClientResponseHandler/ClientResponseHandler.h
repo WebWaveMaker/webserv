@@ -10,6 +10,7 @@
 #include "Dispatcher.hpp"
 #include "ErrorResponseBuilder.hpp"
 #include "GetResponseBuilder.hpp"
+#include "HeadResponseBuilder.hpp"
 #include "Kqueue.hpp"
 #include "PostResponseBuilder.hpp"
 #include "PutResponseBuilder.hpp"

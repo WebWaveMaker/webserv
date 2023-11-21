@@ -67,6 +67,9 @@ namespace reactor {
 				case PUT:
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new PutResponseBuilder(
 						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
+				case HEAD:
+					return utils::shared_ptr<IBuilder<sharedData_t> >(new HeadResponseBuilder(
+						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 				case UNKNOWN:
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
 						BAD_REQUEST, this->_sharedData, this->_serverConfig, this->_locationConfig));

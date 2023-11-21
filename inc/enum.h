@@ -62,7 +62,7 @@ enum HTTP_STATUS {
 
 enum LogLevels { LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG };
 
-enum HttpMethods { GET, POST, DELETE, PUT, UNKNOWN };
+enum HttpMethods { HEAD, GET, POST, DELETE, PUT, UNKNOWN };
 
 enum AsyncState { PENDING, RESOLVE, TERMINATE, ACCEPT, NONE };
 
