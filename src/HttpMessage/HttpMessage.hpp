@@ -10,6 +10,8 @@ class HttpMessage {
 	std::map<std::string, std::string> _headers;
 	std::string _body;
 	int _errorCode;
+	unsigned int _contentLength;
+	unsigned int _contentLengthReceived;
 
    public:
 	HttpMessage();
@@ -22,13 +24,19 @@ class HttpMessage {
 	int getErrorCode(void) const;
 	void setHeaders(const std::map<std::string, std::string>& headers);
 	void setBody(const std::string& body);
+	void setChunkedBody(const std::string& body);
 	std::string combineHeaders(void);
 	enum HttpMethods getMethod(void) const;
 	std::string getRequestTarget(void) const;
 	std::string getTargetFile(void) const;
+	std::string getTargetPath(void) const;
 	std::string& getBody(void);
 	std::map<std::string, std::string>& getHeaders(void);
 	std::string getRawStr(void);
+	unsigned int getContentLength(void) const;
+	void setContentLength(const unsigned int contentLength);
+	unsigned int getContentLengthReceived(void) const;
+	void setContentLengthReceived(const unsigned int contentLengthReceived);
 	void reset();
 };
 

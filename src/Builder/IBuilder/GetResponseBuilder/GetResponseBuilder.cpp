@@ -49,7 +49,7 @@ void GetResponseBuilder::setHeader() {
 	}
 	std::map<std::string, std::string> headers =
 		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
-	headers["Content-Length"] = utils::lltos(fileInfo.st_size);
+	headers[CONTENT_LENGTH] = utils::lltos(fileInfo.st_size);
 	this->_response.setHeaders(headers);
 }
 
@@ -146,7 +146,7 @@ void GetResponseBuilder::makeListHtml(const std::string& path, const std::vector
 	this->setStartLine();
 	std::map<std::string, std::string> headers =
 		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig);
-	headers["Content-Length"] = utils::lltos(html.size());
+	headers[CONTENT_LENGTH] = utils::lltos(html.size());
 	headers["Content-Type"] = "text/html";
 	this->_response.setHeaders(headers);
 	const std::string raw = this->_response.getRawStr();

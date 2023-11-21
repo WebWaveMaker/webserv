@@ -4,10 +4,12 @@
 
 #define CRLF "\r\n"
 #define RNRN "\r\n\r\n"
+#define CONTENT_LENGTH "Content-Length"
+#define CONTENT_TYPE "Content-Type"
+#define TRANSFER_ENCODING "Transfer-Encoding"
 
 #define BUFFER_SIZE 4096
 #define FT 42
-
 
 #define FD_ERROR -1
 #define FD_LISTING -2

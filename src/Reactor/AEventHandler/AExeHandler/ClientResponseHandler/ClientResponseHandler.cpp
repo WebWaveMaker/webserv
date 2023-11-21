@@ -40,7 +40,7 @@ namespace reactor {
 				throw utils::shared_ptr<IBuilder<sharedData_t> >(
 					new ErrorResponseBuilder(this->_request->second.getErrorCode(), this->_sharedData,
 											 this->_serverConfig, this->_locationConfig));
-			std::vector<enum HttpMethods> methods = this->_serverConfig->getDirectives(LIMIT_EXCEPT).asMedVec();
+			std::vector<enum HttpMethods> methods = this->_locationConfig->getDirectives(LIMIT_EXCEPT).asMedVec();
 
 			if (std::find(methods.begin(), methods.end(), this->_request->second.getMethod()) == methods.end())
 				throw utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
@@ -56,8 +56,8 @@ namespace reactor {
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new DeleteResponseBuilder(
 						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 				case PUT:
-					// return utils::shared_ptr<IBuilder<sharedData_t> >(new PutResponseBuilder(
-					// 	this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
+					return utils::shared_ptr<IBuilder<sharedData_t> >(new PutResponseBuilder(
+						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 				case UNKNOWN:
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
 						BAD_REQUEST, this->_sharedData, this->_serverConfig, this->_locationConfig));

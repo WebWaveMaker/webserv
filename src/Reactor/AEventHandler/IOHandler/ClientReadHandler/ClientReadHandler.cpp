@@ -20,8 +20,6 @@ void reactor::ClientReadHandler::handleEvent() {
 		this->setState(TERMINATE);
 		return;
 	}
-	if (readByte && readByte < BUFFER_SIZE) {
-		this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
-		this->getBuffer().push_back('\0');
-	}
+	this->setReadByte(readByte);
+	this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
 }

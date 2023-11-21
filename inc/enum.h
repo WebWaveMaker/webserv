@@ -16,7 +16,7 @@ enum Directives {
 	INDEX,				   // server, location 	std::vector<string> default : index.html
 	LIMIT_EXCEPT,		   // server, location 	std::vector<enum HttpMethods> default : {GET, POST, DELETE, PUT}
 	RETURN,				   // server, location 	int, string default : empty
-	CGI_INDEX,			   // server, location 	string default : empty
+	CGI_INDEX,			   // server, location 	std::vector<string> default : empty
 };
 
 enum HTTP_STATUS {
@@ -46,6 +46,8 @@ enum HTTP_STATUS {
 	REQUEST_TIMEOUT = 408,
 	CONFLICT = 409,
 	GONE = 410,
+	LENGTH_REQUIRED = 411,
+	PAYLOAD_TOO_LARGE = 413,
 	UNSUPPORTED_MEDIA_TYPE = 415,
 	TOO_MANY_REQUESTS = 429,
 
@@ -64,7 +66,7 @@ enum HttpMethods { GET, POST, DELETE, PUT, UNKNOWN };
 
 enum AsyncState { PENDING, RESOLVE, TERMINATE, ACCEPT, NONE };
 
-enum HttpMessageState { DONE, HTTP_ERROR, START_LINE, HEADER, BODY };
+enum HttpMessageState { DONE, HTTP_ERROR, START_LINE, HEADER, BODY, CHUNKED, LONG_FIRST, LONG_BODY, LONG_BODY_DONE };
 
 enum FileMode { MODE_ERROR, MODE_FILE, MODE_DIRECTORY };
 

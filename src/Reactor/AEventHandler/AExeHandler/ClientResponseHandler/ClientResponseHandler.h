@@ -12,6 +12,7 @@
 #include "GetResponseBuilder.hpp"
 #include "Kqueue.hpp"
 #include "PostResponseBuilder.hpp"
+#include "PutResponseBuilder.hpp"
 #include "RequestParser.h"
 #include "ServerManager.hpp"
 
