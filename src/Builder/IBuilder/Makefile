@@ -15,6 +15,7 @@ DIRS := DefaultResponseBuilder \
 		PostResponseBuilder \
 		PutResponseBuilder \
 		RedirectResponseBuilder \
+		HeadResponseBuilder \
 		CgiResponseBuilder
 
 include $(TOPDIR)/config/makefile/objRecipes.mk
