@@ -36,6 +36,7 @@ class Server {
 	AccessLogger& getAccessLogger() const;
 	ErrorLogger& getErrorLogger() const;
 	utils::shared_ptr<std::vector<fd_t> > getClientFds();
+	std::string getClientIP(fd_t fd);
 
 	~Server();
 };

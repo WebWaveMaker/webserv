@@ -15,11 +15,11 @@
 #include "ServerConfig.hpp"
 #include "ServerManager.hpp"
 
-int main(int ac, char** av) {
+int main(int ac, char** av, char** envp) {
 	if (ac != 2)
 		return ErrorLogger::parseError(__FILE__, __LINE__, __func__, "wrong arguments");
 	try {
-		ServerManager::getInstance()->init(av[1]);
+		ServerManager::getInstance()->init(av[1], envp);
 
 		while (true)
 			reactor::Dispatcher::getInstance()->handleEvent();

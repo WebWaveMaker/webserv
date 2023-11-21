@@ -16,6 +16,8 @@ namespace reactor {
 			if (it->get()->getType() == type)
 				handler = *it;
 		}
+		if (!(handler.get()))
+			return;
 
 		size_t index = this->_handlerIndices[handler];
 

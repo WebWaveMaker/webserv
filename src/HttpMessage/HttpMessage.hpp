@@ -27,6 +27,7 @@ class HttpMessage {
 	void setChunkedBody(const std::string& body);
 	std::string combineHeaders(void);
 	enum HttpMethods getMethod(void) const;
+	std::string getMethodStr(void) const;
 	std::string getRequestTarget(void) const;
 	std::string getTargetFile(void) const;
 	std::string getTargetPath(void) const;
@@ -37,6 +38,7 @@ class HttpMessage {
 	void setContentLength(const unsigned int contentLength);
 	unsigned int getContentLengthReceived(void) const;
 	void setContentLengthReceived(const unsigned int contentLengthReceived);
+	std::string getBody(void) const;
 	void reset();
 };
 

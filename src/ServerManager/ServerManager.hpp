@@ -11,14 +11,14 @@ class ServerManager : public u::TSingleton<ServerManager> {
 	ConfigParser _configParser;
 	config_t _serverConfigs;
 	std::map<int, Server*> _servers;
+	char** _envp;
 
 	ServerManager(const ServerManager& obj);
 	ServerManager& operator=(const ServerManager& obj);
 
    public:
 	ServerManager();
-	ServerManager(const std::string path);
-	void init(const std::string path);
+	void init(const std::string path, char** envp);
 	void handleSigPipe();
 	void createServer(config_t& serverConfigs);
 	void createClient(int serverFd, int clientFd, struct sockaddr_in& clientAddr);
@@ -29,6 +29,8 @@ class ServerManager : public u::TSingleton<ServerManager> {
 	utils::shared_ptr<std::vector<fd_t> > getClientFds();
 	void registerReadEvent(fd_t fd);
 	void registerTimeoutEvent();
+	std::string getClientIp(fd_t fd);
+	char** getEnvp() const;
 	~ServerManager();
 };
 

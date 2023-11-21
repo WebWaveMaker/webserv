@@ -4,7 +4,8 @@
 
 ServerManager::ServerManager() : _configParser(), _servers() {}
 
-void ServerManager::init(const std::string path) {
+void ServerManager::init(const std::string path, char** envp) {
+	this->_envp = envp;
 	this->_serverConfigs = this->_configParser.parse(path);
 	try {
 		this->registerTimeoutEvent();
@@ -98,4 +99,17 @@ utils::shared_ptr<std::vector<fd_t> > ServerManager::getClientFds() {
 		std::copy(serverClients->begin(), serverClients->end(), std::back_inserter(*(clientFds.get())));
 	}
 	return (clientFds);
+}
+
+char** ServerManager::getEnvp() const {
+	return (this->_envp);
+}
+
+std::string ServerManager::getClientIp(fd_t fd) {
+	for (std::map<int, Server*>::iterator it = this->_servers.begin(); it != this->_servers.end(); ++it) {
+		if (it->second->hasClient(fd)) {
+			return std::string(it->second->getClientIP(fd));
+		}
+	}
+	return std::string("");
 }

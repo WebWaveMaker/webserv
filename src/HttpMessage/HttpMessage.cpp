@@ -69,6 +69,10 @@ enum HttpMethods HttpMessage::getMethod(void) const {
 	return UNKNOWN;
 }
 
+std::string HttpMessage::getMethodStr(void) const {
+	return (this->_startLine[0]);
+}
+
 std::string HttpMessage::getRequestTarget(void) const {
 	return this->_startLine[1];
 }
@@ -119,4 +123,7 @@ unsigned int HttpMessage::getContentLengthReceived(void) const {
 
 void HttpMessage::setContentLengthReceived(const unsigned int contentLengthReceived) {
 	this->_contentLengthReceived = contentLengthReceived;
+}
+std::string HttpMessage::getBody() const {
+	return this->_body;
 }
