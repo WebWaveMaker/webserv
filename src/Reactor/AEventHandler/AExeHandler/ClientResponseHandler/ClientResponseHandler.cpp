@@ -16,20 +16,25 @@ namespace reactor {
 
 	void ClientResponseHandler::handleEvent() {
 		if (this->removeHandlerIfNecessary()) {
-			this->_director.buildProduct();
+			// this->_director.buildProduct();
 			return;
 		}
 		if (this->_registered == false) {
 			Dispatcher::getInstance()->registerIOHandler<ClientWriteHandlerFactory>(this->_sharedData);
 			this->_registered = true;
 		}
+		std::cout << "client response handler" << std::endl;
 		try {
 			if (this->getBuffer().empty() && this->_director.getBuilderReadState() == RESOLVE) {
 				Dispatcher::getInstance()->removeIOHandler(this->getHandle(), this->getType());
 				Dispatcher::getInstance()->removeExeHandler(this);
+				std::cout << "remove responseHandler" << std::endl;
 				return;
 			}
-
+			std::cout << "this one?" << std::endl;
+			if (this->_director.buildProduct() == false)
+				return;
+			std::cout << "client response handler try catch" << std::endl;
 		} catch (utils::shared_ptr<IBuilder<sharedData_t> >& builder) {
 			this->_director.setBuilder(builder);
 		} catch (...) {

@@ -27,15 +27,16 @@ void RedirectResponseBuilder::setStartLine() {
 
 void RedirectResponseBuilder::setHeader() {
 	std::map<std::string, std::string> headers =
-		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
+		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig);
 
 	headers["Location"] = "http://" + this->_request->second.getHeaders()["Host"] + this->_path;
 	headers[CONTENT_LENGTH] = "0";
-	headers.erase("Content-Type");	// redirect는 body가 없으므로 Content-Type을 지워준다
 	this->_response.setHeaders(headers);
 }
 
 bool RedirectResponseBuilder::setBody() {
+	if (this->_readSharedData->getBuffer().empty())
+		return false;
 	return true;
 }
 
@@ -50,7 +51,7 @@ bool RedirectResponseBuilder::build() {
 void RedirectResponseBuilder::prepare() {
 	this->setStartLine();
 	this->setHeader();
-	const std::string raw = this->_response.getRawStr() + CRLF;
+	const std::string raw = this->_response.getRawStr();
 
 	std::cout << raw << std::endl;
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
