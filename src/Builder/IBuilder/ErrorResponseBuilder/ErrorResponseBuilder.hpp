@@ -18,6 +18,7 @@ class ErrorResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	HttpMessage _response;
 
 	fd_t findReadFile();
+	void finalError();
 
    public:
 	ErrorResponseBuilder(const int errorCode, reactor::sharedData_t sharedData,
