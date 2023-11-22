@@ -99,11 +99,17 @@ fd_t GetResponseBuilder::findReadFile() {
 }
 
 fd_t GetResponseBuilder::fileProcessing() {
-	if (this->checkFileMode(this->_locationConfig->getDirectives(ROOT).asString() +
-							this->_request->second.getTargetFile()) != MODE_FILE)
+	const enum FileMode mode = this->checkFileMode(this->_locationConfig->getDirectives(ROOT).asString() +
+												   this->_request->second.getTargetFile());
+	const enum FileMode serverMode = this->checkFileMode(this->_serverConfig->getDirectives(ROOT).asString() +
+														 this->_request->second.getTargetFile());
+	if (mode == MODE_DIRECTORY)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new RedirectResponseBuilder(MOVED_PERMANENTLY, this->_request->second.getRequestTarget() + "/",
 										this->_sharedData, this->_request, this->_serverConfig));
+	if (mode == MODE_ERROR && serverMode == MODE_ERROR)
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	return this->findReadFile();
 }
 
