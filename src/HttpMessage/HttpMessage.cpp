@@ -107,6 +107,9 @@ void HttpMessage::reset() {
 	this->_startLine[2].clear();
 	this->_headers.clear();
 	this->_body.clear();
+	this->_contentLength = 0;
+	this->_contentLengthReceived = 0;
+	this->_errorCode = 0;
 }
 
 unsigned int HttpMessage::getContentLength(void) const {
@@ -122,5 +125,6 @@ unsigned int HttpMessage::getContentLengthReceived(void) const {
 }
 
 void HttpMessage::setContentLengthReceived(const unsigned int contentLengthReceived) {
+	std::cerr << "setcontentlengthreceived: " << contentLengthReceived << "\n";
 	this->_contentLengthReceived = contentLengthReceived;
 }

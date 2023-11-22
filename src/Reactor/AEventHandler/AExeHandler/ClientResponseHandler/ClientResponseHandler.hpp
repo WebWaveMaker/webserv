@@ -16,7 +16,7 @@ namespace reactor {
 		utils::shared_ptr<IBuilder<sharedData_t> > chooseBuilder();
 
 	   public:
-		ClientResponseHandler(sharedData_t& sharedData, va_list args);
+		ClientResponseHandler(sharedData_t& sharedData);
 		virtual ~ClientResponseHandler();
 		virtual void handleEvent();
 	};
