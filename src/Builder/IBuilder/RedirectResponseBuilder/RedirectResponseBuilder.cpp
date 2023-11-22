@@ -9,8 +9,24 @@ RedirectResponseBuilder::RedirectResponseBuilder(const unsigned int statusCode, 
 	  _request(request),
 	  _serverConfig(serverConfig),
 	  _readSharedData(new reactor::SharedData(FD_ERROR, EVENT_READ, std::vector<char>())),
-	  _response() {
-	std::cout << "path: " << this->_path << std::endl;
+	  _response(),
+	  _sessionId("") {
+	this->_sharedData->clear();
+	this->prepare();
+}
+
+RedirectResponseBuilder::RedirectResponseBuilder(const unsigned int statusCode, const std::string& path,
+												 reactor::sharedData_t sharedData, request_t request,
+												 const utils::shared_ptr<ServerConfig>& serverConfig,
+												 const sessionId_t sessionId)
+	: _statusCode(statusCode),
+	  _path(path),
+	  _sharedData(sharedData),
+	  _request(request),
+	  _serverConfig(serverConfig),
+	  _readSharedData(new reactor::SharedData(FD_ERROR, EVENT_READ, std::vector<char>())),
+	  _response(),
+	  _sessionId(sessionId) {
 	this->_sharedData->clear();
 	this->prepare();
 }
@@ -31,6 +47,8 @@ void RedirectResponseBuilder::setHeader() {
 
 	headers["Location"] = "http://" + this->_request->second.getHeaders()["Host"] + this->_path;
 	headers[CONTENT_LENGTH] = "0";
+	if (this->_sessionId != "")
+		headers[SET_COOKIE] = "sessionId=" + this->_sessionId + "; httponly; Max-Age=60;";
 	this->_response.setHeaders(headers);
 }
 

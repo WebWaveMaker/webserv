@@ -11,11 +11,11 @@ class SessionStore : public utils::TSingleton<SessionStore> {
    public:
 	SessionStore();
 	~SessionStore();
-	SessionData& getSession(std::string& sessionId);
+	SessionData& getSession(const std::string& sessionId);
 	void setSession(const std::string& sessionId, SessionData& sessionData);
-	bool hasSession(std::string& sessionId);
-	bool isSessionExpired(std::string& sessionId);
-	void removeSession(std::string& sessionId);
+	bool hasSession(const std::string& sessionId);
+	bool isSessionExpired(const std::string& sessionId);
+	void removeSession(const std::string& sessionId);
 };
 
 #endif

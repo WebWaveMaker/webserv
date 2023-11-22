@@ -6,11 +6,11 @@
 
 class SessionData {
    private:
-	const std::string _user;
 	const std::time_t _expiredTime;
 	std::map<std::string, std::string> _data;
 
    public:
+	SessionData();
 	SessionData(const std::time_t& expiredTime);
 	SessionData(const SessionData& obj);
 	~SessionData();

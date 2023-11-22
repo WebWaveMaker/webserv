@@ -1,6 +1,8 @@
 #include "SessionData.hpp"
 
-SessionData::SessionData(const std::time_t& expiredTime) : _expiredTime(expiredTime) {}
+SessionData::SessionData() : _expiredTime(), _data() {}
+
+SessionData::SessionData(const std::time_t& expiredTime) : _expiredTime(expiredTime), _data() {}
 
 SessionData::SessionData(const SessionData& obj) : _expiredTime(obj._expiredTime) {}
 

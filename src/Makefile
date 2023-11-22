@@ -12,6 +12,7 @@ DIRS :=	AConfig \
 		Client \
 		Factory \
 		HttpMessage \
+		HttpSession \
 		Parser \
 		Reactor \
 		Server \

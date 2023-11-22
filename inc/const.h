@@ -7,6 +7,8 @@
 #define CONTENT_LENGTH "Content-Length"
 #define CONTENT_TYPE "Content-Type"
 #define TRANSFER_ENCODING "Transfer-Encoding"
+#define SET_COOKIE "Set-Cookie"
+#define COOKIE "Cookie"
 
 #define BUFFER_SIZE 4096
 #define FT 42
