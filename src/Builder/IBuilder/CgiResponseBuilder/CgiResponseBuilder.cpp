@@ -32,9 +32,12 @@ void CgiResponseBuilder::prepare() {
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	this->makeWriteSharedData();
-	if (this->doFork() == false)
+	if (this->doFork() == false) {
+		close(this->_sv[0]);
+		close(this->_sv[1]);
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	}
 	close(this->_sv[1]);
 	// CGI 프로세스에개 write
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::ClientWriteHandlerFactory>(
@@ -69,10 +72,11 @@ bool CgiResponseBuilder::build() {
 	} else {
 		if (std::difftime(std::time(NULL), this->_cgiTime) >= 180) {
 			kill(this->_cgiPid, SIGTERM);
-			return false;
+			throw false;
 		}
 	}
-	if (this->_cgiWriteSharedData->getBuffer().size() == 0) {
+	if ((this->_request->first == DONE || this->_request->first == LONG_BODY_DONE) &&
+		this->_cgiWriteSharedData->getBuffer().empty()) {
 		this->_cgiWriteSharedData->setState(RESOLVE);
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
 															this->_cgiWriteSharedData->getType());
@@ -89,6 +93,10 @@ bool CgiResponseBuilder::setBody() {
 	if (this->_startLineState == false)
 		this->replaceStartLine();
 	else {
+		this->_cgiWriteSharedData->getBuffer().insert(this->_cgiWriteSharedData->getBuffer().end(),
+													  this->_request->second.getBody().begin(),
+													  this->_request->second.getBody().end());
+		this->_request->second.getBody().clear();
 		this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().end(),
 													this->_cgiReadSharedData.get()->getBuffer().begin(),
 													this->_cgiReadSharedData.get()->getBuffer().end());
@@ -258,9 +266,9 @@ bool CgiResponseBuilder::makeSocketPair() {
 void CgiResponseBuilder::makeWriteSharedData() {
 	this->_cgiWriteSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(this->_sv[0], EVENT_WRITE, std::vector<char>()));
-	std::string body = this->_request.get()->second.getBody();
-	for (std::string::size_type i = 0; i < body.size(); ++i)
-		this->_cgiWriteSharedData.get()->getBuffer().push_back(body[i]);
+	this->_cgiWriteSharedData->getBuffer().insert(this->_cgiWriteSharedData->getBuffer().end(),
+												  this->_request->second.getBody().begin(),
+												  this->_request->second.getBody().end());
 }
 
 std::string CgiResponseBuilder::makeQueryString() {
@@ -412,4 +420,8 @@ std::vector<std::string> CgiResponseBuilder::parsPathEnvp() {
 		i++;
 	}
 	return (result);
+}
+
+void CgiResponseBuilder::~CgiResponseBuilder() {
+	close(this->_sv[0]);
 }
