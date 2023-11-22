@@ -422,6 +422,10 @@ std::vector<std::string> CgiResponseBuilder::parsPathEnvp() {
 	return (result);
 }
 
-void CgiResponseBuilder::~CgiResponseBuilder() {
+CgiResponseBuilder::~CgiResponseBuilder() {
 	close(this->_sv[0]);
 }
+
+void CgiResponseBuilder::setHeader() {}
+
+void CgiResponseBuilder::reset() {}
