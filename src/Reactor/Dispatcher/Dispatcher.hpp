@@ -34,11 +34,9 @@ namespace reactor {
 		}
 
 		template <class Factory>
-		void registerExeHandler(sharedData_t sharedData, ...) {
+		void registerExeHandler(sharedData_t sharedData) {
 			Factory factory;
-			va_list args;
-			va_start(args, sharedData);
-			u::shared_ptr<AEventHandler> handler = factory.createExeHandler(sharedData, args);
+			u::shared_ptr<AEventHandler> handler = factory.createExeHandler(sharedData);
 			this->_addHandlers.push_back(handler);
 		}
 		void removeIOHandler(fd_t fd, enum EventType type);

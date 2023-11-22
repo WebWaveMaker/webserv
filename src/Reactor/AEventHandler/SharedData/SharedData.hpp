@@ -12,9 +12,11 @@ namespace reactor {
 		std::vector<char> _buffer;
 		enum AsyncState _state;
 		unsigned int _readByte;
+		request_t _request;
 
 	   public:
 		SharedData(const fd_t fd, const enum EventType type, std::vector<char> buffer);
+		SharedData(const fd_t fd, const enum EventType type, std::vector<char> buffer, request_t request);
 		SharedData(const SharedData& obj);
 		~SharedData();
 		SharedData& operator=(const SharedData& obj);
@@ -31,6 +33,8 @@ namespace reactor {
 		};
 		unsigned int getReadByte() const { return this->_readByte; };
 		void setReadByte(const unsigned int readByte) { this->_readByte = readByte; };
+		request_t getRequest() const { return this->_request; };
+		void setRequest(const request_t request) { this->_request = request; };
 	};
 
 	typedef utils::shared_ptr<SharedData> sharedData_t;

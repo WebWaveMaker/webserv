@@ -5,6 +5,7 @@ RequestParser::RequestParser(utils::shared_ptr<ServerConfig> serverConfig)
 	_msgs.push(utils::shared_ptr<std::pair<enum HttpMessageState, HttpMessage> >(
 		new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 	_curMsg = &_msgs.back();
+	_curMsg->get()->second.setContentLengthReceived(0);
 }
 
 RequestParser::~RequestParser() {}
@@ -100,10 +101,9 @@ bool RequestParser::parseHeader(std::string& buf) {
 		getCurMsg().setErrorCode(LENGTH_REQUIRED);
 		return false;
 	}
-	if (headers.count(CONTENT_LENGTH) == 1)
-		getCurMsg().setContentLength(utils::stoui(headers[CONTENT_LENGTH]));
-	else
+	if (headers.count(CONTENT_LENGTH) == 0)
 		headers[CONTENT_LENGTH] = "0";
+	getCurMsg().setContentLength(utils::stoui(headers[CONTENT_LENGTH]));
 	getCurMsg().setHeaders(headers);
 	if (headers[TRANSFER_ENCODING] == "chunked")
 		_curMsg->get()->first = CHUNKED;
@@ -155,7 +155,10 @@ bool RequestParser::parseChunked(std::string& buf) {
 bool RequestParser::parseLongBody(std::string& buf) {
 	getCurMsg().setBody(buf);
 	getCurMsg().setContentLengthReceived(getCurMsg().getContentLengthReceived() + buf.size());
-	if (getCurMsg().getContentLength() == getCurMsg().getContentLengthReceived()) {
+	const unsigned int contentLength = getCurMsg().getContentLength();
+	const unsigned int contentLengthReceived = getCurMsg().getContentLengthReceived();
+
+	if (contentLength == contentLengthReceived) {
 		_curMsg->get()->first = LONG_BODY_DONE;
 	}
 	buf.clear();
@@ -170,6 +173,8 @@ request_t RequestParser::parse(std::string& content) {
 			new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 		_curMsg = &_msgs.back();
 	}
+
+	std::cerr << "previous contentLengthReceived: " << getCurMsg().getContentLengthReceived() << std::endl;
 	while (content.empty() == false) {
 		switch (this->_msgs.back()->first) {
 			case START_LINE:
@@ -204,5 +209,6 @@ request_t RequestParser::parse(std::string& content) {
 	if (this->_curMsg->get()->first == BODY &&
 		(getCurMsg().getHeaders().count(CONTENT_LENGTH) == 0 || getCurMsg().getHeaders().at(CONTENT_LENGTH) == "0"))
 		this->_curMsg->get()->first = DONE;
+	std::cerr << "request out state: " << this->_curMsg->get()->first << std::endl;
 	return this->pop();
 }

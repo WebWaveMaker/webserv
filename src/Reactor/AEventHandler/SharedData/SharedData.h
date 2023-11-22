@@ -5,5 +5,6 @@
 #include "enum.h"
 #include "shared_ptr.hpp"
 #include "types.h"
+#include "RequestParser.h"
 
 #endif

@@ -2,15 +2,13 @@
 
 namespace reactor {
 
-	ClientResponseHandler::ClientResponseHandler(sharedData_t& sharedData, va_list args)
+	ClientResponseHandler::ClientResponseHandler(sharedData_t& sharedData)
 		: AExeHandler(sharedData),
-		  _request(*va_arg(args, request_t*)),
+		  _request(sharedData->getRequest()),
 		  _serverConfig(ServerManager::getInstance()->getServerConfig(this->getHandle())),
 		  _locationConfig(_serverConfig->getLocationConfig(_request->second.getRequestTarget())),
 		  _director(this->chooseBuilder()),
-		  _registered(false) {
-		va_end(args);
-	}
+		  _registered(false) {}
 
 	ClientResponseHandler::~ClientResponseHandler() {}
 

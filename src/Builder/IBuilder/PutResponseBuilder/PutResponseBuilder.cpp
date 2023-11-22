@@ -73,7 +73,8 @@ bool PutResponseBuilder::setBody() {
 		this->setHeader();
 		const std::string raw = this->_response.getRawStr();
 		this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
-		_isRemoved = true;
+		this->_request.get()->second.setContentLength(0);
+		this->_request.get()->second.setContentLengthReceived(0);
 		return true;
 	}
 	return false;

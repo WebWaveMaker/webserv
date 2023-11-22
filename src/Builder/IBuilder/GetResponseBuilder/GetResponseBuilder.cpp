@@ -17,7 +17,7 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	if (this->_locationConfig->isRedirect()) {
 		std::vector<std::string> rv = this->_locationConfig->getDirectives(RETURN).asStrVec();
-	
+
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new RedirectResponseBuilder(
 			utils::stoui(rv[0]), rv[1], this->_sharedData, this->_request, this->_serverConfig));
 	}

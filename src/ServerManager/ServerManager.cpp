@@ -83,12 +83,12 @@ ServerManager::~ServerManager() {
 
 void ServerManager::registerReadEvent(fd_t fd) {
 	reactor::Dispatcher::getInstance()->registerExeHandler<reactor::ServerAcceptHandlerFactory>(
-		reactor::sharedData_t(new reactor::SharedData(fd, EVENT_READ, std::vector<char>())), NULL);
+		reactor::sharedData_t(new reactor::SharedData(fd, EVENT_READ, std::vector<char>())));
 }
 
 void ServerManager::registerTimeoutEvent() {
 	reactor::Dispatcher::getInstance()->registerExeHandler<reactor::TimeoutHandlerFactory>(
-		reactor::sharedData_t(new reactor::SharedData(4242, EVENT_TIMER, std::vector<char>())), NULL);
+		reactor::sharedData_t(new reactor::SharedData(4242, EVENT_TIMER, std::vector<char>())));
 }
 
 utils::shared_ptr<std::vector<fd_t> > ServerManager::getClientFds() {
