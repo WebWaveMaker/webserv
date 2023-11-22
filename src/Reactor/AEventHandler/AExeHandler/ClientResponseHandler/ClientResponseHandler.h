@@ -4,6 +4,7 @@
 
 #include <cstdarg>
 #include "AExeHandler.hpp"
+#include "CgiResponseBuilder.hpp"
 #include "ClientWriteHandlerFactory.hpp"
 #include "DeleteResponseBuilder.hpp"
 #include "Director.hpp"
