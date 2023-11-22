@@ -11,7 +11,6 @@ class RequestParser : public IParser<request_t, std::string> {
 	std::string _buf;
 	utils::shared_ptr<ServerConfig> _serverConfig;
 
-
 	bool errorRequest(void);
 	std::string findAndSubstr(std::string& buf, std::string delim);
 	bool parseStartLine(std::string& buf);
