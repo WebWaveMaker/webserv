@@ -8,7 +8,7 @@ void reactor::ClientReadHandler::handleEvent() {
 	if (this->getState() == TERMINATE)
 		return;
 	std::vector<char> buffer(BUFFER_SIZE);
-	int readByte = recv(this->getHandle(), buffer.data(), buffer.size() - 1, 0);
+	int readByte = recv(this->getHandle(), buffer.data(), BUFFER_SIZE - 1, 0);
 
 	if (readByte == SYSTEMCALL_ERROR) {
 		this->setState(TERMINATE);

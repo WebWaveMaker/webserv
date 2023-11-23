@@ -16,7 +16,7 @@ namespace reactor {
 	}
 
 	void SyncEventDemultiplexer::unRequestEvent(AEventHandler* handler, const enum EventType type) {
-		this->_kq->registerEvent(handler->getHandle(), type, EV_DELETE, 0, 0, u::nullptr_t);
+		this->_kq->AddEventOnChangeList(handler->getHandle(), type, EV_DELETE, 0, 0, u::nullptr_t);
 	}
 
 	void SyncEventDemultiplexer::unRequestAllEvent(fd_t fd) {
