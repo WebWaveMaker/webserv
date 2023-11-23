@@ -170,7 +170,7 @@ void GetResponseBuilder::makeListHtml(const std::string& path, const std::vector
 }
 
 fd_t GetResponseBuilder::directoryListing() {
-	std::cout << "directory listing" << std::endl;
+	// std::cout << "directory listing" << std::endl;
 	if (this->_locationConfig->getDirectives(AUTOINDEX).asBool() == false)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(FORBIDDEN, this->_sharedData, this->_serverConfig, this->_locationConfig));

@@ -7,9 +7,9 @@ namespace reactor {
 		  _request(sharedData->getRequest()),
 		  _serverConfig(ServerManager::getInstance()->getServerConfig(this->getHandle())),
 		  _locationConfig(_serverConfig->getLocationConfig(_request->second.getRequestTarget())),
+		  _keepalive(true),
 		  _director(this->chooseBuilder()),
-		  _registered(false),
-		  _keepalive(true) {}
+		  _registered(false) {}
 
 	ClientResponseHandler::~ClientResponseHandler() {}
 
@@ -22,21 +22,22 @@ namespace reactor {
 			Dispatcher::getInstance()->registerIOHandler<ClientWriteHandlerFactory>(this->_sharedData);
 			this->_registered = true;
 		}
-		std::cout << "client response handler" << std::endl;
+		// std::cout << "client response handler" << std::endl;
 		try {
 			if (this->getBuffer().empty() && this->_director.getBuilderReadState() == RESOLVE) {
 				Dispatcher::getInstance()->removeIOHandler(this->getHandle(), this->getType());
 				Dispatcher::getInstance()->removeExeHandler(this);
 				if (this->_keepalive == false) {
 					this->_sharedData->setState(TERMINATE);
+					Dispatcher::getInstance()->addFdToClose(this->getHandle());
 				}
-				std::cout << "remove responseHandler" << std::endl;
+				// std::cout << "remove responseHandler" << std::endl;
 				return;
 			}
-			std::cout << "this one?" << std::endl;
+			// std::cout << "this one?" << std::endl;
 			if (this->_director.buildProduct() == false)
 				return;
-			std::cout << "client response handler try catch" << std::endl;
+			// std::cout << "client response handler try catch" << std::endl;
 		} catch (utils::shared_ptr<IBuilder<sharedData_t> >& builder) {
 			this->_director.setBuilder(builder);
 		} catch (...) {
@@ -57,7 +58,7 @@ namespace reactor {
 					new ErrorResponseBuilder(this->_request->second.getErrorCode(), this->_sharedData,
 											 this->_serverConfig, this->_locationConfig));
 
-			if ((this->_request->second.getHeaders())["Connection"] != "Keep-Alive")
+			if ((this->_request->second.getHeaders())["Connection"].compare("Keep-Alive") != 0)
 				this->_keepalive = false;
 			std::vector<enum HttpMethods> methods = this->_locationConfig->getDirectives(LIMIT_EXCEPT).asMedVec();
 

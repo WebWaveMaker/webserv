@@ -1,7 +1,7 @@
 #include "Server.hpp"
 
 Server::Server(utils::shared_ptr<ServerConfig>& serverConfig) : _serverConfig(serverConfig) {
-	std::cout << "server constructor called\n";
+	// std::cout << "server constructor called\n";
 	try {
 		this->listenServer();
 	} catch (std::exception& e) {
@@ -142,7 +142,7 @@ std::string Server::getClientIP(fd_t fd) {
 }
 
 Server::~Server() {
-	std::cout << "Server destructor called\n";
+	// std::cout << "Server destructor called\n";
 
 	this->_clients->clear();
 }

@@ -15,6 +15,7 @@ namespace reactor {
 		socklen_t clientAddrLen = sizeof(clientAddr);
 
 		int clientFd = accept(this->getHandle(), (struct sockaddr*)&clientAddr, &clientAddrLen);
+		std::cerr << clientFd << "Accept!" << std::endl;
 		if (clientFd < 0) {
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 			return;
@@ -27,7 +28,6 @@ namespace reactor {
 			return;
 		}
 		if (fcntl(clientFd, F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
-			std::cout << clientFd << std::endl;
 			ServerManager::getInstance()->eraseClient(clientFd);
 			close(clientFd);
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
