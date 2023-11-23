@@ -39,7 +39,7 @@ void Server::bindListen() {
 		throw std::runtime_error("bind() error\n");
 	}
 
-	if (listen(this->_fd, 5) < 0) {
+	if (listen(this->_fd, 128) < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
 		throw std::runtime_error("listen() error\n");
 	}

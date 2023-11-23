@@ -174,7 +174,7 @@ request_t RequestParser::parse(std::string& content) {
 		_curMsg = &_msgs.back();
 	}
 
-	std::cerr << "previous contentLengthReceived: " << getCurMsg().getContentLengthReceived() << std::endl;
+	// std::cerr << "previous contentLengthReceived: " << getCurMsg().getContentLengthReceived() << std::endl;
 	while (content.empty() == false) {
 		switch (this->_msgs.back()->first) {
 			case START_LINE:
@@ -209,6 +209,6 @@ request_t RequestParser::parse(std::string& content) {
 	if (this->_curMsg->get()->first == BODY &&
 		(getCurMsg().getHeaders().count(CONTENT_LENGTH) == 0 || getCurMsg().getHeaders().at(CONTENT_LENGTH) == "0"))
 		this->_curMsg->get()->first = DONE;
-	std::cerr << "request out state: " << this->_curMsg->get()->first << std::endl;
+	// std::cerr << "request out state: " << this->_curMsg->get()->first << std::endl;
 	return this->pop();
 }

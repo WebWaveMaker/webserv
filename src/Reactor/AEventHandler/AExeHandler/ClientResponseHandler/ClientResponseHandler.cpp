@@ -58,7 +58,7 @@ namespace reactor {
 				throw utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
 					METHOD_NOT_ALLOWED, this->_sharedData, this->_serverConfig, this->_locationConfig));
 			if (this->_locationConfig->isCgi()) {
-				std::cerr << "cgi in\n";
+				// std::cerr << "cgi in\n";
 				return utils::shared_ptr<IBuilder<sharedData_t> >(new CgiResponseBuilder(
 					this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 			}

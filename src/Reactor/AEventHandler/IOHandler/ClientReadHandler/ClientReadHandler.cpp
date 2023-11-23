@@ -11,6 +11,7 @@ void reactor::ClientReadHandler::handleEvent() {
 	int readByte = recv(this->getHandle(), buffer.data(), buffer.size() - 1, 0);
 
 	if (readByte == SYSTEMCALL_ERROR) {
+		this->setState(TERMINATE);
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		return;
 	}

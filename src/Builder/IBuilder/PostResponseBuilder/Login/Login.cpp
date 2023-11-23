@@ -27,7 +27,8 @@ PostResponseBuilder::Login::Login(PostResponseBuilder* builder)
 PostResponseBuilder::Login::~Login() {}
 
 void PostResponseBuilder::Login::sessionProcess(SessionData& sessionData) {
-	std::cerr << "sessionProcess" << sessionData.getData("username") << sessionData.getData("password") << std::endl;
+	(void)sessionData;
+	// std::cerr << "sessionProcess" << sessionData.getData("username") << sessionData.getData("password") << std::endl;
 
 	throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new RedirectResponseBuilder(
 		SEE_OTHER, "/index.html", _builder->_sharedData, _builder->_request, _builder->_serverConfig));

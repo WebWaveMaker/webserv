@@ -260,7 +260,8 @@ bool CgiResponseBuilder::makeSocketPair() {
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		return false;
 	}
-	if (fcntl(this->_sv[0], F_SETFL, O_NONBLOCK) < 0 || fcntl(this->_sv[1], F_SETFL, O_NONBLOCK) < 0) {
+	if (fcntl(this->_sv[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0 ||
+		fcntl(this->_sv[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		return false;
 	}
