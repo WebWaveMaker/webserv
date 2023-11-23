@@ -10,23 +10,20 @@ class HeadResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	const request_t _request;
 	const utils::shared_ptr<ServerConfig> _serverConfig;
 	const utils::shared_ptr<LocationConfig> _locationConfig;
-	bool _removed;
-
 	std::string _path;
-	fd_t _fd;
 
 	reactor::sharedData_t _readSharedData;	// for file, pipe read
 	HttpMessage _response;	// for startLine, headers // defaultResponseBuilder가 기본적인 것들을 채울 예정.
 
-	fd_t findReadFile();
+	std::string findReadFile();
 
-	fd_t fileProcessing();
+	std::string fileProcessing();
 
 	void makeListHtml(const std::string& path, const std::vector<std::string>& dirVec);
 	std::vector<std::string> readDir(const std::string& path);
-	fd_t directoryListing();
+	std::string directoryListing();
 
-	fd_t directoryProcessing();
+	std::string directoryProcessing();
 
    public:
 	HeadResponseBuilder(reactor::sharedData_t sharedData, request_t request,

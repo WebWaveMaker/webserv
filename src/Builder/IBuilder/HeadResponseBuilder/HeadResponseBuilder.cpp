@@ -7,9 +7,7 @@ HeadResponseBuilder::HeadResponseBuilder(reactor::sharedData_t sharedData, const
 	  _request(request),
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
-	  _removed(false),
 	  _path(),
-	  _fd(FD_ERROR),
 	  _readSharedData(),
 	  _response() {
 	if (_locationConfig.get() == u::nullptr_t)
@@ -24,9 +22,7 @@ HeadResponseBuilder::HeadResponseBuilder(reactor::sharedData_t sharedData, const
 	this->prepare();
 }
 
-HeadResponseBuilder::~HeadResponseBuilder() {
-	close(this->_fd);
-}
+HeadResponseBuilder::~HeadResponseBuilder() {}
 
 reactor::sharedData_t HeadResponseBuilder::getProduct() {
 	return this->_readSharedData;
@@ -43,10 +39,6 @@ void HeadResponseBuilder::setHeader() {
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	}
-	if (fileInfo.st_size == 0) {
-		close(this->_fd);
-		this->_fd = FD_ZERO_;
-	}
 	std::map<std::string, std::string> headers =
 		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
 	headers[CONTENT_LENGTH] = utils::lltos(fileInfo.st_size);
@@ -54,18 +46,8 @@ void HeadResponseBuilder::setHeader() {
 }
 
 bool HeadResponseBuilder::setBody() {
-	if (this->_readSharedData.get() == u::nullptr_t)
+	if (this->_sharedData.get() == u::nullptr_t)
 		return false;
-	// this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().end(),
-	// 									  this->_readSharedData->getBuffer().begin(),
-	// 									  this->_readSharedData->getBuffer().end());
-	this->_readSharedData->getBuffer().clear();
-	if (this->_readSharedData->getState() == RESOLVE && this->_removed == false) {
-		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData->getFd(),
-															this->_readSharedData->getType());
-		this->_removed = true;
-		return true;
-	}
 	return true;
 }
 
@@ -74,31 +56,27 @@ void HeadResponseBuilder::reset() {
 	this->_sharedData->getBuffer().clear();
 	this->_readSharedData->getBuffer().clear();
 }
+
 bool HeadResponseBuilder::build() {
-	if (this->_readSharedData->getState() == TERMINATE) {
-		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData.get()->getFd(),
-															this->_readSharedData.get()->getType());
-		this->_sharedData->setState(TERMINATE);
-		throw false;
-	}
 	return this->setBody();
 }
 
-fd_t HeadResponseBuilder::findReadFile() {
+std::string HeadResponseBuilder::findReadFile() {
 	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString();
 	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString();
 	const std::string targetFile = this->_request->second.getTargetFile();
+	std::string path;
 
-	this->_path = locPath + targetFile;
-	if (access(this->_path.c_str(), R_OK) == 0)
-		return utils::makeFd(this->_path.c_str(), "r");
-	this->_path = serverPath + targetFile;
-	if (access(this->_path.c_str(), R_OK) == 0)
-		return utils::makeFd(this->_path.c_str(), "r");
-	return FD_ERROR;
+	path = locPath + targetFile;
+	if (access(path.c_str(), R_OK) == 0)
+		return path;
+	path = serverPath + targetFile;
+	if (access(path.c_str(), R_OK) == 0)
+		return path;
+	return "";
 }
 
-fd_t HeadResponseBuilder::fileProcessing() {
+std::string HeadResponseBuilder::fileProcessing() {
 	if (this->checkFileMode(this->_locationConfig->getDirectives(ROOT).asString() +
 							this->_request->second.getTargetFile()) == MODE_DIRECTORY)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
@@ -155,15 +133,14 @@ void HeadResponseBuilder::makeListHtml(const std::string& path, const std::vecto
 	headers[CONTENT_LENGTH] = utils::lltos(html.size());
 	headers["Content-Type"] = "text/html";
 	this->_response.setHeaders(headers);
-	const std::string raw = this->_response.getRawStr();
-	this->_readSharedData = utils::shared_ptr<reactor::SharedData>(
-		new reactor::SharedData(FD_LISTING, EVENT_READ, std::vector<char>(html.begin(), html.end())));
+	const std::string raw = this->_response.getRawStr() + html;
+	this->_readSharedData =
+		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(FD_LISTING, EVENT_READ, std::vector<char>()));
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
 	this->setReadState(RESOLVE);
-	this->_removed = true;
 }
 
-fd_t HeadResponseBuilder::directoryListing() {
+std::string HeadResponseBuilder::directoryListing() {
 	std::cout << "directory listing" << std::endl;
 	if (this->_locationConfig->getDirectives(AUTOINDEX).asBool() == false)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
@@ -174,10 +151,10 @@ fd_t HeadResponseBuilder::directoryListing() {
 	const std::vector<std::string> dirVec = this->readDir(path);
 	makeListHtml(path, dirVec);
 
-	return FD_LISTING;
+	return "listing";
 }
 
-fd_t HeadResponseBuilder::directoryProcessing() {
+std::string HeadResponseBuilder::directoryProcessing() {
 	if (this->checkFileMode(this->_locationConfig->getDirectives(ROOT).asString() +
 							this->_request->second.getTargetFile()) == MODE_FILE)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
@@ -187,39 +164,35 @@ fd_t HeadResponseBuilder::directoryProcessing() {
 	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString();
 	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString();
 	const std::vector<std::string> indexVec = this->_locationConfig->getDirectives(INDEX).asStrVec();
+	std::string path;
 
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {
-		this->_path = locPath + *cit;
+		path = locPath + *cit;
 		if (access(this->_path.c_str(), R_OK) == 0)
-			return utils::makeFd(this->_path.c_str(), "r");
+			return path;
 	}
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {
-		this->_path = serverPath + *cit;
+		path = serverPath + *cit;
 		if (access(this->_path.c_str(), R_OK) == 0)
-			return utils::makeFd(this->_path.c_str(), "r");
+			return path;
 	}
-	return FD_ERROR;
+	return "";
 }
 
 void HeadResponseBuilder::prepare() {
-	this->_fd = this->checkOurFileMode(this->_request->second.getRequestTarget()) == MODE_FILE
-					? this->fileProcessing()
-					: this->directoryProcessing();
-	if (this->_fd == FD_ERROR)
+	this->_path = this->checkOurFileMode(this->_request->second.getRequestTarget()) == MODE_FILE
+					  ? this->fileProcessing()
+					  : this->directoryProcessing();
+	if (this->_path == "")
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	if (this->_fd == FD_LISTING)
+	if (this->_path == "listing")
 		return;
 	this->setStartLine();
 	this->setHeader();
 	const std::string raw = this->_response.getRawStr();
-	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
 	this->_readSharedData =
-		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(this->_fd, EVENT_READ, std::vector<char>()));
-	if (this->_fd == FD_ZERO_) {
-		this->setReadState(RESOLVE);
-		this->_removed = true;
-		return;
-	}
-	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileReadHandlerFactory>(this->_readSharedData);
+		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(FD_ERROR, EVENT_READ, std::vector<char>()));
+	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
+	this->setReadState(RESOLVE);
 }
