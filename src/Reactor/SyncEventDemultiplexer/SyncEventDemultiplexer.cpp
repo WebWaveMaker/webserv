@@ -9,7 +9,7 @@ namespace reactor {
 
 	void SyncEventDemultiplexer::requestEvent(AEventHandler* handler, const enum EventType type) {
 		if (type == EVENT_TIMER) {
-			this->_kq->AddEventOnChangeList(handler->getHandle(), type, EV_ADD, 0, 5000, handler);
+			this->_kq->AddEventOnChangeList(handler->getHandle(), type, EV_ADD, 0, handler->getReadByte(), handler);
 			return;
 		}
 		this->_kq->AddEventOnChangeList(handler->getHandle(), type, EV_ADD, 0, 0, handler);

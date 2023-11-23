@@ -8,7 +8,8 @@ namespace reactor {
 		  _serverConfig(ServerManager::getInstance()->getServerConfig(this->getHandle())),
 		  _locationConfig(_serverConfig->getLocationConfig(_request->second.getRequestTarget())),
 		  _director(this->chooseBuilder()),
-		  _registered(false) {}
+		  _registered(false),
+		  _keepalive(true) {}
 
 	ClientResponseHandler::~ClientResponseHandler() {}
 
@@ -26,6 +27,9 @@ namespace reactor {
 			if (this->getBuffer().empty() && this->_director.getBuilderReadState() == RESOLVE) {
 				Dispatcher::getInstance()->removeIOHandler(this->getHandle(), this->getType());
 				Dispatcher::getInstance()->removeExeHandler(this);
+				if (this->_keepalive == false) {
+					this->_sharedData->setState(TERMINATE);
+				}
 				std::cout << "remove responseHandler" << std::endl;
 				return;
 			}
@@ -52,6 +56,9 @@ namespace reactor {
 				throw utils::shared_ptr<IBuilder<sharedData_t> >(
 					new ErrorResponseBuilder(this->_request->second.getErrorCode(), this->_sharedData,
 											 this->_serverConfig, this->_locationConfig));
+
+			if ((this->_request->second.getHeaders())["Connection"] != "Keep-Alive")
+				this->_keepalive = false;
 			std::vector<enum HttpMethods> methods = this->_locationConfig->getDirectives(LIMIT_EXCEPT).asMedVec();
 
 			if (std::find(methods.begin(), methods.end(), this->_request->second.getMethod()) == methods.end())
