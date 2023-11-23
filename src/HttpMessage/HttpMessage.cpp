@@ -66,6 +66,8 @@ enum HttpMethods HttpMessage::getMethod(void) const {
 		return DELETE;
 	if (method == "PUT")
 		return PUT;
+	if (method == "HEAD")
+		return HEAD;
 	return UNKNOWN;
 }
 

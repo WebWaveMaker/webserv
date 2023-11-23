@@ -1,7 +1,7 @@
 #include "SyncEventDemultiplexer.hpp"
 
 namespace reactor {
-	SyncEventDemultiplexer::SyncEventDemultiplexer() : _kq(Kqueue::getInstance())  {
+	SyncEventDemultiplexer::SyncEventDemultiplexer() : _kq(Kqueue::getInstance()) {
 		this->_timeout.tv_sec = 0;
 		this->_timeout.tv_nsec = 0;
 	}
