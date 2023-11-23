@@ -6,9 +6,6 @@
 
 namespace reactor {
 	class FileWriteHandler : public AEventHandler {
-	   private:
-		FILE* _fp;
-
 	   public:
 		FileWriteHandler(sharedData_t& sharedData);
 		virtual ~FileWriteHandler();

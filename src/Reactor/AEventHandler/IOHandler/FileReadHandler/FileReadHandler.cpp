@@ -2,8 +2,10 @@
 
 namespace reactor {
 	FileReadHandler::FileReadHandler(sharedData_t& sharedData) : AEventHandler(sharedData) {
-		if (fcntl(this->getHandle(), F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0)	// error
+		if (fcntl(this->getHandle(), F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "fcntl failed");
+			this->setState(TERMINATE);
+		}
 	}
 
 	FileReadHandler::~FileReadHandler() {}
@@ -20,7 +22,7 @@ namespace reactor {
 			this->setState(TERMINATE);
 			return;
 		}
-		if (readByte == 0) {
+		if (readByte < BUFFER_SIZE - 1) {
 			this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
 			this->setState(RESOLVE);
 			return;

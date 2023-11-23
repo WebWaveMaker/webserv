@@ -8,7 +8,6 @@ class RequestParser : public IParser<request_t, std::string> {
    private:
 	std::queue<request_t> _msgs;
 	request_t* _curMsg;
-	std::string _buf;
 	utils::shared_ptr<ServerConfig> _serverConfig;
 
 	bool errorRequest(void);

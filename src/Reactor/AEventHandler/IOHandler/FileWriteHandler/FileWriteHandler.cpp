@@ -1,20 +1,22 @@
 #include "FileWriteHandler.hpp"
 
 namespace reactor {
-	FileWriteHandler::FileWriteHandler(sharedData_t& sharedData)
-		: AEventHandler(sharedData), _fp(fdopen(this->getHandle(), "w")) {}
-
-	FileWriteHandler::~FileWriteHandler() {
-		fclose(this->_fp);
+	FileWriteHandler::FileWriteHandler(sharedData_t& sharedData) : AEventHandler(sharedData) {
+		if (fcntl(this->getHandle(), F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
+			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "fcntl failed");
+			this->setState(TERMINATE);
+		}
 	}
+
+	FileWriteHandler::~FileWriteHandler() {}
 
 	void FileWriteHandler::handleEvent() {
 		if (this->getState() == TERMINATE || this->getState() == RESOLVE ||
 			this->getBuffer().size() == 0)	// executeHandler가 이 핸들러의 상태를 변경한다.
 			return;
 		std::vector<char>& buffer = this->getBuffer();
-		std::size_t numberOfBytes = fwrite(buffer.data(), sizeof(char), buffer.size(), this->_fp);
-		if (ferror(this->_fp)) {
+		ssize_t numberOfBytes = write(this->getHandle(), buffer.data(), buffer.size());
+		if (numberOfBytes == -1) {
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "write failed");
 			this->setState(TERMINATE);
 			return;
