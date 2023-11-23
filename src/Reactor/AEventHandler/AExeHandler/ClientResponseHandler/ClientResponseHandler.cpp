@@ -14,7 +14,7 @@ namespace reactor {
 
 	void ClientResponseHandler::handleEvent() {
 		if (this->removeHandlerIfNecessary()) {
-			// this->_director.buildProduct();
+			this->_director.buildProduct();
 			return;
 		}
 		if (this->_registered == false) {

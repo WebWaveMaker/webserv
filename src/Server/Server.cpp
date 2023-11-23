@@ -53,6 +53,10 @@ void Server::makeSocket() {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
 		throw;
 	}
+	if (fcntl(this->_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
+		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
+		throw;
+	}
 
 	int opt = 1;
 	if (setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {

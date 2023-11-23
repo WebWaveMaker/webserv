@@ -57,6 +57,8 @@ bool CgiResponseBuilder::build() {
 															this->_cgiWriteSharedData->getType());
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
 															this->_cgiReadSharedData->getType());
+		this->_cgiWriteSharedData->setState(TERMINATE);
+		this->_cgiReadSharedData->setState(TERMINATE);
 		if (waitpid(this->_cgiPid, &status, WNOHANG) < 0)
 			kill(this->_cgiPid, SIGTERM);
 		return false;
@@ -67,16 +69,24 @@ bool CgiResponseBuilder::build() {
 																this->_cgiWriteSharedData->getType());
 			reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
 																this->_cgiReadSharedData->getType());
+			this->_cgiWriteSharedData->setState(TERMINATE);
+			this->_cgiReadSharedData->setState(TERMINATE);
 			throw false;
 		}
 	} else {
 		if (std::difftime(std::time(NULL), this->_cgiTime) >= 180) {
 			kill(this->_cgiPid, SIGTERM);
+			reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
+																this->_cgiWriteSharedData->getType());
+			reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
+																this->_cgiReadSharedData->getType());
+			this->_cgiWriteSharedData->setState(TERMINATE);
+			this->_cgiReadSharedData->setState(TERMINATE);
 			throw false;
 		}
 	}
 	if ((this->_request->first == DONE || this->_request->first == LONG_BODY_DONE) &&
-		this->_cgiWriteSharedData->getBuffer().empty()) {
+		this->_cgiWriteSharedData->getBuffer().empty() && this->_cgiWriteSharedData->getState() != RESOLVE) {
 		this->_cgiWriteSharedData->setState(RESOLVE);
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
 															this->_cgiWriteSharedData->getType());
