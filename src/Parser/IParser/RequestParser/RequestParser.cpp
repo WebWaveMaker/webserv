@@ -6,6 +6,7 @@ RequestParser::RequestParser(utils::shared_ptr<ServerConfig> serverConfig)
 		new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 	_curMsg = &_msgs.back();
 	_curMsg->get()->second.setContentLengthReceived(0);
+	_curMsg->get()->second.getBuf().clear();
 }
 
 RequestParser::~RequestParser() {}
@@ -29,19 +30,24 @@ bool RequestParser::errorRequest(void) {
 }
 
 std::string RequestParser::findAndSubstr(std::string& buf, std::string delim) {
-	std::string::size_type size = buf.find(delim);
+
 	std::string& tmpBuf = getCurMsg().getBuf();
+	if (tmpBuf.size()) {
+		buf = tmpBuf + buf;
+		tmpBuf.clear();
+	}
+	std::string::size_type size = buf.find(delim);
 	if (size == std::string::npos) {
 		tmpBuf += buf;
 		buf.clear();
 		return "";
 	}
-	if (tmpBuf.size()) {
-		buf = tmpBuf + buf;
-		size += tmpBuf.size();
-		tmpBuf.clear();
-	}
 	std::string str = buf.substr(0, size);
+	if (str == CRLF) {
+		tmpBuf += buf;
+		buf.clear();
+		return "";
+	}
 	buf = buf.substr(size + delim.size());
 	return str;
 }
@@ -63,7 +69,13 @@ request_t RequestParser::pop(void) {
 }
 
 bool RequestParser::parseStartLine(std::string& buf) {
+	std::cerr << "parseStartLine" << std::endl;
+	std::cerr << "buf: " << buf << std::endl;
+	std::cerr << "curMsg buf: " << _curMsg->get()->second.getBuf() << std::endl;
 	std::string str = this->findAndSubstr(buf, CRLF);
+	std::cerr << "after parseStartLine" << std::endl;
+	std::cerr << "buf: " << buf << std::endl;
+	std::cerr << "curMsg buf: " << _curMsg->get()->second.getBuf() << std::endl;
 	if (str.size() == 0)
 		return false;
 	std::stringstream ss(str);
@@ -172,6 +184,33 @@ bool RequestParser::parseLongBody(std::string& buf) {
 	return true;
 }
 
+void RequestParser::branchParser(const enum HttpMessageState state, std::string& buf) {
+	switch (state) {
+		case START_LINE:
+			this->parseStartLine(buf);
+			break;
+		case HEADER:
+			this->parseHeader(buf);
+			break;
+		case BODY:
+			this->parseBody(buf);
+			break;
+		case CHUNKED:
+			this->parseChunked(buf);
+			break;
+		case LONG_FIRST:
+			this->parseLongBody(buf);
+			break;
+		case LONG_BODY:
+			this->parseLongBody(buf);
+			break;
+		case HTTP_ERROR:
+			buf.clear();
+		default:
+			break;
+	}
+}
+
 request_t RequestParser::parse(std::string& content) {
 	if (content.size() == 0)
 		return this->pop();
@@ -181,41 +220,25 @@ request_t RequestParser::parse(std::string& content) {
 		_curMsg = &_msgs.back();
 	}
 
+	std::cerr << "request in state: " << this->_curMsg->get()->first << std::endl;
+	std::cerr << "request content" << this->_curMsg->get()->second.getBuf() << std::endl;
+	std::cerr << "current buf" << this->_curMsg->get()->second.getBuf() << std::endl;
+	std::cerr << "request in content: " << content << std::endl;
+
 	// std::cerr << "previous contentLengthReceived: " << getCurMsg().getContentLengthReceived() << std::endl;
 	while (content.empty() == false) {
-		switch (this->_msgs.back()->first) {
-			case START_LINE:
-				this->parseStartLine(content);
-				break;
-			case HEADER:
-				this->parseHeader(content);
-				break;
-			case BODY:
-				this->parseBody(content);
-				break;
-			case CHUNKED:
-				this->parseChunked(content);
-				break;
-			case LONG_FIRST:
-				this->parseLongBody(content);
-				break;
-			case LONG_BODY:
-				this->parseLongBody(content);
-				break;
-			case HTTP_ERROR:
-				content.clear();
-			default:
-				break;
-		}
+		this->branchParser(this->_msgs.back()->first, content);
 		if (this->_msgs.back()->first == DONE && content.empty() == false) {
 			_msgs.push(utils::shared_ptr<std::pair<enum HttpMessageState, HttpMessage> >(
 				new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 			_curMsg = &_msgs.back();
 		}
 	}
+	if (content.empty() && getCurMsg().getBuf().size())
+		this->branchParser(_curMsg->get()->first, content);
 	if (this->_curMsg->get()->first == BODY &&
 		(getCurMsg().getHeaders().count(CONTENT_LENGTH) == 0 || getCurMsg().getHeaders().at(CONTENT_LENGTH) == "0"))
 		this->_curMsg->get()->first = DONE;
-	// std::cerr << "request out state: " << this->_curMsg->get()->first << std::endl;
+	std::cerr << "request out state: " << this->_curMsg->get()->first << std::endl;
 	return this->pop();
 }

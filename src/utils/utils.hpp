@@ -16,6 +16,7 @@ namespace utils {
 	std::string trim(const std::string& source);
 	fd_t makeFd(const char* path, const char* option);
 	std::string generateRandomString();
+	std::string removeSubstring(const std::string& mainStr, const std::string& substr);
 }  // namespace utils
 
 #endif

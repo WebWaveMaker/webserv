@@ -29,3 +29,7 @@ std::string Mime::getMimeType(const std::string& extension) const {
 	}
 	return "";
 }
+
+bool Mime::hasMimeType(const std::string& extension) const {
+	return _mimeTypes.find(extension) != _mimeTypes.end();
+}

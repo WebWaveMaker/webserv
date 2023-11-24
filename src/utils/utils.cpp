@@ -128,4 +128,16 @@ namespace utils {
 		return randomString;
 	}
 
+	std::string removeSubstring(const std::string& mainStr, const std::string& substr) {
+		std::string result = mainStr;
+		size_t pos = result.find(substr);
+
+		// 만약 substr이 mainStr 안에 있다면 해당 부분 제거
+		if (pos != std::string::npos) {
+			result.erase(pos, substr.length());
+		}
+
+		return result;
+	}
+
 }  // namespace utils

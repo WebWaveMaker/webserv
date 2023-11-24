@@ -185,10 +185,12 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::str
 			bestMatchKey = key;
 			longestMatch = key.length();
 		}
+		if (key.compare(reqPath + '/') == 0)
+			return this->_locations[key];
 	}
 
 	if (longestMatch > 0) {
-		return this->_locations.find(bestMatchKey)->second;
+		return this->_locations[bestMatchKey];
 	} else {
 		return utils::shared_ptr<LocationConfig>();
 	}
@@ -196,4 +198,8 @@ utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::str
 
 std::string ServerConfig::getMimeTypes(const std::string& extension) const {
 	return this->_parent->getMimeTypes(extension);
+}
+
+bool ServerConfig::hasMimeTypes(const std::string& extension) const {
+	return this->_parent->hasMimeTypes(extension);
 }

@@ -95,6 +95,8 @@ class HttpConfig : public AConfig {
 	std::string getMimeTypes(const std::string& extension) const;
 
 	void setMimeTypes(utils::shared_ptr<Mime> mimeTypes);
+
+	bool hasMimeTypes(const std::string& extension) const;
 };
 
 #endif	// HTTPCONFIG_HPP

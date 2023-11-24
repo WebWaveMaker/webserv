@@ -107,3 +107,7 @@ std::string HttpConfig::getMimeTypes(const std::string& extension) const {
 void HttpConfig::setMimeTypes(utils::shared_ptr<Mime> mimeTypes) {
 	this->_mimeTypes = mimeTypes;
 }
+
+bool HttpConfig::hasMimeTypes(const std::string& extension) const {
+	return this->_mimeTypes->hasMimeType(extension);
+}

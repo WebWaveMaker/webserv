@@ -10,6 +10,7 @@ class RequestParser : public IParser<request_t, std::string> {
 	request_t* _curMsg;
 	utils::shared_ptr<ServerConfig> _serverConfig;
 
+	void branchParser(const enum HttpMessageState state, std::string& buf);
 	bool errorRequest(void);
 	std::string findAndSubstr(std::string& buf, std::string delim);
 	bool parseStartLine(std::string& buf);

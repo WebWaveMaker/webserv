@@ -36,5 +36,6 @@ class ServerConfig : public AConfig {
 	utils::shared_ptr<LocationConfig> getLocation(const std::string& identifier);
 	utils::shared_ptr<LocationConfig> getLocationConfig(const std::string& reqPath);
 	std::string getMimeTypes(const std::string& extension) const;
+	bool hasMimeTypes(const std::string& extension) const;
 };
 #endif	// SERVERCONFIG_HPP

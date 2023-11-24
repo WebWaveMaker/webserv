@@ -49,6 +49,18 @@ std::vector<std::string> DefaultResponseBuilder::setDefaultStartLine(const int s
 	return startLine;
 }
 
+std::vector<std::string> DefaultResponseBuilder::setDefaultStartLine(
+	int statusCode, const std::string extension, const utils::shared_ptr<ServerConfig>& serverConfig) {
+	if (serverConfig->hasMimeTypes(extension) == false)
+		statusCode = UNSUPPORTED_MEDIA_TYPE;
+	const std::string str = utils::itos(statusCode);
+	std::vector<std::string> startLine(3);
+	startLine[0] = "HTTP/1.1";
+	startLine[1] = str;
+	startLine[2] = this->_httpStatusCodes[str];
+	return startLine;
+}
+
 std::map<std::string, std::string> DefaultResponseBuilder::setDefaultHeader(
 	const utils::shared_ptr<ServerConfig>& serverConfig, const std::string& path) {
 	std::map<std::string, std::string> headers;

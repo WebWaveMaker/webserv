@@ -16,6 +16,7 @@ class Mime {
 
 	void setMimeTypes(std::string extension, std::string mimeType);
 	std::string getMimeType(const std::string& extension) const;
+	bool hasMimeType(const std::string& extension) const;
 };
 
 #endif	// MIME_HPP

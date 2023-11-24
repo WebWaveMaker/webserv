@@ -87,7 +87,8 @@ bool GetResponseBuilder::build() {
 fd_t GetResponseBuilder::findReadFile() {
 	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString();
 	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString();
-	const std::string targetFile = this->_request->second.getTargetFile();
+	const std::string targetFile =
+		utils::removeSubstring(this->_request->second.getRequestTarget(), this->_locationConfig->getPath());
 
 	this->_path = locPath + targetFile;
 	if (access(this->_path.c_str(), R_OK) == 0)
@@ -99,14 +100,16 @@ fd_t GetResponseBuilder::findReadFile() {
 }
 
 fd_t GetResponseBuilder::fileProcessing() {
-	const enum FileMode mode = this->checkFileMode(this->_locationConfig->getDirectives(ROOT).asString() +
-												   this->_request->second.getTargetFile());
-	const enum FileMode serverMode = this->checkFileMode(this->_serverConfig->getDirectives(ROOT).asString() +
-														 this->_request->second.getTargetFile());
+	const enum FileMode mode = this->checkFileMode(
+		this->_locationConfig->getDirectives(ROOT).asString() +
+		utils::removeSubstring(this->_request->second.getRequestTarget(), this->_locationConfig->getPath()));
+	const enum FileMode serverMode = this->checkFileMode(
+		this->_serverConfig->getDirectives(ROOT).asString() +
+		utils::removeSubstring(this->_request->second.getRequestTarget(), this->_locationConfig->getPath()));
+	if (this->_locationConfig->getPath() == this->_request->second.getRequestTarget() + '/')
+		return directoryProcessing();
 	if (mode == MODE_DIRECTORY)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new RedirectResponseBuilder(MOVED_PERMANENTLY, this->_request->second.getRequestTarget() + "/",
-										this->_sharedData, this->_request, this->_serverConfig));
+		return directoryProcessing();
 	if (mode == MODE_ERROR && serverMode == MODE_ERROR)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
@@ -170,7 +173,6 @@ void GetResponseBuilder::makeListHtml(const std::string& path, const std::vector
 }
 
 fd_t GetResponseBuilder::directoryListing() {
-	// std::cout << "directory listing" << std::endl;
 	if (this->_locationConfig->getDirectives(AUTOINDEX).asBool() == false)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(FORBIDDEN, this->_sharedData, this->_serverConfig, this->_locationConfig));
@@ -184,14 +186,19 @@ fd_t GetResponseBuilder::directoryListing() {
 }
 
 fd_t GetResponseBuilder::directoryProcessing() {
+	std::string middle =
+		utils::removeSubstring(this->_request->second.getRequestTarget(), this->_locationConfig->getPath());
+	std::cerr << middle << std::endl;
+	if (middle[0] == '/')
+		middle = "";
 	if (this->checkFileMode(this->_locationConfig->getDirectives(ROOT).asString() +
 							this->_request->second.getTargetFile()) == MODE_FILE)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	if (this->_locationConfig->getOwnIndex().empty())
 		return this->directoryListing();
-	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString();
-	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString();
+	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString() + middle;
+	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString() + middle;
 	const std::vector<std::string> indexVec = this->_locationConfig->getDirectives(INDEX).asStrVec();
 
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {

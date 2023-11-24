@@ -23,10 +23,12 @@ namespace reactor {
 			return;
 		}
 		std::string content = std::string(this->getBuffer().begin(), this->getBuffer().begin() + this->getReadByte());
+		std::cout << "content: " << content << std::endl;
 		request_t request = this->_requestParser.parse(content);
 		this->getBuffer().clear();
-		// std::cout << "client request handler" << std::endl;
+		std::cerr << "client request handler" << std::endl;
 		if (request.get() && !(request->first == LONG_BODY || request->first == LONG_BODY_DONE)) {
+			std::cerr << "thishishishsihi" << request->first << std::endl;
 			if (request->first == LONG_FIRST)
 				request->first = LONG_BODY;
 			this->_writeData->setRequest(request);
