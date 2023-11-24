@@ -10,6 +10,7 @@ namespace reactor {
 	   private:
 		Kqueue* _kq;
 		std::map<fd_t, std::time_t> _fdsTime;
+		struct timespec _timeout;
 
 		SyncEventDemultiplexer(const SyncEventDemultiplexer& obj);
 		SyncEventDemultiplexer& operator=(const SyncEventDemultiplexer& obj);

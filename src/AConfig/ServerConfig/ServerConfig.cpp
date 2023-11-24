@@ -65,6 +65,8 @@ void ServerConfig::setDirectives(const std::string& directive, const std::vector
 				methods.push_back(DELETE);
 			} else if (*it == "PUT") {
 				methods.push_back(PUT);
+			} else if (*it == "HEAD") {
+				methods.push_back(HEAD);
 			} else {
 				throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid method for limit_except");
 			}

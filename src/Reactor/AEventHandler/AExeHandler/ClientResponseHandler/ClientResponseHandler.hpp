@@ -10,6 +10,7 @@ namespace reactor {
 		const request_t _request;
 		const utils::shared_ptr<ServerConfig> _serverConfig;
 		const utils::shared_ptr<LocationConfig> _locationConfig;
+		bool _keepalive;
 		Director<sharedData_t> _director;
 		bool _registered;
 

@@ -14,3 +14,9 @@ sessionId_t HttpSession::createSession(const std::time_t& expiredTime) {
 SessionData& HttpSession::getSessionData(const sessionId_t& sessionId) {
 	return this->_sessionStore->getSession(sessionId);
 }
+
+bool HttpSession::hasSession(const sessionId_t& sessionId) {
+	if (sessionId == "")
+		return false;
+	return this->_sessionStore->hasSession(sessionId);
+}

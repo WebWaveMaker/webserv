@@ -1,7 +1,7 @@
 #include "RequestParser.hpp"
 
 RequestParser::RequestParser(utils::shared_ptr<ServerConfig> serverConfig)
-	: IParser(), _msgs(), _curMsg(u::nullptr_t), _buf(), _serverConfig(serverConfig) {
+	: IParser(), _msgs(), _curMsg(u::nullptr_t), _serverConfig(serverConfig) {
 	_msgs.push(utils::shared_ptr<std::pair<enum HttpMessageState, HttpMessage> >(
 		new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 	_curMsg = &_msgs.back();
@@ -30,15 +30,16 @@ bool RequestParser::errorRequest(void) {
 
 std::string RequestParser::findAndSubstr(std::string& buf, std::string delim) {
 	std::string::size_type size = buf.find(delim);
+	std::string& tmpBuf = getCurMsg().getBuf();
 	if (size == std::string::npos) {
-		this->_buf += buf;
+		tmpBuf += buf;
 		buf.clear();
 		return "";
 	}
-	if (this->_buf.size()) {
-		buf = this->_buf + buf;
-		size += this->_buf.size();
-		this->_buf.clear();
+	if (tmpBuf.size()) {
+		buf = tmpBuf + buf;
+		size += tmpBuf.size();
+		tmpBuf.clear();
 	}
 	std::string str = buf.substr(0, size);
 	buf = buf.substr(size + delim.size());
@@ -51,7 +52,8 @@ request_t RequestParser::get(void) {
 
 request_t RequestParser::pop(void) {
 	request_t elem;
-	if (this->_msgs.empty())
+	if (this->_msgs.empty() || this->_msgs.front()->first == START_LINE || this->_msgs.front()->first == HEADER ||
+		this->_msgs.front()->first == BODY)
 		return elem;
 	elem = this->_msgs.front();
 	if (this->_msgs.front()->first == DONE || this->_msgs.front()->first == HTTP_ERROR ||
@@ -63,7 +65,7 @@ request_t RequestParser::pop(void) {
 bool RequestParser::parseStartLine(std::string& buf) {
 	std::string str = this->findAndSubstr(buf, CRLF);
 	if (str.size() == 0)
-		return errorRequest();
+		return false;
 	std::stringstream ss(str);
 	std::vector<std::string> startLine(3);
 
@@ -81,7 +83,7 @@ bool RequestParser::parseStartLine(std::string& buf) {
 bool RequestParser::parseHeader(std::string& buf) {
 	std::string str = this->findAndSubstr(buf, RNRN);
 	if (str.size() == 0)
-		return errorRequest();
+		return false;
 	str += CRLF;
 	std::vector<std::string> headerFields = utils::split(str, CRLF);
 	std::map<std::string, std::string> headers;
@@ -161,6 +163,11 @@ bool RequestParser::parseLongBody(std::string& buf) {
 	if (contentLength == contentLengthReceived) {
 		_curMsg->get()->first = LONG_BODY_DONE;
 	}
+	if (contentLength > _serverConfig->getDirectives(CLIENT_MAX_BODY_SIZE).asUint()) {
+		_curMsg->get()->first = LONG_BODY_ERROR;
+		getCurMsg().setErrorCode(PAYLOAD_TOO_LARGE);
+		return false;
+	};
 	buf.clear();
 	return true;
 }
@@ -174,7 +181,7 @@ request_t RequestParser::parse(std::string& content) {
 		_curMsg = &_msgs.back();
 	}
 
-	std::cerr << "previous contentLengthReceived: " << getCurMsg().getContentLengthReceived() << std::endl;
+	// std::cerr << "previous contentLengthReceived: " << getCurMsg().getContentLengthReceived() << std::endl;
 	while (content.empty() == false) {
 		switch (this->_msgs.back()->first) {
 			case START_LINE:
@@ -209,6 +216,6 @@ request_t RequestParser::parse(std::string& content) {
 	if (this->_curMsg->get()->first == BODY &&
 		(getCurMsg().getHeaders().count(CONTENT_LENGTH) == 0 || getCurMsg().getHeaders().at(CONTENT_LENGTH) == "0"))
 		this->_curMsg->get()->first = DONE;
-	std::cerr << "request out state: " << this->_curMsg->get()->first << std::endl;
+	// std::cerr << "request out state: " << this->_curMsg->get()->first << std::endl;
 	return this->pop();
 }

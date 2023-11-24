@@ -1,19 +1,22 @@
 #include "SyncEventDemultiplexer.hpp"
 
 namespace reactor {
-	SyncEventDemultiplexer::SyncEventDemultiplexer() : _kq(Kqueue::getInstance()) {}
+	SyncEventDemultiplexer::SyncEventDemultiplexer() : _kq(Kqueue::getInstance()) {
+		this->_timeout.tv_sec = 0;
+		this->_timeout.tv_nsec = 0;
+	}
 	SyncEventDemultiplexer::~SyncEventDemultiplexer() {}
 
 	void SyncEventDemultiplexer::requestEvent(AEventHandler* handler, const enum EventType type) {
 		if (type == EVENT_TIMER) {
-			this->_kq->AddEventOnChangeList(handler->getHandle(), type, EV_ADD, 0, 5000, handler);
+			this->_kq->AddEventOnChangeList(handler->getHandle(), type, EV_ADD, 0, handler->getReadByte(), handler);
 			return;
 		}
 		this->_kq->AddEventOnChangeList(handler->getHandle(), type, EV_ADD, 0, 0, handler);
 	}
 
 	void SyncEventDemultiplexer::unRequestEvent(AEventHandler* handler, const enum EventType type) {
-		this->_kq->registerEvent(handler->getHandle(), type, EV_DELETE, 0, 0, u::nullptr_t);
+		this->_kq->AddEventOnChangeList(handler->getHandle(), type, EV_DELETE, 0, 0, u::nullptr_t);
 	}
 
 	void SyncEventDemultiplexer::unRequestAllEvent(fd_t fd) {
@@ -39,7 +42,7 @@ namespace reactor {
 		this->_kq->checkSize();
 		const int eventNum =
 			kevent(this->_kq->getFd(), &this->_kq->getChangeList()[0], this->_kq->getChangeList().size(),
-				   &this->_kq->getkEventList()[0], this->_kq->getkEventList().size(), u::nullptr_t);
+				   &this->_kq->getkEventList()[0], this->_kq->getkEventList().size(), &this->_timeout);
 		if (eventNum == SYSTEMCALL_ERROR)
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		this->_kq->getChangeList().clear();

@@ -46,7 +46,7 @@ void ServerManager::eraseClient(fd_t fd) {
 		 ++serverIt) {
 		if (serverIt->second->hasClient(fd)) {
 			serverIt->second->eraseClient(fd);
-			std::cout << "erase in Server :" << fd << std::endl;
+			std::cerr << "erase in Server :" << fd << std::endl;
 			break;
 		}
 	}
@@ -87,8 +87,10 @@ void ServerManager::registerReadEvent(fd_t fd) {
 }
 
 void ServerManager::registerTimeoutEvent() {
-	reactor::Dispatcher::getInstance()->registerExeHandler<reactor::TimeoutHandlerFactory>(
-		reactor::sharedData_t(new reactor::SharedData(4242, EVENT_TIMER, std::vector<char>())));
+	reactor::sharedData_t timersharedData =
+		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(4242, EVENT_TIMER, std::vector<char>()));
+	timersharedData->setReadByte(this->_serverConfigs[0]->getDirectives(KEEPALIVE_TIMEOUT).asUint() * 500);
+	reactor::Dispatcher::getInstance()->registerExeHandler<reactor::TimeoutHandlerFactory>(timersharedData);
 }
 
 utils::shared_ptr<std::vector<fd_t> > ServerManager::getClientFds() {

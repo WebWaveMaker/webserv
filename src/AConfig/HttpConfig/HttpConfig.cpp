@@ -90,6 +90,7 @@ ConfigValue HttpConfig::getDirectives(Directives method) const {
 			methods.push_back(POST);
 			methods.push_back(DELETE);
 			methods.push_back(PUT);
+			methods.push_back(HEAD);
 			return ConfigValue(methods);
 		} else {
 			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid directive");

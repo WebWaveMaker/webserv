@@ -7,6 +7,7 @@
 #include "ErrorResponseBuilder.hpp"
 #include "HttpMessage.hpp"
 #include "IBuilder.hpp"
+#include "PutResponseBuilder.hpp"
 #include "RedirectResponseBuilder.hpp"
 #include "SharedData.hpp"
 

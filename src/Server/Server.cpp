@@ -1,7 +1,7 @@
 #include "Server.hpp"
 
 Server::Server(utils::shared_ptr<ServerConfig>& serverConfig) : _serverConfig(serverConfig) {
-	std::cout << "server constructor called\n";
+	// std::cout << "server constructor called\n";
 	try {
 		this->listenServer();
 	} catch (std::exception& e) {
@@ -39,7 +39,7 @@ void Server::bindListen() {
 		throw std::runtime_error("bind() error\n");
 	}
 
-	if (listen(this->_fd, 5) < 0) {
+	if (listen(this->_fd, 128) < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
 		throw std::runtime_error("listen() error\n");
 	}
@@ -51,6 +51,10 @@ void Server::makeSocket() {
 
 	if (this->_fd < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
+		throw;
+	}
+	if (fcntl(this->_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
+		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		throw;
 	}
 
@@ -138,7 +142,7 @@ std::string Server::getClientIP(fd_t fd) {
 }
 
 Server::~Server() {
-	std::cout << "Server destructor called\n";
+	// std::cout << "Server destructor called\n";
 
 	this->_clients->clear();
 }

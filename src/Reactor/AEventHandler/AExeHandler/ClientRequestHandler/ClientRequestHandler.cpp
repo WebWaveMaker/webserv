@@ -25,7 +25,7 @@ namespace reactor {
 		std::string content = std::string(this->getBuffer().begin(), this->getBuffer().begin() + this->getReadByte());
 		request_t request = this->_requestParser.parse(content);
 		this->getBuffer().clear();
-		std::cout << "client request handler" << std::endl;
+		// std::cout << "client request handler" << std::endl;
 		if (request.get() && !(request->first == LONG_BODY || request->first == LONG_BODY_DONE)) {
 			if (request->first == LONG_FIRST)
 				request->first = LONG_BODY;

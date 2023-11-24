@@ -1,7 +1,7 @@
 #include "HttpMessage.hpp"
 
 HttpMessage::HttpMessage()
-	: _startLine(3), _headers(), _body(), _errorCode(0), _contentLength(0), _contentLengthReceived(0) {}
+	: _startLine(3), _headers(), _body(), _errorCode(0), _contentLength(0), _contentLengthReceived(0), _buf() {}
 
 HttpMessage::HttpMessage(const HttpMessage& obj) {
 	*this = obj;
@@ -66,6 +66,8 @@ enum HttpMethods HttpMessage::getMethod(void) const {
 		return DELETE;
 	if (method == "PUT")
 		return PUT;
+	if (method == "HEAD")
+		return HEAD;
 	return UNKNOWN;
 }
 
@@ -125,6 +127,14 @@ unsigned int HttpMessage::getContentLengthReceived(void) const {
 }
 
 void HttpMessage::setContentLengthReceived(const unsigned int contentLengthReceived) {
-	std::cerr << "setcontentlengthreceived: " << contentLengthReceived << "\n";
+	// std::cerr << "setcontentlengthreceived: " << contentLengthReceived << "\n";
 	this->_contentLengthReceived = contentLengthReceived;
+}
+
+void HttpMessage::setBuf(const std::string& buf) {
+	this->_buf = buf;
+}
+
+std::string& HttpMessage::getBuf(void) {
+	return this->_buf;
 }

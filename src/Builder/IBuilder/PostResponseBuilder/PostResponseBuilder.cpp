@@ -54,7 +54,7 @@ void PostResponseBuilder::divideEntryPoint() {
 
 	// default 동작은 파일업로드.
 	throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-		new ErrorResponseBuilder(BAD_REQUEST, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		new PutResponseBuilder(this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 }
 
 void PostResponseBuilder::setStartLine() {}

@@ -7,6 +7,7 @@ namespace reactor {
 		  _request(sharedData->getRequest()),
 		  _serverConfig(ServerManager::getInstance()->getServerConfig(this->getHandle())),
 		  _locationConfig(_serverConfig->getLocationConfig(_request->second.getRequestTarget())),
+		  _keepalive(true),
 		  _director(this->chooseBuilder()),
 		  _registered(false) {}
 
@@ -14,25 +15,29 @@ namespace reactor {
 
 	void ClientResponseHandler::handleEvent() {
 		if (this->removeHandlerIfNecessary()) {
-			// this->_director.buildProduct();
+			this->_director.buildProduct();
 			return;
 		}
 		if (this->_registered == false) {
 			Dispatcher::getInstance()->registerIOHandler<ClientWriteHandlerFactory>(this->_sharedData);
 			this->_registered = true;
 		}
-		std::cout << "client response handler" << std::endl;
+		// std::cout << "client response handler" << std::endl;
 		try {
 			if (this->getBuffer().empty() && this->_director.getBuilderReadState() == RESOLVE) {
 				Dispatcher::getInstance()->removeIOHandler(this->getHandle(), this->getType());
 				Dispatcher::getInstance()->removeExeHandler(this);
-				std::cout << "remove responseHandler" << std::endl;
+				if (this->_keepalive == false) {
+					this->_sharedData->setState(TERMINATE);
+					Dispatcher::getInstance()->addFdToClose(this->getHandle());
+				}
+				// std::cout << "remove responseHandler" << std::endl;
 				return;
 			}
-			std::cout << "this one?" << std::endl;
+			// std::cout << "this one?" << std::endl;
 			if (this->_director.buildProduct() == false)
 				return;
-			std::cout << "client response handler try catch" << std::endl;
+			// std::cout << "client response handler try catch" << std::endl;
 		} catch (utils::shared_ptr<IBuilder<sharedData_t> >& builder) {
 			this->_director.setBuilder(builder);
 		} catch (...) {
@@ -52,13 +57,16 @@ namespace reactor {
 				throw utils::shared_ptr<IBuilder<sharedData_t> >(
 					new ErrorResponseBuilder(this->_request->second.getErrorCode(), this->_sharedData,
 											 this->_serverConfig, this->_locationConfig));
+
+			if ((this->_request->second.getHeaders())["Connection"].compare("Keep-Alive") != 0)
+				this->_keepalive = false;
 			std::vector<enum HttpMethods> methods = this->_locationConfig->getDirectives(LIMIT_EXCEPT).asMedVec();
 
 			if (std::find(methods.begin(), methods.end(), this->_request->second.getMethod()) == methods.end())
 				throw utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
 					METHOD_NOT_ALLOWED, this->_sharedData, this->_serverConfig, this->_locationConfig));
 			if (this->_locationConfig->isCgi()) {
-				std::cerr << "cgi in\n";
+				// std::cerr << "cgi in\n";
 				return utils::shared_ptr<IBuilder<sharedData_t> >(new CgiResponseBuilder(
 					this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 			}
@@ -74,6 +82,9 @@ namespace reactor {
 						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 				case PUT:
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new PutResponseBuilder(
+						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
+				case HEAD:
+					return utils::shared_ptr<IBuilder<sharedData_t> >(new HeadResponseBuilder(
 						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 				case UNKNOWN:
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
