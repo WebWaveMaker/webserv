@@ -23,6 +23,8 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	HttpMessage _response;
 	std::string _startLine[3];
 	bool _startLineState;
+	bool _contentLengthState;
+	std::vector<char> _pendingBuf;
 	std::time_t _cgiTime;
 
 	CgiResponseBuilder(const CgiResponseBuilder& obj);
@@ -57,9 +59,12 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	std::string makeExtension();
 	std::vector<std::string> parsPathEnvp();
 	void inItInterpreterMap();
+	void checkContentLength();
 	void replaceStartLine();
 	void cgiStartLineInsert();
 	void addCgiEnvp(std::vector<std::string>& cgiEnvpVec, const std::string& key, const std::string& value);
+	void setClientHeaders(std::vector<std::string>& cgiEnvVec);
+	void makeHttpHeaders(std::string& key);
 };
 
 // Start Line: GET / HTTP/1.1

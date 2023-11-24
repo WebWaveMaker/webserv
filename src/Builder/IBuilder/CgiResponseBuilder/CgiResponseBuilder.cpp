@@ -8,10 +8,12 @@ CgiResponseBuilder::CgiResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
 	  _cgiReadSharedData(),
-	  _startLineState(false) {
+	  _startLineState(false),
+	  _contentLengthState(false) {
 	if (_locationConfig.get() == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	this->_pendingBuf.clear();
 	this->inItInterpreterMap();
 	this->prepare();
 }
@@ -98,11 +100,11 @@ bool CgiResponseBuilder::setBody() {
 	if (this->_cgiReadSharedData.get() == u::nullptr_t)
 		return false;
 
-	// cgi로 부터 받은 status: 200 ok 부분을 startline형식으로 변경해야함
-	// cgi에 대한 read이벤트를 삭제합니다.
 	if (this->_startLineState == false)
 		this->replaceStartLine();
-	else {
+	else if (this->_startLineState == true && this->_contentLengthState == false)
+		this->checkContentLength();
+	if (this->_startLineState == true && this->_contentLengthState == true) {
 		this->_cgiWriteSharedData->getBuffer().insert(this->_cgiWriteSharedData->getBuffer().end(),
 													  this->_request->second.getBody().begin(),
 													  this->_request->second.getBody().end());
@@ -121,31 +123,86 @@ bool CgiResponseBuilder::setBody() {
 	return true;
 }
 
-std::string CgiResponseBuilder::makePathInfo() {
-	std::string pathInfo = this->_request->second.getRequestTarget();
-	std::string locPath = this->_locationConfig.get()->getPath();
+void CgiResponseBuilder::cgiStartLineInsert() {
+	const std::string delimiter = "\r\n";
+	std::vector<char>& readBuffer = this->_cgiReadSharedData->getBuffer();
+	std::vector<char>::iterator it =
+		std::search(readBuffer.begin(), readBuffer.end(), delimiter.begin(), delimiter.end());
 
-	pathInfo.erase(0, locPath.size());
+	if (it != readBuffer.end()) {
+		readBuffer.erase(readBuffer.begin(), it + delimiter.size());
+		std::string startLine = this->_startLine[0] + " " + this->_startLine[1] + " " + this->_startLine[2] + "\r\n";
+		readBuffer.insert(readBuffer.begin(), startLine.begin(), startLine.end());
+		this->_startLineState = true;
+	}
+}
 
-	size_t dotPos = pathInfo.find('.');
-	if (dotPos != std::string::npos) {
-		size_t slashPos = pathInfo.find('/', dotPos);
-		if (slashPos != std::string::npos)
-			pathInfo.erase(0, slashPos);
-		size_t questPos = pathInfo.find('?');
-		if (questPos == std::string::npos)
-			return pathInfo;
-		pathInfo.erase(questPos);
-		return pathInfo;
+void CgiResponseBuilder::replaceStartLine() {
+	std::vector<char>& readBuffer = this->_cgiReadSharedData->getBuffer();
+	if (readBuffer.size() == 0)
+		return;
+	std::string msg;
+
+	const std::string crlf = "\r\n";
+	std::vector<char>::iterator crlfIt = std::search(readBuffer.begin(), readBuffer.end(), crlf.begin(), crlf.end());
+
+	if (crlfIt == readBuffer.end())
+		return;
+
+	msg.assign(readBuffer.begin(), crlfIt);
+	std::stringstream ss;
+	ss << msg;
+	ss >> this->_startLine[0] >> this->_startLine[1] >> this->_startLine[2];
+	if (this->_startLine[0].empty() || this->_startLine[1].empty() || this->_startLine[2].empty()) {
+		this->_startLine->clear();
+		return;
+	}
+	if (this->_startLine[0].compare("Status:") == 0) {
+		this->_startLine[0] = "HTTP/1.1";
+		this->_startLineState = true;
 	} else {
-		if (pathInfo.empty())
-			return pathInfo;
-		pathInfo = "/" + pathInfo;
-		size_t questPos = pathInfo.find('?');
-		if (questPos == std::string::npos)
-			return pathInfo;
-		pathInfo.erase(questPos);
-		return pathInfo;
+		this->_startLine[0] = "HTTP/1.1";
+		this->_startLine[1] = "200";
+		this->_startLine[2] = "OK";
+		std::string startLine = this->_startLine[0] + " " + this->_startLine[1] + " " + this->_startLine[2] + "\r\n";
+		readBuffer.insert(readBuffer.begin(), startLine.begin(), startLine.end());
+		this->_startLineState = true;
+		return;
+	}
+	this->cgiStartLineInsert();
+}
+
+void CgiResponseBuilder::checkContentLength() {
+	std::vector<char>& readBuffer = this->_cgiReadSharedData->getBuffer();
+	if (readBuffer.size() == 0)
+		return;
+	const std::string cl = "Content-Length";
+	std::vector<char>::iterator clIt = std::search(readBuffer.begin(), readBuffer.end(), cl.begin(), cl.end());
+
+	if (clIt != readBuffer.end()) {
+		this->_contentLengthState = true;
+		return;
+	}
+	if (this->_cgiReadSharedData->getState() != TERMINATE) {
+		return;
+	} else {
+		const std::string crlfcrlf = "\r\n\r\n";
+		std::vector<char>::iterator clclIt =
+			std::search(readBuffer.begin(), readBuffer.end(), crlfcrlf.begin(), crlfcrlf.end());
+		if (clclIt != readBuffer.end()) {
+			size_t contentLength = 0;
+			clclIt += crlfcrlf.size();
+			for (; clclIt != readBuffer.end(); ++clclIt)
+				contentLength++;
+			std::string contentLengthHeader = "Content-Length: " + utils::lltos(contentLength) + "\r\n";
+			std::string crlf = "\r\n";
+			clclIt = std::search(readBuffer.begin(), readBuffer.end(), crlf.begin(), crlf.end());
+			std::cerr << "before readbuffer: " << readBuffer.data() << std::endl;
+			readBuffer.insert(clclIt + crlf.size(), contentLengthHeader.begin(), contentLengthHeader.end());
+			std::cerr << "readbuffer: " << readBuffer.data() << std::endl;
+			this->_contentLengthState = true;
+			return;
+		}
 	}
 }
 
@@ -206,55 +263,6 @@ std::string CgiResponseBuilder::makeCgiFullPath() {
 		}
 	}
 	return std::string("");
-}
-
-void CgiResponseBuilder::cgiStartLineInsert() {
-	const std::string delimiter = "\r\n";
-	std::vector<char>& readBuffer = this->_cgiReadSharedData->getBuffer();
-	std::vector<char>::iterator it =
-		std::search(readBuffer.begin(), readBuffer.end(), delimiter.begin(), delimiter.end());
-
-	if (it != readBuffer.end()) {
-		readBuffer.erase(readBuffer.begin(), it + delimiter.size());
-		std::string startLine = this->_startLine[0] + " " + this->_startLine[1] + " " + this->_startLine[2] + "\r\n";
-		readBuffer.insert(readBuffer.begin(), startLine.begin(), startLine.end());
-		this->_startLineState = true;
-	}
-}
-
-void CgiResponseBuilder::replaceStartLine() {
-	std::vector<char>& readBuffer = this->_cgiReadSharedData->getBuffer();
-	if (readBuffer.size() == 0)
-		return;
-	std::string msg;
-
-	const char crlf[] = {'\r', '\n'};
-	std::vector<char>::iterator crlfIt = std::find_first_of(readBuffer.begin(), readBuffer.end(), crlf, crlf + 2);
-
-	if (crlfIt == readBuffer.end())
-		return;
-
-	msg.assign(readBuffer.begin(), crlfIt);
-	std::stringstream ss;
-	ss << msg;
-	ss >> this->_startLine[0] >> this->_startLine[1] >> this->_startLine[2];
-	if (this->_startLine[0].empty() || this->_startLine[1].empty() || this->_startLine[2].empty()) {
-		this->_startLine->clear();
-		return;
-	}
-	if (this->_startLine[0].compare("Status:") == 0) {
-		this->_startLine[0] = "HTTP/1.1";
-		this->_startLineState = true;
-	} else {
-		this->_startLine[0] = "HTTP/1.1";
-		this->_startLine[1] = "200";
-		this->_startLine[2] = "OK";
-		std::string startLine = this->_startLine[0] + " " + this->_startLine[1] + " " + this->_startLine[2] + "\r\n";
-		readBuffer.insert(readBuffer.begin(), startLine.begin(), startLine.end());
-		this->_startLineState = true;
-		return;
-	}
-	this->cgiStartLineInsert();
 }
 
 reactor::sharedData_t CgiResponseBuilder::getProduct() {
@@ -342,39 +350,61 @@ char** CgiResponseBuilder::makeArgs() {
 	return args;
 }
 
+void CgiResponseBuilder::makeHttpHeaders(std::string& key) {
+	std::string http = "HTTP_";
+	for (size_t i = 0; i < key.length(); ++i) {
+		key[i] = std::toupper(key[i]);
+		if (key[i] == '-')
+			key[i] = '_';
+	}
+	key = http + key;
+}
+
+void CgiResponseBuilder::setClientHeaders(std::vector<std::string>& cgiEnvVec) {
+	std::map<std::string, std::string>& headers = this->_request.get()->second.getHeaders();
+
+	for (std::map<std::string, std::string>::iterator hIt = headers.begin(); hIt != headers.end(); ++hIt) {
+		std::string key = hIt->first;
+		std::string value = hIt->second;
+		this->makeHttpHeaders(key);
+		this->addCgiEnvp(cgiEnvVec, key, value);
+	}
+}
+
 char** CgiResponseBuilder::setEnvp() {
 	char** envp = ServerManager::getInstance()->getEnvp();
 
 	std::vector<std::string> cgiEnvpVec;
-	std::string method = this->_request.get()->second.getMethodStr();
-	std::string scriptName = this->_cgiFullPath;
-	std::string queryString = this->makeQueryString();
+	this->setClientHeaders(cgiEnvpVec);
 
-	std::string serverName = this->_request.get()->second.getHeaders()["Host"];
+	std::map<std::string, std::string>& headers = this->_request.get()->second.getHeaders();
+	std::string serverName = this->_serverConfig->getDirectives(SERVER_NAME).asString();
 	size_t colPos = serverName.find(':');
 	if (colPos != std::string::npos)
 		serverName.erase(colPos);
-
-	std::string serverPort = utils::itos(this->_serverConfig.get()->getDirectives(LISTEN).asUint());
-
-	std::string serverProtocol = "HTTP/1.1";
-	std::string gatewayInterface = "CGI/1.1";
-	std::string contentType = (this->_request.get()->second.getHeaders())["Content-Type"];
-	std::string contentLength = (this->_request.get()->second.getHeaders())["Content-Length"];
+	std::string contentType = headers["Content-Type"];
+	std::string contentLength = headers["Content-Length"];
 	if (contentLength.empty())
 		contentLength = "0";
+
+	std::string method = this->_request.get()->second.getMethodStr();
+	std::string scriptName = this->_cgiFullPath;
+	std::string queryString = this->makeQueryString();
+	std::string serverPort = utils::itos(this->_serverConfig.get()->getDirectives(LISTEN).asUint());
+	std::string serverProtocol = "HTTP/1.1";
+	std::string gatewayInterface = "CGI/1.1";
 	std::string remoteAddr = ServerManager::getInstance()->getClientIp(this->_sharedData.get()->getFd());
 	std::string pathInfo = this->makePathInfo();
 
+	this->addCgiEnvp(cgiEnvpVec, "SERVER_NAME", serverName);
+	this->addCgiEnvp(cgiEnvpVec, "CONTENT_TYPE", contentType);
+	this->addCgiEnvp(cgiEnvpVec, "CONTENT_LENGTH", contentLength);
 	this->addCgiEnvp(cgiEnvpVec, "REQUEST_METHOD", method);
 	this->addCgiEnvp(cgiEnvpVec, "SCRIPT_NAME", scriptName);
 	this->addCgiEnvp(cgiEnvpVec, "QUERY_STRING", queryString);
-	this->addCgiEnvp(cgiEnvpVec, "SERVER_NAME", serverName);
 	this->addCgiEnvp(cgiEnvpVec, "SERVER_PORT", serverPort);
 	this->addCgiEnvp(cgiEnvpVec, "SERVER_PROTOCOL", serverProtocol);
 	this->addCgiEnvp(cgiEnvpVec, "GATEWAY_INTERFACE", gatewayInterface);
-	this->addCgiEnvp(cgiEnvpVec, "CONTENT_TYPE", contentType);
-	this->addCgiEnvp(cgiEnvpVec, "CONTENT_LENGTH", contentLength);
 	this->addCgiEnvp(cgiEnvpVec, "REMOTE_ADDR", remoteAddr);
 	this->addCgiEnvp(cgiEnvpVec, "PATH_INFO", pathInfo);
 
@@ -396,6 +426,34 @@ char** CgiResponseBuilder::setEnvp() {
 void CgiResponseBuilder::addCgiEnvp(std::vector<std::string>& cgiEnvpVec, const std::string& key,
 									const std::string& value) {
 	cgiEnvpVec.push_back(key + "=" + value);
+}
+
+std::string CgiResponseBuilder::makePathInfo() {
+	std::string pathInfo = this->_request->second.getRequestTarget();
+	std::string locPath = this->_locationConfig.get()->getPath();
+
+	pathInfo.erase(0, locPath.size());
+
+	size_t dotPos = pathInfo.find('.');
+	if (dotPos != std::string::npos) {
+		size_t slashPos = pathInfo.find('/', dotPos);
+		if (slashPos != std::string::npos)
+			pathInfo.erase(0, slashPos);
+		size_t questPos = pathInfo.find('?');
+		if (questPos == std::string::npos)
+			return pathInfo;
+		pathInfo.erase(questPos);
+		return pathInfo;
+	} else {
+		if (pathInfo.empty())
+			return pathInfo;
+		pathInfo = "/" + pathInfo;
+		size_t questPos = pathInfo.find('?');
+		if (questPos == std::string::npos)
+			return pathInfo;
+		pathInfo.erase(questPos);
+		return pathInfo;
+	}
 }
 
 //pl = perl, py = python, php = php, rb = ruby 절대경로 필요

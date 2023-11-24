@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # HTTP 상태 코드와 컨텐트 타입을 출력
-echo -e "Status: 200 OK\r\nContent-type: text/html\r\nContent-Length: 498\r\n"
+echo -e "Status: 200 OK\r\nContent-type: text/html\r\n\r\n"
 
 # HTML 문서 시작
 echo -e "<html><head><title>CGI Test</title></head><body>"
