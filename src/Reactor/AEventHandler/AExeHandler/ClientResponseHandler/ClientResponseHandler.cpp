@@ -6,12 +6,28 @@ namespace reactor {
 		: AExeHandler(sharedData),
 		  _request(sharedData->getRequest()),
 		  _serverConfig(ServerManager::getInstance()->getServerConfig(this->getHandle())),
-		  _locationConfig(_serverConfig->getLocationConfig(_request->second.getRequestTarget())),
+		  _locationConfig(_serverConfig->getLocationConfig(this->findLocationBlock())),
 		  _keepalive(true),
 		  _director(this->chooseBuilder()),
 		  _registered(false) {}
 
 	ClientResponseHandler::~ClientResponseHandler() {}
+
+	std::string ClientResponseHandler::findLocationBlock() {
+		std::string requestTarget = this->_request->second.getRequestTarget();
+
+		size_t dotPos = requestTarget.find('.');
+		if (dotPos == std::string::npos)
+			return requestTarget;
+		size_t slashPos = requestTarget.find('/', dotPos);
+		if (slashPos == std::string::npos) {
+			requestTarget.erase(0, dotPos);
+			return "/" + requestTarget;
+		}
+		requestTarget.erase(slashPos);
+		requestTarget.erase(0, dotPos);
+		return "/" + requestTarget;
+	}
 
 	void ClientResponseHandler::handleEvent() {
 		if (this->removeHandlerIfNecessary()) {
