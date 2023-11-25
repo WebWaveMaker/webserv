@@ -100,7 +100,7 @@ namespace reactor {
 			const handle_t handle = this->_removeHandlers[i]->getHandle();
 			if (this->_exeHandlers.find(handle) != this->_exeHandlers.end()) {
 				const size_t index = this->_handlerIndices[this->_removeHandlers[i]];
-				std::cerr << "aapply remove: " << this->_exeHandlers[handle][index]->getHandle() << std::endl;
+				std::cerr << "apply remove: " << this->_exeHandlers[handle][index]->getHandle() << std::endl;
 				if (index < this->_exeHandlers[handle].size()) {
 					if (index != this->_exeHandlers[handle].size() - 1) {
 						std::swap(this->_exeHandlers[handle][index], this->_exeHandlers[handle].back());

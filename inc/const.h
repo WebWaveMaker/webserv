@@ -12,6 +12,7 @@
 
 #define BUFFER_SIZE 4096
 #define FT 42
+#define CRLF_LEN 2
 
 #define FD_ERROR -1
 #define FD_LISTING -2

@@ -72,6 +72,7 @@ enum HttpMessageState {
 	START_LINE,
 	HEADER,
 	BODY,
+	CHUNKED_FIRST,
 	CHUNKED,
 	LONG_FIRST,
 	LONG_BODY,
