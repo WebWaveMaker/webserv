@@ -12,6 +12,7 @@ class HttpMessage {
 	int _errorCode;
 	unsigned int _contentLength;
 	unsigned int _contentLengthReceived;
+	unsigned int _totalChunkedLength;
 	std::string _buf;
 
    public:
@@ -42,6 +43,8 @@ class HttpMessage {
 	void reset();
 	void setBuf(const std::string& buf);
 	std::string& getBuf(void);
+	void setTotalChunkedLength(const unsigned int totalChunkedLength);
+	unsigned int getTotalChunkedLength(void) const;
 };
 
 typedef utils::shared_ptr<HttpMessage> msg_t;

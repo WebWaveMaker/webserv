@@ -17,6 +17,22 @@ namespace utils {
 	fd_t makeFd(const char* path, const char* option);
 	std::string generateRandomString();
 	std::string removeSubstring(const std::string& mainStr, const std::string& substr);
+
+	template <typename T>
+	T toHexNum(const std::string& str) {
+		T num;
+		std::istringstream ss(str);
+
+		if (!(ss >> std::hex >> num)) {
+			throw(std::invalid_argument("String is not representing hex: " + str));
+		}
+
+		char remaining;
+		if (ss >> remaining) {
+			throw(std::invalid_argument("Leftover character after str to hex convertion: " + str));
+		}
+		return (num);
+	}
 }  // namespace utils
 
 #endif

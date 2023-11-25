@@ -22,6 +22,8 @@ class RequestParser : public IParser<request_t, std::string> {
 	RequestParser(const RequestParser& obj);
 	request_t pop(void);
 	HttpMessage& getCurMsg(void);
+	inline void saveBufAndClear(std::string& buf);
+	inline std::string cutBuf(std::string& buf, const std::string::size_type size);
 
    public:
 	RequestParser(utils::shared_ptr<ServerConfig> serverConfig);

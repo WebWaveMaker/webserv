@@ -6,6 +6,8 @@ RequestParser::RequestParser(utils::shared_ptr<ServerConfig> serverConfig)
 		new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 	_curMsg = &_msgs.back();
 	_curMsg->get()->second.setContentLengthReceived(0);
+	_curMsg->get()->second.setContentLength(0);
+	_curMsg->get()->second.setTotalChunkedLength(0);
 	_curMsg->get()->second.getBuf().clear();
 }
 
@@ -69,13 +71,7 @@ request_t RequestParser::pop(void) {
 }
 
 bool RequestParser::parseStartLine(std::string& buf) {
-	std::cerr << "parseStartLine" << std::endl;
-	std::cerr << "buf: " << buf << std::endl;
-	std::cerr << "curMsg buf: " << _curMsg->get()->second.getBuf() << std::endl;
 	std::string str = this->findAndSubstr(buf, CRLF);
-	std::cerr << "after parseStartLine" << std::endl;
-	std::cerr << "buf: " << buf << std::endl;
-	std::cerr << "curMsg buf: " << _curMsg->get()->second.getBuf() << std::endl;
 	if (str.size() == 0)
 		return false;
 	std::stringstream ss(str);
@@ -120,7 +116,7 @@ bool RequestParser::parseHeader(std::string& buf) {
 	getCurMsg().setContentLength(utils::stoui(headers[CONTENT_LENGTH]));
 	getCurMsg().setHeaders(headers);
 	if (headers[TRANSFER_ENCODING] == "chunked")
-		_curMsg->get()->first = CHUNKED;
+		_curMsg->get()->first = CHUNKED_FIRST;
 	else if (getCurMsg().getContentLength() > BUFFER_SIZE)
 		_curMsg->get()->first = LONG_FIRST;
 	else
@@ -153,16 +149,62 @@ bool RequestParser::parseBody(std::string& buf) {
 	return true;
 }
 
+// if (contentLength == 0) {
+// 	_curMsg->get()->first = DONE;
+// 	buf.clear();
+// 	return true;
+// }
+// const std::string str = buf.substr(0, contentLength - 1);
+// buf.erase(0, contentLength - 1);
+// _curMsg->get()->second.setChunkedBody(str);
+
+inline void RequestParser::saveBufAndClear(std::string& buf) {
+	getCurMsg().setBuf(buf);
+	buf.clear();
+}
+
+inline std::string RequestParser::cutBuf(std::string& buf, const std::string::size_type size) {
+	std::string rv = buf.substr(0, size);
+	buf.erase(0, size);
+	return rv;
+}
+
 bool RequestParser::parseChunked(std::string& buf) {
-	unsigned int contentLength = utils::stoui(this->findAndSubstr(buf, CRLF));
-	if (contentLength == 0) {
-		_curMsg->get()->first = DONE;
-		buf.clear();
-		return true;
+	HttpMessage& curMsg = getCurMsg();
+	buf = curMsg.getBuf() + buf;
+	curMsg.getBuf().clear();
+	std::string::size_type crlf_pos = buf.find(CRLF);
+
+	if (crlf_pos == std::string::npos) {
+		saveBufAndClear(buf);
+		return false;
 	}
-	const std::string str = buf.substr(0, contentLength - 1);
-	buf.erase(0, contentLength - 1);
-	_curMsg->get()->second.setChunkedBody(str);
+	unsigned int chunkedLength;
+
+	try {
+		chunkedLength = utils::toHexNum<unsigned int>(buf.substr(0, crlf_pos));
+	} catch (const std::invalid_argument& ex) {
+		ErrorLogger::parseError(__FILE__, __LINE__, __func__, "chunked length is not hex");
+		return errorRequest();
+	}
+
+	if (buf.size() < crlf_pos + CRLF_LEN + chunkedLength + CRLF_LEN) {
+		saveBufAndClear(buf);
+		return false;
+	}
+
+	curMsg.setContentLengthReceived(curMsg.getContentLengthReceived() + chunkedLength);
+	cutBuf(buf, crlf_pos + CRLF_LEN);
+	curMsg.setChunkedBody(cutBuf(buf, chunkedLength));
+	if (cutBuf(buf, CRLF_LEN) != CRLF) {
+		ErrorLogger::parseError(__FILE__, __LINE__, __func__, "chunked body is not CRLF");
+		return errorRequest();
+	}
+
+	if (chunkedLength == 0) {
+		_curMsg->get()->first = DONE;
+	} else
+		_curMsg->get()->first = CHUNKED;
 	return true;
 }
 
@@ -195,6 +237,9 @@ void RequestParser::branchParser(const enum HttpMessageState state, std::string&
 		case BODY:
 			this->parseBody(buf);
 			break;
+		case CHUNKED_FIRST:
+			this->parseChunked(buf);
+			break;
 		case CHUNKED:
 			this->parseChunked(buf);
 			break;
@@ -220,12 +265,6 @@ request_t RequestParser::parse(std::string& content) {
 		_curMsg = &_msgs.back();
 	}
 
-	std::cerr << "request in state: " << this->_curMsg->get()->first << std::endl;
-	std::cerr << "request content" << this->_curMsg->get()->second.getBuf() << std::endl;
-	std::cerr << "current buf" << this->_curMsg->get()->second.getBuf() << std::endl;
-	std::cerr << "request in content: " << content << std::endl;
-
-	// std::cerr << "previous contentLengthReceived: " << getCurMsg().getContentLengthReceived() << std::endl;
 	while (content.empty() == false) {
 		this->branchParser(this->_msgs.back()->first, content);
 		if (this->_msgs.back()->first == DONE && content.empty() == false) {
@@ -234,11 +273,8 @@ request_t RequestParser::parse(std::string& content) {
 			_curMsg = &_msgs.back();
 		}
 	}
-	if (content.empty() && getCurMsg().getBuf().size())
-		this->branchParser(_curMsg->get()->first, content);
 	if (this->_curMsg->get()->first == BODY &&
 		(getCurMsg().getHeaders().count(CONTENT_LENGTH) == 0 || getCurMsg().getHeaders().at(CONTENT_LENGTH) == "0"))
 		this->_curMsg->get()->first = DONE;
-	std::cerr << "request out state: " << this->_curMsg->get()->first << std::endl;
 	return this->pop();
 }

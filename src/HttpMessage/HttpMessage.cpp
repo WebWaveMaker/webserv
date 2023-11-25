@@ -132,9 +132,17 @@ void HttpMessage::setContentLengthReceived(const unsigned int contentLengthRecei
 }
 
 void HttpMessage::setBuf(const std::string& buf) {
-	this->_buf = buf;
+	this->_buf += buf;
 }
 
 std::string& HttpMessage::getBuf(void) {
 	return this->_buf;
+}
+
+void HttpMessage::setTotalChunkedLength(const unsigned int totalChunkedLength) {
+	this->_totalChunkedLength = totalChunkedLength;
+}
+
+unsigned int HttpMessage::getTotalChunkedLength(void) const {
+	return this->_totalChunkedLength;
 }
