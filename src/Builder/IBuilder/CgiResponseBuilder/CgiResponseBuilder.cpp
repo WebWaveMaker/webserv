@@ -105,6 +105,8 @@ bool CgiResponseBuilder::setBody() {
 	else if (this->_startLineState == true && this->_contentLengthState == false)
 		this->checkContentLength();
 	if (this->_startLineState == true && this->_contentLengthState == true) {
+		if (this->_request->first == DONE || this->_request->first == LONG_BODY_DONE)
+			this->_request->second.getBody().append("\0");
 		this->_cgiWriteSharedData->getBuffer().insert(this->_cgiWriteSharedData->getBuffer().end(),
 													  this->_request->second.getBody().begin(),
 													  this->_request->second.getBody().end());
