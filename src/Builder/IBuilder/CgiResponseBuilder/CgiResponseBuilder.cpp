@@ -216,11 +216,10 @@ void CgiResponseBuilder::checkContentLength() {
 
 std::string CgiResponseBuilder::makeUriPath() {
 	std::string uriCgiPath = this->_request->second.getRequestTarget();
-	std::string locPath = this->_locationConfig.get()->getPath();
-	uriCgiPath.erase(0, locPath.size());
 
 	size_t dotPos = uriCgiPath.find('.');
 	if (dotPos != std::string::npos) {
+		return "youpi.bla";
 		size_t slashPos = uriCgiPath.find('/', dotPos);
 		if (slashPos != std::string::npos)
 			uriCgiPath.erase(slashPos);
@@ -404,7 +403,10 @@ char** CgiResponseBuilder::setEnvp() {
 	std::string gatewayInterface = "CGI/1.1";
 	std::string remoteAddr = ServerManager::getInstance()->getClientIp(this->_sharedData.get()->getFd());
 	std::string pathInfo = this->makePathInfo();
+	std::string pathTranslated =
+		this->_locationConfig->getDirectives(ROOT).asString() + this->_request->second.getTargetFile();
 
+	this->addCgiEnvp(cgiEnvpVec, "PATH_TRANSLATED", pathTranslated);
 	this->addCgiEnvp(cgiEnvpVec, "SERVER_NAME", serverName);
 	this->addCgiEnvp(cgiEnvpVec, "CONTENT_TYPE", contentType);
 	this->addCgiEnvp(cgiEnvpVec, "CONTENT_LENGTH", contentLength);
@@ -439,6 +441,7 @@ void CgiResponseBuilder::addCgiEnvp(std::vector<std::string>& cgiEnvpVec, const 
 
 std::string CgiResponseBuilder::makePathInfo() {
 	std::string pathInfo = this->_request->second.getRequestTarget();
+	return pathInfo;
 	std::string locPath = this->_locationConfig.get()->getPath();
 
 	pathInfo.erase(0, locPath.size());

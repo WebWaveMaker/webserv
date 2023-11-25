@@ -16,16 +16,24 @@ namespace reactor {
 	std::string ClientResponseHandler::findLocationBlock() {
 		std::string requestTarget = this->_request->second.getRequestTarget();
 
+		std::cerr << "request target : " << requestTarget << std::endl;
+		if (this->_request->second.getMethodStr() == "GET")
+			return requestTarget;
+
 		size_t dotPos = requestTarget.find('.');
 		if (dotPos == std::string::npos)
 			return requestTarget;
 		size_t slashPos = requestTarget.find('/', dotPos);
 		if (slashPos == std::string::npos) {
 			requestTarget.erase(0, dotPos);
+			if (this->_serverConfig->getLocation("/" + requestTarget + "/").get() == NULL)
+				return this->_request->second.getRequestTarget();
 			return "/" + requestTarget;
 		}
 		requestTarget.erase(slashPos);
 		requestTarget.erase(0, dotPos);
+		if (this->_serverConfig->getLocation("/" + requestTarget + "/").get() == NULL)
+			return this->_request->second.getRequestTarget();
 		return "/" + requestTarget;
 	}
 
@@ -81,7 +89,8 @@ namespace reactor {
 			if (std::find(methods.begin(), methods.end(), this->_request->second.getMethod()) == methods.end())
 				throw utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
 					METHOD_NOT_ALLOWED, this->_sharedData, this->_serverConfig, this->_locationConfig));
-			if (this->_locationConfig->isCgi()) {
+			if (this->
+			_locationConfig->isCgi()) {
 				// std::cerr << "cgi in\n";
 				return utils::shared_ptr<IBuilder<sharedData_t> >(new CgiResponseBuilder(
 					this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
