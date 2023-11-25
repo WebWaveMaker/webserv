@@ -1,5 +1,11 @@
 #include "CgiResponseBuilder.hpp"
 
+// cgi_tester는 cgi 스크립트가 아니라 fastCgi의 역할을 해주는 것이다.
+// .bla 같은 특정 확장자의 요청은 모두 cgi로 처리될 수 있는 설정 방식이 추가 되어야 한다.
+// cgi_tester에게 .bla 같은 실행야하는 스크립트 정보를 주는 것이다.
+// .bla 같은 스크립트파일이 없으면 서버에서 404 notfound로 처리한다.
+// 로케이션 자체가 cgi처리한다고 하면 기본실행 스크립트가 있어야 한다.
+
 CgiResponseBuilder::CgiResponseBuilder(reactor::sharedData_t sharedData, const request_t request,
 									   const utils::shared_ptr<ServerConfig>& serverConfig,
 									   const utils::shared_ptr<LocationConfig>& locationConfig)
@@ -374,6 +380,7 @@ void CgiResponseBuilder::setClientHeaders(std::vector<std::string>& cgiEnvVec) {
 }
 
 char** CgiResponseBuilder::setEnvp() {
+	// http://localhost:1234/directory/youpi.bla
 	char** envp = ServerManager::getInstance()->getEnvp();
 
 	std::vector<std::string> cgiEnvpVec;
