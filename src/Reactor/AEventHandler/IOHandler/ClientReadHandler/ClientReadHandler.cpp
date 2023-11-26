@@ -20,6 +20,7 @@ void reactor::ClientReadHandler::handleEvent() {
 		this->setState(TERMINATE);
 		return;
 	}
+	// std::cerr << buffer.data();
 	this->setReadByte(readByte);
 	this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
 }

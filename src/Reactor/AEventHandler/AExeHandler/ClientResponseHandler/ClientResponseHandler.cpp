@@ -11,14 +11,14 @@ namespace reactor {
 		  _director(this->chooseBuilder()),
 		  _registered(false) {}
 
-	ClientResponseHandler::~ClientResponseHandler() {}
+	ClientResponseHandler::~ClientResponseHandler() {
+		std::cerr << "REsponse removeREsponse removeREsponse removeREsponse removeREsponse removeREsponse "
+					 "removeREsponse removeREsponse remove"
+				  << std::endl;
+	}
 
 	std::string ClientResponseHandler::findLocationBlock() {
 		std::string requestTarget = this->_request->second.getRequestTarget();
-
-		std::cerr << "request target : " << requestTarget << std::endl;
-		if (this->_request->second.getMethodStr() == "GET")
-			return requestTarget;
 
 		size_t dotPos = requestTarget.find('.');
 		if (dotPos == std::string::npos)
@@ -28,13 +28,25 @@ namespace reactor {
 			requestTarget.erase(0, dotPos);
 			if (this->_serverConfig->getLocation("/" + requestTarget + "/").get() == NULL)
 				return this->_request->second.getRequestTarget();
-			return "/" + requestTarget;
+			std::vector<HttpMethods> methods =
+				this->_serverConfig->getLocation("/" + requestTarget + "/")->getDirectives(LIMIT_EXCEPT).asMedVec();
+			for (std::vector<HttpMethods>::iterator it = methods.begin(); it != methods.end(); ++it) {
+				if (*it == this->_request->second.getMethod())
+					return "/" + requestTarget;
+			}
+			return this->_request->second.getRequestTarget();
 		}
 		requestTarget.erase(slashPos);
 		requestTarget.erase(0, dotPos);
 		if (this->_serverConfig->getLocation("/" + requestTarget + "/").get() == NULL)
 			return this->_request->second.getRequestTarget();
-		return "/" + requestTarget;
+		std::vector<HttpMethods> methods =
+			this->_serverConfig->getLocation("/" + requestTarget + "/")->getDirectives(LIMIT_EXCEPT).asMedVec();
+		for (std::vector<HttpMethods>::iterator it = methods.begin(); it != methods.end(); ++it) {
+			if (*it == this->_request->second.getMethod())
+				return "/" + requestTarget;
+		}
+		return this->_request->second.getRequestTarget();
 	}
 
 	void ClientResponseHandler::handleEvent() {
@@ -82,19 +94,21 @@ namespace reactor {
 					new ErrorResponseBuilder(this->_request->second.getErrorCode(), this->_sharedData,
 											 this->_serverConfig, this->_locationConfig));
 
-			if ((this->_request->second.getHeaders())["Connection"].compare("Keep-Alive") != 0)
-				this->_keepalive = false;
+			// if ((this->_request->second.getHeaders())["Connection"].compare("Keep-Alive") != 0)
+			// 	this->_keepalive = false;
 			std::vector<enum HttpMethods> methods = this->_locationConfig->getDirectives(LIMIT_EXCEPT).asMedVec();
 
 			if (std::find(methods.begin(), methods.end(), this->_request->second.getMethod()) == methods.end())
 				throw utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
 					METHOD_NOT_ALLOWED, this->_sharedData, this->_serverConfig, this->_locationConfig));
-			if (this->
-			_locationConfig->isCgi()) {
-				// std::cerr << "cgi in\n";
+			if (this->_locationConfig->isCgi()) {
+				std::cerr << "cgi incgi incgi incgi incgi incgi incgi incgi incgi incgi incgi incgi incgi incgi incgi "
+							 "incgi in"
+						  << std::endl;
 				return utils::shared_ptr<IBuilder<sharedData_t> >(new CgiResponseBuilder(
 					this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 			}
+			std::cerr << "nocginocginocginocginocginocginocginocginocginocginocgi" << std::endl;
 			switch (this->_request->second.getMethod()) {
 				case GET:
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new GetResponseBuilder(

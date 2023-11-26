@@ -10,7 +10,7 @@
 #define SET_COOKIE "Set-Cookie"
 #define COOKIE "Cookie"
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 100000
 #define FT 42
 #define CRLF_LEN 2
 

@@ -65,6 +65,7 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	void addCgiEnvp(std::vector<std::string>& cgiEnvpVec, const std::string& key, const std::string& value);
 	void setClientHeaders(std::vector<std::string>& cgiEnvVec);
 	void makeHttpHeaders(std::string& key);
+	std::string makePathTranslated();
 };
 
 // Start Line: GET / HTTP/1.1

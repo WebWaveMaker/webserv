@@ -175,14 +175,16 @@ bool RequestParser::parseChunked(std::string& buf) {
 	curMsg.getBuf().clear();
 	std::string::size_type crlf_pos = buf.find(CRLF);
 
+	std::cerr << buf.data();
 	if (crlf_pos == std::string::npos) {
 		saveBufAndClear(buf);
 		return false;
 	}
-	unsigned int chunkedLength;
+	unsigned int chunkedLength = 0;
 
 	try {
 		chunkedLength = utils::toHexNum<unsigned int>(buf.substr(0, crlf_pos));
+		std::cerr << "\nchunked Length: " << chunkedLength << std::endl;
 	} catch (const std::invalid_argument& ex) {
 		ErrorLogger::parseError(__FILE__, __LINE__, __func__, "chunked length is not hex");
 		return errorRequest();
@@ -194,6 +196,7 @@ bool RequestParser::parseChunked(std::string& buf) {
 	}
 
 	curMsg.setContentLengthReceived(curMsg.getContentLengthReceived() + chunkedLength);
+	std::cerr << "received: " << curMsg.getContentLengthReceived() << std::endl;
 	cutBuf(buf, crlf_pos + CRLF_LEN);
 	curMsg.setChunkedBody(cutBuf(buf, chunkedLength));
 	if (cutBuf(buf, CRLF_LEN) != CRLF) {
