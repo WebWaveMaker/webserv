@@ -36,9 +36,9 @@ void PostResponseBuilder::setPath(const std::string& target, const std::string t
 	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString() + targetPath;
 
 	if (access(locPath.c_str(), F_OK) == 0) {
-		this->_path = locPath;
+		this->_path = locPath + target;
 	} else if (access(serverPath.c_str(), F_OK) == 0) {
-		this->_path = serverPath;
+		this->_path = serverPath + target;
 	} else {
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
@@ -128,8 +128,9 @@ void PostResponseBuilder::prepare() {
 	if (target[target.size() - 1] == '/')
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			UNSUPPORTED_MEDIA_TYPE, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	this->setPath(target.substr(1),
-				  utils::removeSubstring(this->_request->second.getRequestTarget(), this->_locationConfig->getPath()));
+	// this->setPath(target.substr(1),
+	// 			  utils::removeSubstring(this->_request->second.getRequestTarget(), this->_locationConfig->getPath()));
+	this->setPath(target.substr(1), this->_request->second.getTargetPath().substr(1));
 	if (checkFileMode(this->_path) == MODE_FILE)
 		this->_isExist = true;
 	else
