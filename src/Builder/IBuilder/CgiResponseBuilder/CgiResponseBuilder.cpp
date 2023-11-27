@@ -97,7 +97,8 @@ bool CgiResponseBuilder::build() {
 			throw false;
 		}
 	}
-	if ((this->_request->first == DONE || this->_request->first == LONG_BODY_DONE) &&
+	if ((this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
+		 this->_request->first == CHUNKED_DONE) &&
 		this->_cgiWriteSharedData->getBuffer().empty() && this->_cgiWriteSharedData->getState() != RESOLVE) {
 		this->_cgiWriteSharedData->setState(RESOLVE);
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
@@ -122,7 +123,8 @@ bool CgiResponseBuilder::setBody() {
 												  this->_request->second.getBody().end());
 	this->_request->second.getBody().clear();
 	if (this->_startLineState == true && this->_contentLengthState == true) {
-		if (this->_request->first == DONE || this->_request->first == LONG_BODY_DONE) {
+		if (this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
+			this->_request->first == CHUNKED_DONE) {
 			std::cerr << "Send body to cgi Done!!!" << std::endl;
 			this->_request->second.getBody().append("\0");
 		}
