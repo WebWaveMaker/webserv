@@ -16,6 +16,8 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	std::map<std::string, std::string> _interpreterMap;
 	int _sv[2];
 	pid_t _cgiPid;
+	bool _unchunkedState;
+	bool _forked;
 
 	reactor::sharedData_t _cgiWriteSharedData;
 	reactor::sharedData_t _cgiReadSharedData;
@@ -49,6 +51,7 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	std::string makeCgiFullPath();
 	bool makeSocketPair();
 	void makeWriteSharedData();
+	bool makeunChunked();
 	bool doFork();
 	char** setEnvp();
 	std::string makeQueryString();

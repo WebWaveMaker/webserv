@@ -13,6 +13,8 @@ CgiResponseBuilder::CgiResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _request(request),
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
+	  _unchunkedState(false),
+	  _forked(false),
 	  _cgiReadSharedData(),
 	  _startLineState(false),
 	  _contentLengthState(false) {
@@ -44,17 +46,6 @@ void CgiResponseBuilder::prepare() {
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	this->makeWriteSharedData();
-	if (this->doFork() == false) {
-		close(this->_sv[0]);
-		close(this->_sv[1]);
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	}
-	close(this->_sv[1]);
-	// CGI 프로세스에개 write
-	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::ClientWriteHandlerFactory>(
-		this->_cgiWriteSharedData);
-	// CGI로 부터 read
 	this->_cgiReadSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(this->_sv[0], EVENT_READ, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::ClientReadHandlerFactory>(this->_cgiReadSharedData);
@@ -62,7 +53,6 @@ void CgiResponseBuilder::prepare() {
 
 // handleEvent에서 여기가 호출된다.
 bool CgiResponseBuilder::build() {
-	// cgi에 대한 WriteHandler를 삭제합니다.
 	int status;
 	if (this->_sharedData->getState() == TERMINATE) {
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
@@ -71,70 +61,99 @@ bool CgiResponseBuilder::build() {
 															this->_cgiReadSharedData->getType());
 		this->_cgiWriteSharedData->setState(TERMINATE);
 		this->_cgiReadSharedData->setState(TERMINATE);
-		if (waitpid(this->_cgiPid, &status, WNOHANG) < 0)
-			kill(this->_cgiPid, SIGTERM);
+		if (this->_forked) {
+			if (waitpid(this->_cgiPid, &status, WNOHANG) < 0)
+				kill(this->_cgiPid, SIGTERM);
+		}
 		return false;
 	}
-	if (waitpid(this->_cgiPid, &status, WNOHANG) > 0) {
-		if (WIFEXITED(status) == false) {
-			reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
-																this->_cgiWriteSharedData->getType());
-			reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
-																this->_cgiReadSharedData->getType());
-			this->_cgiWriteSharedData->setState(TERMINATE);
-			this->_cgiReadSharedData->setState(TERMINATE);
-			throw false;
+	if (this->_forked) {
+		if (waitpid(this->_cgiPid, &status, WNOHANG) > 0) {
+			if (WIFEXITED(status) == false) {
+				reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
+																	this->_cgiWriteSharedData->getType());
+				reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
+																	this->_cgiReadSharedData->getType());
+				this->_cgiWriteSharedData->setState(TERMINATE);
+				this->_cgiReadSharedData->setState(TERMINATE);
+				throw false;
+			}
+		} else {
+			if (std::difftime(std::time(NULL), this->_cgiTime) >= 6000) {
+				kill(this->_cgiPid, SIGTERM);
+				reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
+																	this->_cgiWriteSharedData->getType());
+				reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
+																	this->_cgiReadSharedData->getType());
+				this->_cgiWriteSharedData->setState(TERMINATE);
+				this->_cgiReadSharedData->setState(TERMINATE);
+				throw false;
+			}
 		}
-	} else {
-		if (std::difftime(std::time(NULL), this->_cgiTime) >= 600) {
-			kill(this->_cgiPid, SIGTERM);
-			reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
-																this->_cgiWriteSharedData->getType());
-			reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
-																this->_cgiReadSharedData->getType());
-			this->_cgiWriteSharedData->setState(TERMINATE);
-			this->_cgiReadSharedData->setState(TERMINATE);
-			throw false;
-		}
-	}
-	if ((this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
-		 this->_request->first == CHUNKED_DONE) &&
-		this->_cgiWriteSharedData->getBuffer().empty() && this->_cgiWriteSharedData->getState() != RESOLVE) {
-		this->_cgiWriteSharedData->setState(RESOLVE);
-		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
-															this->_cgiWriteSharedData->getType());
 	}
 	return this->setBody();
+}
+
+bool CgiResponseBuilder::makeunChunked() {
+	if (this->_unchunkedState == true)
+		return this->_unchunkedState;
+	if (!this->_request->second.getBody().empty() &&
+		(this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
+		 this->_request->first == CHUNKED_DONE)) {
+		this->_request->second.getBody().append("\0");
+		this->_request->second.getHeaders()[CONTENT_LENGTH] =
+			utils::lltos(this->_request->second.getContentLengthReceived());
+		this->_cgiWriteSharedData->getBuffer().insert(this->_cgiWriteSharedData->getBuffer().end(),
+													  this->_request->second.getBody().begin(),
+													  this->_request->second.getBody().end());
+		this->_request->second.getBody().clear();
+		if (this->_forked == false) {
+			if (this->doFork() == false) {
+				close(this->_sv[0]);
+				close(this->_sv[1]);
+				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+					new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			}
+			close(this->_sv[1]);
+			// CGI 프로세스에개 write
+			reactor::Dispatcher::getInstance()->registerIOHandler<reactor::ClientWriteHandlerFactory>(
+				this->_cgiWriteSharedData);
+			this->_forked = true;
+			this->_unchunkedState = true;
+		}
+		return true;
+	}
+	this->_cgiWriteSharedData->getBuffer().insert(this->_cgiWriteSharedData->getBuffer().end(),
+												  this->_request->second.getBody().begin(),
+												  this->_request->second.getBody().end());
+	this->_request->second.getBody().clear();
+	return false;
 }
 
 bool CgiResponseBuilder::setBody() {
 	if (this->_cgiReadSharedData.get() == u::nullptr_t)
 		return false;
-
+	if (this->makeunChunked() == false) {
+		return false;
+	}
+	if ((this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
+		 this->_request->first == CHUNKED_DONE) &&
+		this->_cgiWriteSharedData->getBuffer().empty() && this->_cgiWriteSharedData->getState() != RESOLVE) {
+		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
+															this->_cgiWriteSharedData->getType());
+		this->_cgiWriteSharedData->setState(RESOLVE);
+	}
 	if (this->_startLineState == false)
 		this->replaceStartLine();
 	else if (this->_startLineState == true && this->_contentLengthState == false)
 		this->checkContentLength();
-	// std::cerr << "Send body to "
-	// 			 "cgiIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
-	// 		  << std::endl;
-	this->_cgiWriteSharedData->getBuffer().insert(this->_cgiWriteSharedData->getBuffer().end(),
-												  this->_request->second.getBody().begin(),
-												  this->_request->second.getBody().end());
-	this->_request->second.getBody().clear();
 	if (this->_startLineState == true && this->_contentLengthState == true) {
-		if (this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
-			this->_request->first == CHUNKED_DONE) {
-			std::cerr << "Send body to cgi Done!!!" << std::endl;
-			this->_request->second.getBody().append("\0");
-		}
 		this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().end(),
 													this->_cgiReadSharedData.get()->getBuffer().begin(),
 													this->_cgiReadSharedData.get()->getBuffer().end());
 		this->_cgiReadSharedData.get()->getBuffer().clear();
 	}
 	if (this->_cgiReadSharedData.get()->getState() == TERMINATE && this->_cgiWriteSharedData->getState() == RESOLVE) {
-		std::cerr << "Recv body to cgi Done!!!" << std::endl;
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData.get()->getFd(),
 															this->_cgiReadSharedData.get()->getType());
 		this->_cgiReadSharedData->setState(RESOLVE);
@@ -295,6 +314,7 @@ void CgiResponseBuilder::makeWriteSharedData() {
 	this->_cgiWriteSharedData->getBuffer().insert(this->_cgiWriteSharedData->getBuffer().end(),
 												  this->_request->second.getBody().begin(),
 												  this->_request->second.getBody().end());
+	this->_request->second.getBody().clear();
 }
 
 std::string CgiResponseBuilder::makeQueryString() {
