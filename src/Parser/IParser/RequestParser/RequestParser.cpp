@@ -65,7 +65,8 @@ request_t RequestParser::pop(void) {
 		return elem;
 	elem = this->_msgs.front();
 	if (this->_msgs.front()->first == DONE || this->_msgs.front()->first == HTTP_ERROR ||
-		this->_msgs.front()->first == LONG_BODY_DONE || this->_msgs.front()->first == CHUNKED_DONE)
+		this->_msgs.front()->first == LONG_BODY_DONE || this->_msgs.front()->first == CHUNKED_DONE ||
+		this->_msgs.front()->first == LONG_BODY_ERROR || this->_msgs.front()->first == CHUNKED_ERROR)
 		this->_msgs.pop();
 	return elem;
 }
@@ -109,6 +110,11 @@ bool RequestParser::parseHeader(std::string& buf) {
 		headers[TRANSFER_ENCODING] != "chunked") {
 		_curMsg->get()->first = HTTP_ERROR;
 		getCurMsg().setErrorCode(LENGTH_REQUIRED);
+		return false;
+	}
+	if (headers[CONTENT_TYPE] == "multiPart/form-data") {
+		_curMsg->get()->first = HTTP_ERROR;
+		getCurMsg().setErrorCode(UNSUPPORTED_MEDIA_TYPE);
 		return false;
 	}
 	if (headers.count(CONTENT_LENGTH) == 0)
@@ -200,9 +206,9 @@ bool RequestParser::parseChunked(std::string& buf) {
 
 	curMsg.setContentLengthReceived(curMsg.getContentLengthReceived() + chunkedLength);
 	curMsg.setTotalChunkedLength(curMsg.getTotalChunkedLength() + chunkedLength);
-
+	std::cerr << "total chunked length: " << curMsg.getTotalChunkedLength() << std::endl;
 	if (curMsg.getTotalChunkedLength() >= _serverConfig->getDirectives(CLIENT_MAX_BODY_SIZE).asUint()) {
-		_curMsg->get()->first = HTTP_ERROR;
+		_curMsg->get()->first = CHUNKED_ERROR;
 		getCurMsg().setErrorCode(PAYLOAD_TOO_LARGE);
 		return false;
 	}
@@ -265,6 +271,13 @@ void RequestParser::branchParser(const enum HttpMessageState state, std::string&
 			break;
 		case HTTP_ERROR:
 			buf.clear();
+			break;
+		case LONG_BODY_ERROR:
+			buf.clear();
+			break;
+		case CHUNKED_ERROR:
+			buf.clear();
+			break;
 		default:
 			break;
 	}

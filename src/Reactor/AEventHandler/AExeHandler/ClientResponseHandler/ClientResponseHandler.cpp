@@ -51,6 +51,7 @@ namespace reactor {
 
 	void ClientResponseHandler::handleEvent() {
 		if (this->removeHandlerIfNecessary()) {
+			std::cerr << "ClientResponseHandler handleEvent removeHandlerIfNecessary" << std::endl;
 			this->_director.buildProduct();
 			return;
 		}
@@ -60,7 +61,8 @@ namespace reactor {
 		}
 		// std::cout << "client response handler" << std::endl;
 		try {
-			if (this->getBuffer().empty() && this->_director.getBuilderReadState() == RESOLVE) {
+			if (this->getBuffer().empty() && this->_director.getProduct()->getBuffer().empty() &&
+				this->_director.getBuilderReadState() == RESOLVE) {
 				Dispatcher::getInstance()->removeIOHandler(this->getHandle(), this->getType());
 				Dispatcher::getInstance()->removeExeHandler(this);
 				if (this->_keepalive == false) {

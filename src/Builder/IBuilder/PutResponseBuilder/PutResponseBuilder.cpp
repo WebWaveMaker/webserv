@@ -60,6 +60,16 @@ bool PutResponseBuilder::setBody() {
 		this->_sharedData->setState(TERMINATE);
 		return false;
 	}
+	if ((this->_request->first == HTTP_ERROR || this->_request->first == LONG_BODY_ERROR ||
+		 this->_request->first == CHUNKED_ERROR) &&
+		_isRemoved == false) {
+		std::remove(this->_path.c_str());
+		_isRemoved = true;
+		reactor::Dispatcher::getInstance()->removeIOHandler(this->_writeSharedData->getFd(),
+															this->_writeSharedData->getType());
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			this->_request->second.getErrorCode(), this->_sharedData, this->_serverConfig, this->_locationConfig));
+	}
 	this->_writeSharedData->getBuffer().insert(this->_writeSharedData->getBuffer().end(),
 											   this->_request->second.getBody().begin(),
 											   this->_request->second.getBody().end());

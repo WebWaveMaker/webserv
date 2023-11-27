@@ -12,7 +12,7 @@ ErrorResponseBuilder::~ErrorResponseBuilder() {
 }
 
 reactor::sharedData_t ErrorResponseBuilder::getProduct() {
-	return this->_sharedData;
+	return this->_readSharedData;
 }
 
 void ErrorResponseBuilder::setStartLine() {
@@ -42,6 +42,7 @@ bool ErrorResponseBuilder::setBody() {
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().end(),
 										  this->_readSharedData->getBuffer().begin(),
 										  this->_readSharedData->getBuffer().end());
+	std::cerr << "errorResponseBuiler:" << std::string(this->_sharedData->getBuffer().begin(), this->_sharedData->getBuffer().end()) << std::endl;
 	this->_readSharedData->getBuffer().clear();
 	if (this->_readSharedData->getState() == RESOLVE) {
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData->getFd(),
@@ -59,6 +60,7 @@ void ErrorResponseBuilder::reset() {
 }
 
 bool ErrorResponseBuilder::build() {
+	std::cerr << "errorResponseBuiler: " << (this->_readSharedData->getState()) << std::endl;
 	if (this->_readSharedData->getState() == TERMINATE) {
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData.get()->getFd(),
 															this->_readSharedData.get()->getType());
@@ -73,7 +75,7 @@ fd_t ErrorResponseBuilder::findReadFile() {
 		return FD_ERROR;
 	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString();
 	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString();
-	std::string errorPage = this->_locationConfig->getErrorPage(this->_errorCode);
+	std::string errorPage = this->_locationConfig->getErrorPage(this->_errorCode).substr(1);
 
 	this->_path = locPath + errorPage;
 	if (access(this->_path.c_str(), R_OK) == 0)
