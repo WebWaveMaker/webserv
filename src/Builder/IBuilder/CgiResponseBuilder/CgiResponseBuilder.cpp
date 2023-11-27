@@ -46,8 +46,8 @@ void CgiResponseBuilder::prepare() {
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	this->makeWriteSharedData();
-	this->_cgiReadSharedData =
-		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(this->_sv[0], EVENT_READ, std::vector<char>()));
+	this->_cgiReadSharedData = utils::shared_ptr<reactor::SharedData>(
+		new reactor::SharedData(this->_readPipe[0], EVENT_READ, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::ClientReadHandlerFactory>(this->_cgiReadSharedData);
 }
 
@@ -109,12 +109,13 @@ bool CgiResponseBuilder::makeunChunked() {
 		this->_request->second.getBody().clear();
 		if (this->_forked == false) {
 			if (this->doFork() == false) {
-				close(this->_sv[0]);
-				close(this->_sv[1]);
+				close(this->_writePipe[1]);
+				close(this->_readPipe[0]);
 				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 					new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
 			}
-			close(this->_sv[1]);
+			close(this->_writePipe[0]);
+			close(this->_readPipe[1]);
 			// CGI 프로세스에개 write
 			reactor::Dispatcher::getInstance()->registerIOHandler<reactor::ClientWriteHandlerFactory>(
 				this->_cgiWriteSharedData);
@@ -296,21 +297,33 @@ void CgiResponseBuilder::setStartLine() {
 }
 
 bool CgiResponseBuilder::makeSocketPair() {
-	if (socketpair(AF_UNIX, SOCK_STREAM, 0, &this->_sv[0]) < 0) {
+	if (pipe(this->_writePipe) < 0 || pipe(this->_readPipe) < 0) {
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		return false;
 	}
-	if (fcntl(this->_sv[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0 ||
-		fcntl(this->_sv[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
+	if (fcntl(this->_writePipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0 ||
+		fcntl(this->_readPipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		return false;
 	}
+	std::cerr << "cgi write: " << this->_writePipe[1] << std::endl;
+	std::cerr << "cgi read: " << this->_readPipe[0] << std::endl;
 	return true;
+	// if (socketpair(AF_UNIX, SOCK_STREAM, 0, &this->_sv[0]) < 0) {
+	// 	ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
+	// 	return false;
+	// }
+	// if (fcntl(this->_sv[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0 ||
+	// 	fcntl(this->_sv[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
+	// 	ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
+	// 	return false;
+	// }
+	// return true;
 }
 
 void CgiResponseBuilder::makeWriteSharedData() {
-	this->_cgiWriteSharedData =
-		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(this->_sv[0], EVENT_WRITE, std::vector<char>()));
+	this->_cgiWriteSharedData = utils::shared_ptr<reactor::SharedData>(
+		new reactor::SharedData(this->_writePipe[1], EVENT_WRITE, std::vector<char>()));
 	this->_cgiWriteSharedData->getBuffer().insert(this->_cgiWriteSharedData->getBuffer().end(),
 												  this->_request->second.getBody().begin(),
 												  this->_request->second.getBody().end());
@@ -335,24 +348,30 @@ std::string CgiResponseBuilder::makeQueryString() {
 bool CgiResponseBuilder::doFork() {
 	this->_cgiPid = fork();
 	if (this->_cgiPid == -1) {
-		close(this->_sv[0]);
-		close(this->_sv[1]);
+		close(this->_writePipe[0]);
+		close(this->_writePipe[1]);
+		close(this->_readPipe[0]);
+		close(this->_readPipe[1]);
 		return false;
 	}
 	this->_cgiTime = std::time(NULL);
 	if (this->_cgiPid == 0) {
-		close(this->_sv[0]);
+		close(this->_writePipe[1]);
+		close(this->_readPipe[0]);
 		char** envp = this->setEnvp();
 		char** args = this->makeArgs();
-		if (dup2(this->_sv[1], STDIN_FILENO) == -1) {
-			close(this->_sv[1]);
+		if (dup2(this->_writePipe[0], STDIN_FILENO) == -1) {
+			close(this->_writePipe[0]);
+			close(this->_readPipe[1]);
 			exit(1);
 		}
-		if (dup2(this->_sv[1], STDOUT_FILENO) == -1) {
-			close(this->_sv[1]);
+		if (dup2(this->_readPipe[1], STDOUT_FILENO) == -1) {
+			close(this->_writePipe[0]);
+			close(this->_readPipe[1]);
 			exit(1);
 		}
-		close(this->_sv[1]);
+		close(this->_writePipe[0]);
+		close(this->_readPipe[1]);
 		execve(args[0], args, envp);
 		exit(1);
 	}
@@ -546,7 +565,9 @@ std::vector<std::string> CgiResponseBuilder::parsPathEnvp() {
 }
 
 CgiResponseBuilder::~CgiResponseBuilder() {
-	close(this->_sv[0]);
+	std::cerr << "bye byebyebyebyebyebyebyebyebyebye CGI\n";
+	close(this->_writePipe[1]);
+	close(this->_readPipe[0]);
 }
 
 void CgiResponseBuilder::setHeader() {}

@@ -7,7 +7,9 @@ HttpMessage::HttpMessage(const HttpMessage& obj) {
 	*this = obj;
 }
 
-HttpMessage::~HttpMessage() {}
+HttpMessage::~HttpMessage() {
+	std::cerr << "http http http http http http http http http \n";
+}
 
 HttpMessage& HttpMessage::operator=(const HttpMessage& obj) {
 	if (this != &obj) {

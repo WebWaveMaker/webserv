@@ -9,10 +9,11 @@ void reactor::ClientReadHandler::handleEvent() {
 	if (this->getState() == TERMINATE)
 		return;
 	std::vector<char> buffer(BUFFER_SIZE);
-	int readByte = recv(this->getHandle(), buffer.data(), BUFFER_SIZE - 1, 0);
+	int readByte = read(this->getHandle(), buffer.data(), BUFFER_SIZE - 1);
 
 	if (readByte == SYSTEMCALL_ERROR) {
 		this->setState(TERMINATE);
+		std::cerr << "errFd: " << this->getHandle() << std::endl;
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		return;
 	}

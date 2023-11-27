@@ -65,7 +65,7 @@ request_t RequestParser::pop(void) {
 		return elem;
 	elem = this->_msgs.front();
 	if (this->_msgs.front()->first == DONE || this->_msgs.front()->first == HTTP_ERROR ||
-		this->_msgs.front()->first == LONG_BODY_DONE)
+		this->_msgs.front()->first == LONG_BODY_DONE || this->_msgs.front()->first == CHUNKED_DONE)
 		this->_msgs.pop();
 	return elem;
 }
