@@ -14,6 +14,7 @@ namespace reactor {
 		if (numberOfBytes == SYSTEMCALL_ERROR)
 			return;
 		buffer.erase(buffer.begin(), buffer.begin() + numberOfBytes);
-		std::cerr << "client Write: " << std::string(buffer.begin(), buffer.end()) << std::endl;
+		std::cerr << "write size: " << buffer.size() << std::endl;
+		// std::cerr << "client Write: " << std::string(buffer.begin(), buffer.end()) << std::endl;
 	}
 }  // namespace reactor

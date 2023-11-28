@@ -52,10 +52,6 @@ bool CgiResponseBuilder::build() {
 	int status;
 	if (this->_sharedData->getState() == TERMINATE) {
 		this->removeIOHandlers();
-		// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
-		// 													this->_cgiWriteSharedData->getType());
-		// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
-		// 													this->_cgiReadSharedData->getType());
 		this->_cgiWriteSharedData->setState(TERMINATE);
 		this->_cgiReadSharedData->setState(TERMINATE);
 		if (this->_forked) {
@@ -68,10 +64,6 @@ bool CgiResponseBuilder::build() {
 		if (waitpid(this->_cgiPid, &status, WNOHANG) > 0) {
 			if (WIFEXITED(status) == false) {
 				this->removeIOHandlers();
-				// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
-				// 													this->_cgiWriteSharedData->getType());
-				// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
-				// 													this->_cgiReadSharedData->getType());
 				this->_cgiWriteSharedData->setState(TERMINATE);
 				this->_cgiReadSharedData->setState(TERMINATE);
 				throw false;
@@ -80,10 +72,6 @@ bool CgiResponseBuilder::build() {
 			if (std::difftime(std::time(NULL), this->_cgiTime) >= 6000) {
 				kill(this->_cgiPid, SIGTERM);
 				this->removeIOHandlers();
-				// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
-				// 													this->_cgiWriteSharedData->getType());
-				// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
-				// 													this->_cgiReadSharedData->getType());
 				this->_cgiWriteSharedData->setState(TERMINATE);
 				this->_cgiReadSharedData->setState(TERMINATE);
 				throw false;
@@ -98,8 +86,6 @@ bool CgiResponseBuilder::makeunChunked() {
 		return this->_unchunkedState;
 	if (this->_request->first == CHUNKED_ERROR || this->_request->first == HTTP_ERROR) {
 		this->removeReadIO();
-		// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
-		// 													this->_cgiReadSharedData->getType());
 		this->cleanPipes();
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			this->_request->second.getErrorCode(), this->_sharedData, this->_serverConfig, this->_locationConfig));
@@ -110,9 +96,8 @@ bool CgiResponseBuilder::makeunChunked() {
 		this->_request->second.getBody().append("\0");
 		this->_request->second.getHeaders()[CONTENT_LENGTH] =
 			utils::lltos(this->_request->second.getContentLengthReceived());
-		this->_cgiWriteSharedData->getBuffer().insert(this->_cgiWriteSharedData->getBuffer().end(),
-													  this->_request->second.getBody().begin(),
-													  this->_request->second.getBody().end());
+		utils::insertData<std::vector<char>, std::string>(this->_cgiWriteSharedData->getBuffer(),
+														  this->_request->second.getBody());
 		this->_request->second.getBody().clear();
 		if (this->_forked == false) {
 			if (this->doFork() == false) {
@@ -131,9 +116,8 @@ bool CgiResponseBuilder::makeunChunked() {
 		}
 		return true;
 	}
-	this->_cgiWriteSharedData->getBuffer().insert(this->_cgiWriteSharedData->getBuffer().end(),
-												  this->_request->second.getBody().begin(),
-												  this->_request->second.getBody().end());
+	utils::insertData<std::vector<char>, std::string>(this->_cgiWriteSharedData->getBuffer(),
+													  this->_request->second.getBody());
 	this->_request->second.getBody().clear();
 	return false;
 }
@@ -149,8 +133,6 @@ bool CgiResponseBuilder::setBody() {
 		 this->_request->first == CHUNKED_DONE) &&
 		this->_cgiWriteSharedData->getBuffer().empty() && this->_cgiWriteSharedData->getState() != RESOLVE) {
 		this->removeWriteIO();
-		// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
-		// 													this->_cgiWriteSharedData->getType());
 		this->_cgiWriteSharedData->setState(RESOLVE);
 	}
 	if (this->_startLineState == false)
@@ -158,15 +140,12 @@ bool CgiResponseBuilder::setBody() {
 	else if (this->_startLineState == true && this->_contentLengthState == false)
 		this->checkContentLength();
 	if (this->_startLineState == true && this->_contentLengthState == true) {
-		this->_sharedData.get()->getBuffer().insert(this->_sharedData.get()->getBuffer().end(),
-													this->_cgiReadSharedData.get()->getBuffer().begin(),
-													this->_cgiReadSharedData.get()->getBuffer().end());
+		utils::insertData<std::vector<char>, std::vector<char> >(this->_sharedData.get()->getBuffer(),
+																 this->_cgiReadSharedData.get()->getBuffer());
 		this->_cgiReadSharedData.get()->getBuffer().clear();
 	}
 	if (this->_cgiReadSharedData.get()->getState() == TERMINATE && this->_cgiWriteSharedData->getState() == RESOLVE) {
 		this->removeReadIO();
-		// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData.get()->getFd(),
-		// 													this->_cgiReadSharedData.get()->getType());
 		this->_cgiReadSharedData->setState(RESOLVE);
 		return true;
 	}
@@ -319,24 +298,13 @@ bool CgiResponseBuilder::makeSocketPair() {
 	std::cerr << "cgi write: " << this->_writePipe[1] << std::endl;
 	std::cerr << "cgi read: " << this->_readPipe[0] << std::endl;
 	return true;
-	// if (socketpair(AF_UNIX, SOCK_STREAM, 0, &this->_sv[0]) < 0) {
-	// 	ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
-	// 	return false;
-	// }
-	// if (fcntl(this->_sv[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0 ||
-	// 	fcntl(this->_sv[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
-	// 	ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
-	// 	return false;
-	// }
-	// return true;
 }
 
 void CgiResponseBuilder::makeWriteSharedData() {
 	this->_cgiWriteSharedData = utils::shared_ptr<reactor::SharedData>(
 		new reactor::SharedData(this->_writePipe[1], EVENT_WRITE, std::vector<char>()));
-	this->_cgiWriteSharedData->getBuffer().insert(this->_cgiWriteSharedData->getBuffer().end(),
-												  this->_request->second.getBody().begin(),
-												  this->_request->second.getBody().end());
+	utils::insertData<std::vector<char>, std::string>(this->_cgiWriteSharedData->getBuffer(),
+													  this->_request->second.getBody());
 	this->_request->second.getBody().clear();
 }
 
