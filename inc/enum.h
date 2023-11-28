@@ -99,4 +99,8 @@ enum EventType {
 	// EVFILT_EXCEPT = -15
 };
 
+enum AccessType { Read, Write };
+
+enum FileAccessState { FILE_ACCESS, FILE_WAIT, FILE_CLOSE };
+
 #endif
