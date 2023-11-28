@@ -90,8 +90,8 @@ bool CgiResponseBuilder::makeunChunked() {
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			this->_request->second.getErrorCode(), this->_sharedData, this->_serverConfig, this->_locationConfig));
 	}
-	if (!this->_request->second.getBody().empty() &&
-		(this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
+
+	if ((this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
 		 this->_request->first == CHUNKED_DONE)) {
 		this->_request->second.getBody().append("\0");
 		this->_request->second.getHeaders()[CONTENT_LENGTH] =
