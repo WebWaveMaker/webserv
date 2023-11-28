@@ -9,6 +9,7 @@
 #define TRANSFER_ENCODING "Transfer-Encoding"
 #define SET_COOKIE "Set-Cookie"
 #define COOKIE "Cookie"
+#define MULTIPART_FORM_DATA "multipart/form-data"
 
 #define BUFFER_SIZE 100000
 #define FT 42

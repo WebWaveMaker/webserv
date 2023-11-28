@@ -42,7 +42,8 @@ bool ErrorResponseBuilder::setBody() {
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().end(),
 										  this->_readSharedData->getBuffer().begin(),
 										  this->_readSharedData->getBuffer().end());
-	std::cerr << "errorResponseBuiler:" << std::string(this->_sharedData->getBuffer().begin(), this->_sharedData->getBuffer().end()) << std::endl;
+	std::cerr << "errorResponseBuiler:"
+			  << std::string(this->_sharedData->getBuffer().begin(), this->_sharedData->getBuffer().end()) << std::endl;
 	this->_readSharedData->getBuffer().clear();
 	if (this->_readSharedData->getState() == RESOLVE) {
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData->getFd(),

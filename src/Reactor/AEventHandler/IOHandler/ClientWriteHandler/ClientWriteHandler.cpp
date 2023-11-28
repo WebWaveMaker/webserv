@@ -6,7 +6,7 @@ namespace reactor {
 
 	void ClientWriteHandler::handleEvent() {
 		// std::cout << "hi i'm write Handler" << std::endl;
-		if (this->getState() == TERMINATE || this->getState() == RESOLVE || this->getBuffer().size() == 0) {
+		if (this->getState() == TERMINATE || this->getState() == RESOLVE || this->getBuffer().empty()) {
 			return;
 		}
 		std::vector<char>& buffer = this->getBuffer();
@@ -14,7 +14,6 @@ namespace reactor {
 		if (numberOfBytes == SYSTEMCALL_ERROR)
 			return;
 		buffer.erase(buffer.begin(), buffer.begin() + numberOfBytes);
-		std::cerr << "write size: " << buffer.size() << std::endl;
-		// std::cerr << "client Write: " << std::string(buffer.begin(), buffer.end()) << std::endl;
+		std::cerr << "client write handler buffer size: " << buffer.size() << std::endl;
 	}
 }  // namespace reactor
