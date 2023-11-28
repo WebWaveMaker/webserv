@@ -67,7 +67,8 @@ void Server::makeSocket() {
 void Server::mallocParameter() {
 
 	std::pair<std::string, LogLevels> errorLog = this->_serverConfig->getDirectives(ERROR_LOG).asLog();
-	const int errorFd = utils::makeFd(errorLog.first.c_str(), "w");
+	const int errorFd = utils::makeFd(("." + errorLog.first).c_str(), "w");
+	std::cerr << "errorFd: " << errorFd << std::endl;
 
 	this->_clients =
 		utils::shared_ptr<std::map<int, utils::shared_ptr<Client> > >(new std::map<int, utils::shared_ptr<Client> >);

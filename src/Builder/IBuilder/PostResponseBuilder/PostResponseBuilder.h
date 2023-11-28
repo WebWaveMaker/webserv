@@ -5,6 +5,7 @@
 #include <dirent.h>
 #include "DefaultResponseBuilder.hpp"
 #include "ErrorResponseBuilder.hpp"
+#include "FileAccessManager.hpp"
 #include "HttpMessage.hpp"
 #include "IBuilder.hpp"
 #include "PutResponseBuilder.hpp"

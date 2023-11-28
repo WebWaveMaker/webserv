@@ -1,9 +1,11 @@
 #include "FileReadHandler.hpp"
 
 namespace reactor {
-	FileReadHandler::FileReadHandler(sharedData_t& sharedData) : AEventHandler(sharedData) {
+	FileReadHandler::FileReadHandler(sharedData_t& sharedData)
+		: AEventHandler(sharedData), _state(reactor::FileAccessManager::getInstance()->getState(sharedData->getFd())) {
+		std::cerr << "FileReadHandler: " << this->getHandle() << std::endl;
 		if (fcntl(this->getHandle(), F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
-			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "fcntl failed");
+			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 			this->setState(TERMINATE);
 		}
 	}
@@ -13,6 +15,8 @@ namespace reactor {
 	void FileReadHandler::handleEvent() {
 		// std::cout << "hi i'm FilereadHandler" << std::endl;
 		if (this->getState() == TERMINATE || this->getState() == RESOLVE)
+			return;
+		if (this->_state == FILE_WAIT)
 			return;
 		std::vector<char> buffer(BUFFER_SIZE);
 		ssize_t readByte = read(this->getHandle(), buffer.data(), BUFFER_SIZE - 1);

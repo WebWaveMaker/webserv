@@ -8,7 +8,7 @@ ErrorResponseBuilder::ErrorResponseBuilder(const int errorCode, reactor::sharedD
 	this->prepare();
 }
 ErrorResponseBuilder::~ErrorResponseBuilder() {
-	close(this->_fd);
+	reactor::FileAccessManager::getInstance()->closeFd(this->_fd);
 }
 
 reactor::sharedData_t ErrorResponseBuilder::getProduct() {
@@ -77,10 +77,10 @@ fd_t ErrorResponseBuilder::findReadFile() {
 
 	this->_path = locPath + errorPage;
 	if (access(this->_path.c_str(), R_OK) == 0)
-		return utils::makeFd(this->_path.c_str(), "r");
+		return reactor::FileAccessManager::getInstance()->makeFd(this->_path, "r");
 	this->_path = serverPath + errorPage;
 	if (access(this->_path.c_str(), R_OK) == 0)
-		return utils::makeFd(this->_path.c_str(), "r");
+		return reactor::FileAccessManager::getInstance()->makeFd(this->_path, "r");
 	return FD_ERROR;
 }
 

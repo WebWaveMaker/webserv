@@ -2,33 +2,38 @@
 
 namespace reactor {
 	FileAccessManager::FileAccessManager() {}
-	FileAccessManager::~FileAccessManager() {}
+	FileAccessManager::~FileAccessManager() {
+		clear();
+	}
 
 	fd_t FileAccessManager::makeFd(std::string filename, std::string option) {
 		FILE* file = fopen(filename.c_str(), option.c_str());
 		if (file == NULL)
 			return FD_ERROR;
-		const fd_t fileFd = fileno(file);
-		addFileInfo(fileFd, makeFileInfo(filename, fileFd, file, FileAccessState::FILE_WAIT));
+		fd_t fileFd = fileno(file);
+		addFileInfo(fileFd, makeFileInfo(filename, file, FILE_WAIT));
 		addWait(fileFd, filename);
 		setStateAll();
+		std::cerr << "makeFd: " << fileFd << std::endl;
+		test_print_all_fd();
 		return (fileFd);
 	}
 
 	void FileAccessManager::closeFd(fd_t fd) {
 		FileInfo& fileInfo = findFileInfo(fd);
-		if (fileInfo.state == FileAccessState::FILE_WAIT) {
+		if (fileInfo.state == FILE_WAIT) {
 			eraseWait(fd);
 		}
 		eraseFileInfo(fd);
 		setStateAll();
+		std::cerr << "closeFd: " << fd << std::endl;
 	}
 
 	FileAccessState& FileAccessManager::getState(fd_t fd) {
 		return findFileInfo(fd).state;
 	}
 
-	FileInfo FileAccessManager::makeFileInfo(std::string& filename, const fd_t& fd, FILE* fp, FileAccessState state) {
+	FileInfo FileAccessManager::makeFileInfo(std::string& filename, FILE* fp, FileAccessState state) {
 		FileInfo fileInfo(filename, fp, state);
 		return fileInfo;
 	}
@@ -106,8 +111,23 @@ namespace reactor {
 	void FileAccessManager::setStateAll() {
 		std::map<std::string, std::vector<fd_t> >::iterator it = waitVector.begin();
 		while (it != waitVector.end()) {
-			setState(it->second.front(), FileAccessState::FILE_ACCESS);
+			setState(it->second.front(), FILE_ACCESS);
 			it++;
 		}
+	}
+
+	void FileAccessManager::clear() {
+		accessMap.clear();
+		waitVector.clear();
+	}
+
+	void FileAccessManager::test_print_all_fd() {
+		std::map<fd_t, FileInfo>::iterator it = FileAccessManager::getInstance()->accessMap.begin();
+		while (it != FileAccessManager::getInstance()->accessMap.end()) {
+			std::cerr << "fd: " << it->first << ", fileName: " << it->second.fileName << ", state: " << it->second.state
+					  << std::endl;
+			it++;
+		}
+		std::cerr << std::endl;
 	}
 }  // namespace reactor

@@ -25,7 +25,7 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 }
 
 GetResponseBuilder::~GetResponseBuilder() {
-	close(this->_fd);
+	reactor::FileAccessManager::getInstance()->closeFd(this->_fd);
 }
 
 reactor::sharedData_t GetResponseBuilder::getProduct() {
@@ -44,7 +44,7 @@ void GetResponseBuilder::setHeader() {
 			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	}
 	if (fileInfo.st_size == 0) {
-		close(this->_fd);
+		reactor::FileAccessManager::getInstance()->closeFd(this->_fd);
 		this->_fd = FD_ZERO_;
 	}
 	std::map<std::string, std::string> headers =
@@ -92,10 +92,10 @@ fd_t GetResponseBuilder::findReadFile() {
 
 	this->_path = locPath + targetFile;
 	if (access(this->_path.c_str(), R_OK) == 0)
-		return utils::makeFd(this->_path.c_str(), "r");
+		return reactor::FileAccessManager::getInstance()->makeFd(this->_path, "r");
 	this->_path = serverPath + targetFile;
 	if (access(this->_path.c_str(), R_OK) == 0)
-		return utils::makeFd(this->_path.c_str(), "r");
+		return reactor::FileAccessManager::getInstance()->makeFd(this->_path, "r");
 	return FD_ERROR;
 }
 
@@ -204,12 +204,12 @@ fd_t GetResponseBuilder::directoryProcessing() {
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {
 		this->_path = locPath + *cit;
 		if (access(this->_path.c_str(), R_OK) == 0)
-			return utils::makeFd(this->_path.c_str(), "r");
+			return reactor::FileAccessManager::getInstance()->makeFd(this->_path, "r");
 	}
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {
 		this->_path = serverPath + *cit;
 		if (access(this->_path.c_str(), R_OK) == 0)
-			return utils::makeFd(this->_path.c_str(), "r");
+			return reactor::FileAccessManager::getInstance()->makeFd(this->_path, "r");
 	}
 	return FD_ERROR;
 }
