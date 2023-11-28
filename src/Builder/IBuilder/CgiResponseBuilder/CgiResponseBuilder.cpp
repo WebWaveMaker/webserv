@@ -97,6 +97,13 @@ bool CgiResponseBuilder::build() {
 bool CgiResponseBuilder::makeunChunked() {
 	if (this->_unchunkedState == true)
 		return this->_unchunkedState;
+	if (this->_request->first == CHUNKED_ERROR || this->_request->first == HTTP_ERROR) {
+		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
+															this->_cgiReadSharedData->getType());
+		this->cleanPipes();
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			this->_request->second.getErrorCode(), this->_sharedData, this->_serverConfig, this->_locationConfig));
+	}
 	if (!this->_request->second.getBody().empty() &&
 		(this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
 		 this->_request->first == CHUNKED_DONE)) {
@@ -131,8 +138,7 @@ bool CgiResponseBuilder::makeunChunked() {
 	return false;
 }
 
-
-// 여기에 request가 에러일때 중간에 errorReponseBuilder를 던지는 로직이 필요함. 
+// 여기에 request가 에러일때 중간에 errorReponseBuilder를 던지는 로직이 필요함.
 bool CgiResponseBuilder::setBody() {
 	if (this->_cgiReadSharedData.get() == u::nullptr_t)
 		return false;
@@ -575,3 +581,10 @@ CgiResponseBuilder::~CgiResponseBuilder() {
 void CgiResponseBuilder::setHeader() {}
 
 void CgiResponseBuilder::reset() {}
+
+void CgiResponseBuilder::cleanPipes() {
+	close(this->_readPipe[0]);
+	close(this->_readPipe[1]);
+	close(this->_writePipe[0]);
+	close(this->_writePipe[1]);
+}
