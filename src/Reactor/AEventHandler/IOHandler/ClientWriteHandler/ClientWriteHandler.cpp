@@ -11,10 +11,9 @@ namespace reactor {
 		}
 		std::vector<char>& buffer = this->getBuffer();
 		ssize_t numberOfBytes = write(this->getHandle(), buffer.data(), this->getBuffer().size());
-		std::cerr << "send: " << numberOfBytes << std::endl;
 		if (numberOfBytes == SYSTEMCALL_ERROR)
 			return;
 		buffer.erase(buffer.begin(), buffer.begin() + numberOfBytes);
-		std::cerr << "client Write: " << buffer.size() << std::endl;
+		std::cerr << "client Write: " << std::string(buffer.begin(), buffer.end()) << std::endl;
 	}
 }  // namespace reactor

@@ -131,6 +131,8 @@ bool CgiResponseBuilder::makeunChunked() {
 	return false;
 }
 
+
+// 여기에 request가 에러일때 중간에 errorReponseBuilder를 던지는 로직이 필요함. 
 bool CgiResponseBuilder::setBody() {
 	if (this->_cgiReadSharedData.get() == u::nullptr_t)
 		return false;
