@@ -21,10 +21,6 @@ CgiResponseBuilder::CgiResponseBuilder(reactor::sharedData_t sharedData, const r
 	if (_locationConfig.get() == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	std::cerr
-		<< "cgi builder "
-		   "createEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
-		<< std::endl;
 	this->_pendingBuf.clear();
 	this->inItInterpreterMap();
 	this->prepare();
@@ -55,10 +51,11 @@ void CgiResponseBuilder::prepare() {
 bool CgiResponseBuilder::build() {
 	int status;
 	if (this->_sharedData->getState() == TERMINATE) {
-		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
-															this->_cgiWriteSharedData->getType());
-		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
-															this->_cgiReadSharedData->getType());
+		this->removeIOHandlers();
+		// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
+		// 													this->_cgiWriteSharedData->getType());
+		// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
+		// 													this->_cgiReadSharedData->getType());
 		this->_cgiWriteSharedData->setState(TERMINATE);
 		this->_cgiReadSharedData->setState(TERMINATE);
 		if (this->_forked) {
@@ -70,10 +67,11 @@ bool CgiResponseBuilder::build() {
 	if (this->_forked) {
 		if (waitpid(this->_cgiPid, &status, WNOHANG) > 0) {
 			if (WIFEXITED(status) == false) {
-				reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
-																	this->_cgiWriteSharedData->getType());
-				reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
-																	this->_cgiReadSharedData->getType());
+				this->removeIOHandlers();
+				// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
+				// 													this->_cgiWriteSharedData->getType());
+				// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
+				// 													this->_cgiReadSharedData->getType());
 				this->_cgiWriteSharedData->setState(TERMINATE);
 				this->_cgiReadSharedData->setState(TERMINATE);
 				throw false;
@@ -81,10 +79,11 @@ bool CgiResponseBuilder::build() {
 		} else {
 			if (std::difftime(std::time(NULL), this->_cgiTime) >= 6000) {
 				kill(this->_cgiPid, SIGTERM);
-				reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
-																	this->_cgiWriteSharedData->getType());
-				reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
-																	this->_cgiReadSharedData->getType());
+				this->removeIOHandlers();
+				// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
+				// 													this->_cgiWriteSharedData->getType());
+				// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
+				// 													this->_cgiReadSharedData->getType());
 				this->_cgiWriteSharedData->setState(TERMINATE);
 				this->_cgiReadSharedData->setState(TERMINATE);
 				throw false;
@@ -98,8 +97,9 @@ bool CgiResponseBuilder::makeunChunked() {
 	if (this->_unchunkedState == true)
 		return this->_unchunkedState;
 	if (this->_request->first == CHUNKED_ERROR || this->_request->first == HTTP_ERROR) {
-		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
-															this->_cgiReadSharedData->getType());
+		this->removeReadIO();
+		// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
+		// 													this->_cgiReadSharedData->getType());
 		this->cleanPipes();
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			this->_request->second.getErrorCode(), this->_sharedData, this->_serverConfig, this->_locationConfig));
@@ -148,8 +148,9 @@ bool CgiResponseBuilder::setBody() {
 	if ((this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
 		 this->_request->first == CHUNKED_DONE) &&
 		this->_cgiWriteSharedData->getBuffer().empty() && this->_cgiWriteSharedData->getState() != RESOLVE) {
-		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
-															this->_cgiWriteSharedData->getType());
+		this->removeWriteIO();
+		// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
+		// 													this->_cgiWriteSharedData->getType());
 		this->_cgiWriteSharedData->setState(RESOLVE);
 	}
 	if (this->_startLineState == false)
@@ -163,8 +164,9 @@ bool CgiResponseBuilder::setBody() {
 		this->_cgiReadSharedData.get()->getBuffer().clear();
 	}
 	if (this->_cgiReadSharedData.get()->getState() == TERMINATE && this->_cgiWriteSharedData->getState() == RESOLVE) {
-		reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData.get()->getFd(),
-															this->_cgiReadSharedData.get()->getType());
+		this->removeReadIO();
+		// reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData.get()->getFd(),
+		// 													this->_cgiReadSharedData.get()->getType());
 		this->_cgiReadSharedData->setState(RESOLVE);
 		return true;
 	}
@@ -587,4 +589,19 @@ void CgiResponseBuilder::cleanPipes() {
 	close(this->_readPipe[1]);
 	close(this->_writePipe[0]);
 	close(this->_writePipe[1]);
+}
+
+void CgiResponseBuilder::removeIOHandlers() {
+	this->removeReadIO();
+	this->removeWriteIO();
+}
+
+void CgiResponseBuilder::removeReadIO() {
+	reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiReadSharedData->getFd(),
+														this->_cgiReadSharedData->getType());
+}
+
+void CgiResponseBuilder::removeWriteIO() {
+	reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
+														this->_cgiWriteSharedData->getType());
 }

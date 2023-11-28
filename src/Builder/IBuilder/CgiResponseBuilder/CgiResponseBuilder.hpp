@@ -73,6 +73,9 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	std::string makePathTranslated();
 
 	void cleanPipes();
+	void removeIOHandlers();
+	void removeReadIO();
+	void removeWriteIO();
 };
 
 // Start Line: GET / HTTP/1.1
