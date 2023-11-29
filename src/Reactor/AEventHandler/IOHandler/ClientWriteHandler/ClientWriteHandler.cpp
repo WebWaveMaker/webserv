@@ -5,14 +5,15 @@ namespace reactor {
 	ClientWriteHandler::~ClientWriteHandler() {}
 
 	void ClientWriteHandler::handleEvent() {
-		if (this->getState() == TERMINATE || this->getState() == RESOLVE || this->getBuffer().size() == 0)
-			return;
-		std::vector<char>& buffer = this->getBuffer();
-		ssize_t numberOfBytes = send(this->getHandle(), buffer.data(), this->getBuffer().size(), 0);
-		if (numberOfBytes == -1) {
-			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "send failed");
+		// std::cout << "hi i'm write Handler" << std::endl;
+		if (this->getState() == TERMINATE || this->getState() == RESOLVE || this->getBuffer().empty()) {
 			return;
 		}
+		std::vector<char>& buffer = this->getBuffer();
+		ssize_t numberOfBytes = write(this->getHandle(), buffer.data(), this->getBuffer().size());
+		if (numberOfBytes == SYSTEMCALL_ERROR)
+			return;
 		buffer.erase(buffer.begin(), buffer.begin() + numberOfBytes);
+		std::cerr << "client write handler buffer size: " << buffer.size() << std::endl;
 	}
 }  // namespace reactor

@@ -10,7 +10,7 @@ namespace reactor {
 	   public:
 		ClientRequestHandlerFactory();
 		~ClientRequestHandlerFactory();
-		virtual utils::shared_ptr<AEventHandler> createExeHandler(sharedData_t& sharedData, va_list args);
+		virtual utils::shared_ptr<AEventHandler> createExeHandler(sharedData_t& sharedData);
 	};
 }  // namespace reactor
 #endif

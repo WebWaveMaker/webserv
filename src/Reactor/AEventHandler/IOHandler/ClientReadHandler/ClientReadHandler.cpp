@@ -5,25 +5,23 @@ reactor::ClientReadHandler::ClientReadHandler(sharedData_t& sharedData) : AEvent
 reactor::ClientReadHandler::~ClientReadHandler() {}
 
 void reactor::ClientReadHandler::handleEvent() {
+	// std::cerr << "read handler\n";
 	if (this->getState() == TERMINATE)
 		return;
 	std::vector<char> buffer(BUFFER_SIZE);
-	int readByte = recv(this->getHandle(), buffer.data(), buffer.size() - 1, 0);
+	int readByte = read(this->getHandle(), buffer.data(), BUFFER_SIZE - 1);
 
-	if (readByte == -1) {
-		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "recv fail");
+	if (readByte == SYSTEMCALL_ERROR) {
 		this->setState(TERMINATE);
+		std::cerr << "errFd: " << this->getHandle() << std::endl;
+		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		return;
 	}
 	if (readByte == 0) {
 		this->setState(TERMINATE);
 		return;
 	}
-	std::cout << "readByte: " << readByte << std::endl;
-	std::cout << buffer.data() << std::endl;
-
-	if (readByte && readByte < BUFFER_SIZE) {
-		this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
-		this->getBuffer().push_back('\0');
-	}
+	// std::cerr << std::string(buffer.begin(), buffer.begin() + readByte) << std::endl;
+	this->setReadByte(readByte);
+	this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
 }

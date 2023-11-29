@@ -5,10 +5,17 @@ const char* logTimeFormat::errorTimeFormat = " %Y/%m/%d %H:%M:%S ";
 const char* logTimeFormat::systemTimeFormat = " %a, %d %b %Y %H:%M:%S ";
 const char* logTimeFormat::GMTtimeFormat = "%a, %d %b %Y %H:%M:%S GMT";
 const char* logTimeFormat::UTCtimeFormat = "%Y-%m-%dT%H:%M:%SZ";
+const char* logTimeFormat::dirListFormat = "%d-%b-%Y %H:%M";
 
 namespace utils {
 
 	std::string itos(const int& num) {
+		std::ostringstream os;
+		os << num;
+		return os.str();
+	}
+
+	std::string lltos(const long long& num) {
 		std::ostringstream os;
 		os << num;
 		return os.str();
@@ -43,12 +50,24 @@ namespace utils {
 		const std::time_t t = std::time(NULL);
 		const std::tm* localTime = std::localtime(&t);
 
-		char buf[42];
+		char buf[FT];
 		std::strftime(buf, sizeof(buf), format, localTime);
 
-		return DARK_BLUE + std::string(buf) + RESET;
+		return std::string(buf);
 	}
+
+	std::string formatTime(const std::time_t t, const char* format) {
+		const std::tm* localTime = std::localtime(&t);
+
+		char buf[FT];
+		std::strftime(buf, sizeof(buf), format, localTime);
+
+		return std::string(buf);
+	}
+
 	unsigned int stoui(const std::string s) {
+		if (s == "")
+			return 0;
 		unsigned int i;
 		std::istringstream(s) >> i;
 		return i;
@@ -63,7 +82,8 @@ namespace utils {
 			rv.push_back(token);
 			input.erase(0, pos + delimiter.length());
 		}
-
+		if (input.size() > 0)
+			rv.push_back(input);
 		return rv;
 	}
 
@@ -82,6 +102,42 @@ namespace utils {
 		s.erase(0, s.find_first_not_of(" \n\r\t"));
 		s.erase(s.find_last_not_of(" \n\r\t") + 1);
 		return s;
+	}
+
+	fd_t makeFd(const char* path, const char* option) {
+		FILE* file = fopen(path, option);
+		if (file == NULL)
+			return FD_ERROR;
+		const fd_t fileFd = fileno(file);
+		return (fileFd);
+	}
+
+	std::string generateRandomString() {
+		static const char alphanum[] =
+			"0123456789"
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			"abcdefghijklmnopqrstuvwxyz";
+
+		std::string randomString;
+		srand(static_cast<unsigned int>(time(NULL)));
+
+		for (int i = 0; i < 32; ++i) {
+			randomString += alphanum[rand() % (sizeof(alphanum) - 1)];
+		}
+
+		return randomString;
+	}
+
+	std::string removeSubstring(const std::string& mainStr, const std::string& substr) {
+		std::string result = mainStr;
+		size_t pos = result.find(substr);
+
+		// 만약 substr이 mainStr 안에 있다면 해당 부분 제거
+		if (pos != std::string::npos) {
+			result.erase(pos, substr.length());
+		}
+
+		return result;
 	}
 
 }  // namespace utils

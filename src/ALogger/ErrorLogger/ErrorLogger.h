@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <cerrno>
 #include "ALogger.hpp"
+#include "const.h"
 #include "enum.h"
 
 #endif

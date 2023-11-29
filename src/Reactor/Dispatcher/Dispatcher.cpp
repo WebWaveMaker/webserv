@@ -7,34 +7,35 @@ namespace reactor {
 	Dispatcher::~Dispatcher() {}
 	/*IOhandler 하나만 Dispatcher, kevent에서 삭제합니다.*/
 	void Dispatcher::removeIOHandler(fd_t fd, enum EventType type) {
+		if (this->_ioHandlers.find(fd) == this->_ioHandlers.end())
+			return;
+		std::vector<u::shared_ptr<AEventHandler> > handlers = this->_ioHandlers.find(fd)->second;
+		u::shared_ptr<AEventHandler> handler;
 
-		if (this->_ioHandlers.find(fd) != this->_ioHandlers.end()) {
-			std::vector<u::shared_ptr<AEventHandler> > handlers = this->_ioHandlers.find(fd)->second;
-			u::shared_ptr<AEventHandler> handler;
-
-			for (std::vector<u::shared_ptr<AEventHandler> >::iterator it = handlers.begin(); it != handlers.end();
-				 ++it) {
-				if (it->get()->getType() == type)
-					handler = *it;
-			}
-
-			size_t index = this->_handlerIndices[handler];
-
-			if (index != this->_ioHandlers[fd].size() - 1) {
-				std::swap(this->_ioHandlers[fd][index], this->_ioHandlers[fd].back());
-				this->_handlerIndices[this->_ioHandlers[fd][index]] = index;
-			}
-
-			this->_demultiplexer->unRequestEvent(this->_ioHandlers[fd].back().get(), type);
-			this->_ioHandlers[fd].pop_back();
-			this->_handlerIndices.erase(handler);
+		for (std::vector<u::shared_ptr<AEventHandler> >::iterator it = handlers.begin(); it != handlers.end(); ++it) {
+			if (it->get()->getType() == type)
+				handler = *it;
 		}
+		if (!(handler.get()))
+			return;
+
+		size_t index = this->_handlerIndices[handler];
+
+		if (index != this->_ioHandlers[fd].size() - 1) {
+			std::swap(this->_ioHandlers[fd][index], this->_ioHandlers[fd].back());
+			this->_handlerIndices[this->_ioHandlers[fd][index]] = index;
+		}
+
+		this->_demultiplexer->unRequestEvent(this->_ioHandlers[fd].back().get(), type);
+		this->_ioHandlers[fd].pop_back();
+		this->_handlerIndices.erase(handler);
 	}
 	/*Exehandler 하나만 Dispatcher에서 삭제합니다.*/
 	void Dispatcher::removeExeHandler(AEventHandler* handler) {
 		const handle_t handle = handler->getHandle();
 		for (size_t i = 0; i < this->_exeHandlers[handle].size(); ++i) {
 			if (this->_exeHandlers[handle][i].get() == handler) {
+				std::cerr << "add remove: " << this->_exeHandlers[handle][i]->getHandle() << std::endl;
 				this->_removeHandlers.push_back(this->_exeHandlers[handle][i]);
 				return;
 			}
@@ -83,7 +84,7 @@ namespace reactor {
 				}
 
 				this->_ioHandlers.erase(*it);
-				std::cout << *it << " : was closed\n";
+				std::cerr << *it << " : was closed\n";
 			}
 		}
 		this->_fdsToClose.clear();
@@ -99,6 +100,7 @@ namespace reactor {
 			const handle_t handle = this->_removeHandlers[i]->getHandle();
 			if (this->_exeHandlers.find(handle) != this->_exeHandlers.end()) {
 				const size_t index = this->_handlerIndices[this->_removeHandlers[i]];
+				std::cerr << "apply remove: " << this->_exeHandlers[handle][index]->getHandle() << std::endl;
 				if (index < this->_exeHandlers[handle].size()) {
 					if (index != this->_exeHandlers[handle].size() - 1) {
 						std::swap(this->_exeHandlers[handle][index], this->_exeHandlers[handle].back());
@@ -122,9 +124,11 @@ namespace reactor {
 			}
 		}
 		this->applyHandlersChanges();
-		for (size_t i = 0; i < this->_fdsToClose.size(); ++i) {
-			for (size_t handlerIdx = 0; i < this->_exeHandlers[i].size(); ++handlerIdx)
-				this->_removeHandlers.push_back(this->_exeHandlers[i][handlerIdx]);
+		for (std::set<fd_t>::const_iterator cit = this->_fdsToClose.begin(); cit != this->_fdsToClose.end(); ++cit) {
+			const std::vector<u::shared_ptr<AEventHandler> >& handlers = this->_exeHandlers[*cit];
+
+			for (size_t handlerIdx = 0; handlerIdx < handlers.size(); ++handlerIdx)
+				this->_removeHandlers.push_back(handlers[handlerIdx]);
 		}
 		this->applyHandlersChanges();
 	}

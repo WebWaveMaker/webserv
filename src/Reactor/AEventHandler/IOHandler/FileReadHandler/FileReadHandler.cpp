@@ -1,28 +1,34 @@
 #include "FileReadHandler.hpp"
 
 namespace reactor {
+	FileReadHandler::FileReadHandler(sharedData_t& sharedData) : AEventHandler(sharedData) {
+		if (fcntl(this->getHandle(), F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
+			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "fcntl failed");
+			this->setState(TERMINATE);
+		}
+	}
 
-	FileReadHandler::FileReadHandler(sharedData_t& sharedData)
-		: AEventHandler(sharedData), _fp(fdopen(this->getHandle(), "r")) {}
 	FileReadHandler::~FileReadHandler() {}
 
 	void FileReadHandler::handleEvent() {
+		// std::cout << "hi i'm FilereadHandler" << std::endl;
 		if (this->getState() == TERMINATE || this->getState() == RESOLVE)
 			return;
 		std::vector<char> buffer(BUFFER_SIZE);
-		std::size_t readByte = fread(buffer.data(), sizeof(char), BUFFER_SIZE - 1, this->_fp);
+		ssize_t readByte = read(this->getHandle(), buffer.data(), BUFFER_SIZE - 1);
 
-		if (ferror(this->_fp)) {
+		if (readByte == -1) {
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "read fail");
 			this->setState(TERMINATE);
 			return;
 		}
-		if (feof(this->_fp)) {
-			this->setState(TERMINATE);
+		std::cerr << "readByte: " << readByte << std::endl;
+		std::cerr << "data: " << buffer.data() << std::endl;
+		if (readByte < BUFFER_SIZE - 1) {
+			this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
+			this->setState(RESOLVE);
 			return;
 		}
-		std::cout << "readByte: " << readByte << std::endl;
-		std::cout << "buffer: " << buffer.data() << std::endl;
 		this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
 	}
 }  // namespace reactor

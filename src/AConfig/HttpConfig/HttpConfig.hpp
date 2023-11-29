@@ -17,6 +17,8 @@
  * from the AConfig interface and implements all its pure virtual methods.
 */
 class HttpConfig : public AConfig {
+   private:
+	utils::shared_ptr<Mime> _mimeTypes; /**< The MIME types. */
    public:
 	/**
      * @brief Default constructor.
@@ -89,6 +91,12 @@ class HttpConfig : public AConfig {
      * @return A ConfigValue object containing the directive values.
      */
 	virtual ConfigValue getDirectives(Directives method) const;
+
+	std::string getMimeTypes(const std::string& extension) const;
+
+	void setMimeTypes(utils::shared_ptr<Mime> mimeTypes);
+
+	bool hasMimeTypes(const std::string& extension) const;
 };
 
 #endif	// HTTPCONFIG_HPP

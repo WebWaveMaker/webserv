@@ -103,6 +103,16 @@ class AConfig {
 	 * @return A ConfigValue object containing the directive value.
 	 */
 	virtual ConfigValue getDirectives(Directives method) const = 0;
+
+	/**
+	 * @brief Check if the given method is a directive.
+	 * 
+	 * This function checks if the given method is a directive.
+	 * 
+	 * @param method The method to check.
+	 * @return true if the method is a directive, false otherwise.
+	 */
+	bool isDirective(Directives method) const;
 };
 
 #endif	// ACONFIG_HPP

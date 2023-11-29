@@ -3,7 +3,7 @@
 #define IPARSER_HPP
 
 #include <string>
-template <typename T>
+template <typename T, typename T2>
 class IParser {
    public:
 	/**
@@ -16,7 +16,7 @@ class IParser {
      * @param content 파싱할 내용
      * @return 파싱 성공 여부 
      */
-	virtual T parse(const std::string& content) = 0;
+	virtual T parse(T2& content) = 0;
 
    protected:
 	/**

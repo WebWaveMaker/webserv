@@ -8,13 +8,16 @@ NAME :=	$(PROJECT_NAME)
 
 DIRS :=	AConfig \
 		ALogger \
+		Builder \
 		Client \
 		Factory \
 		HttpMessage \
+		HttpSession \
 		Parser \
 		Reactor \
 		Server \
 		ServerManager \
+		Mime \
 		utils
 
 LIBS :=	$(addsuffix .a, $(addprefix lib/, $(DIRS)))

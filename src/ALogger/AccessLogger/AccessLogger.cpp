@@ -48,6 +48,8 @@ void AccessLogger::log(const std::string& msg, const char* func, const int enum_
 	const std::string methodStr = this->getHttpMethodStr(static_cast<HttpMethods>(enum__));
 	const std::string buf = this->makeLogMsg(methodStr + msg, func, arg);
 
-	if (write(this->fd_, buf.c_str(), buf.size()) == -1)
-		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "AccessLogger log error");
+	std::cout << buf << std::endl;
+
+	// if (write(this->fd_, buf.c_str(), buf.size()) == SYSTEMCALL_ERROR)
+	// 	ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "AccessLogger log error");
 }

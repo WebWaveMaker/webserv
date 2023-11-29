@@ -5,7 +5,7 @@
 
 #include "ConfigParser.h"
 
-class ConfigParser : IParser<config_t> {
+class ConfigParser : IParser<config_t, const std::string> {
    public:
 	ConfigParser();
 	virtual ~ConfigParser();
@@ -22,6 +22,7 @@ class ConfigParser : IParser<config_t> {
 	bool serverBlockTokenizer(const std::string& content, size_t& position, ServerBlock& serverBlock);
 	bool locationBlockTokenizer(const std::string& content, size_t& position, LocationBlock& locationBlock);
 	bool directiveTokenizer(const std::string& content, size_t& position, Directive& directive);
+	void parseMimeTypes(const std::string& filename, utils::shared_ptr<Mime> mimeTypes);
 };
 
 #endif	// CONFIG_PARSER_H

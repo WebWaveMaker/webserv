@@ -29,7 +29,7 @@ ServerConfig& ServerConfig::operator=(const ServerConfig& other) {
 void ServerConfig::setDirectives(const std::string& directive, const std::vector<std::string>& values) {
 	if (values.empty())
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid number of parameters for " + directive);
-
+	ConfigSyntax::checkSyntax(directive, values);
 	if (directive == "sendfile") {
 		_directives.insert(std::make_pair(SENDFILE, addBooleanValue(values[0])));
 	} else if (directive == "keepalive_timeout") {
@@ -65,6 +65,8 @@ void ServerConfig::setDirectives(const std::string& directive, const std::vector
 				methods.push_back(DELETE);
 			} else if (*it == "PUT") {
 				methods.push_back(PUT);
+			} else if (*it == "HEAD") {
+				methods.push_back(HEAD);
 			} else {
 				throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid method for limit_except");
 			}
@@ -102,8 +104,8 @@ std::string ServerConfig::getErrorPage(unsigned int error_code) const {
 ConfigValue ServerConfig::getDirectives(Directives method) const {
 	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(method);
 	if (it == _directives.end()) {
-		if (_parent.get() == u::nullptr_t)
-			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid error code");
+		// if (_parent.get() == u::nullptr_t)
+		// throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid error code");
 		if (method == SENDFILE) {
 			return _parent->getDirectives(SENDFILE);
 		} else if (method == KEEPALIVE_TIMEOUT) {
@@ -129,7 +131,6 @@ ConfigValue ServerConfig::getDirectives(Directives method) const {
 		}
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid directive");
 	}
-	std::cerr << "finded" << std::endl;
 	return it->second;
 }
 
@@ -137,13 +138,69 @@ void ServerConfig::setLocations(std::string identifier, utils::shared_ptr<Locati
 	// 이미 존재하는 경우 덮어씌우지 않음
 	if (_locations.find(identifier) != _locations.end())
 		return;
+	location->setPath(identifier);
 	_locations[identifier] = location;
 }
 
-utils::shared_ptr<LocationConfig> ServerConfig::getLocation(const std::string& identifier) const {
+utils::shared_ptr<LocationConfig> ServerConfig::getLocation(const std::string& identifier) {
 	std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = _locations.find(identifier);
 	if (it == _locations.end()) {
-		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid location identifier");
+		// throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid location identifier");
+		return utils::shared_ptr<LocationConfig>();
 	}
 	return it->second;
+}
+
+std::string ServerConfig::getOwnRoot() {
+	std::string str;
+	std::map<Directives, ConfigValue>::iterator it = _directives.find(ROOT);
+	if (it == _directives.end()) {
+		return std::string();  // 지시어를 찾을 수 없음
+	}
+	str = it->second.asString();  // 결과를 참조를 통해 반환
+	return str;					  // 성공적으로 값을 찾음
+}
+
+std::vector<std::string> ServerConfig::getOwnIndex() {
+	std::vector<std::string> vec;
+	std::map<Directives, ConfigValue>::iterator it = _directives.find(INDEX);
+	if (it == _directives.end()) {
+		return std::vector<std::string>();	// 지시어를 찾을 수 없음
+	}
+	vec = it->second.asStrVec();  // 결과를 참조를 통해 반환
+	return vec;					  // 성공적으로 값을 찾음
+}
+
+bool ServerConfig::getOwnConfirmedMethods(Directives method) const {
+	return _directives.find(method) != _directives.end();
+}
+
+utils::shared_ptr<LocationConfig> ServerConfig::getLocationConfig(const std::string& reqPath) {
+	std::string bestMatchKey;
+	size_t longestMatch = 0;
+
+	for (std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = this->_locations.begin();
+		 it != this->_locations.end(); ++it) {
+		const std::string& key = it->first;
+		if (reqPath.compare(0, key.length(), key) == 0 && key.length() > longestMatch) {
+			bestMatchKey = key;
+			longestMatch = key.length();
+		}
+		if (key.compare(reqPath + '/') == 0)
+			return this->_locations[key];
+	}
+
+	if (longestMatch > 0) {
+		return this->_locations[bestMatchKey];
+	} else {
+		return utils::shared_ptr<LocationConfig>();
+	}
+}
+
+std::string ServerConfig::getMimeTypes(const std::string& extension) const {
+	return this->_parent->getMimeTypes(extension);
+}
+
+bool ServerConfig::hasMimeTypes(const std::string& extension) const {
+	return this->_parent->hasMimeTypes(extension);
 }

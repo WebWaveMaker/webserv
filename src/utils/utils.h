@@ -9,7 +9,9 @@
 #include <vector>
 #include "TSingleton.hpp"
 #include "color.h"
+#include "const.h"
 #include "nullptr_t.hpp"
+#include "types.h"
 
 class logTimeFormat {
    public:
@@ -18,6 +20,7 @@ class logTimeFormat {
 	static const char* systemTimeFormat;
 	static const char* GMTtimeFormat;
 	static const char* UTCtimeFormat;
+	static const char* dirListFormat;
 };	// namespace logTimeFormat
 
 #endif

@@ -85,12 +85,12 @@ std::string ErrorLogger::makeLogMsg(const std::string& msg, const std::string& f
 		   "() failed " + "(" + msg + ")\n";
 }
 
-// logLevel에 따라 logLevel을 다르게 출력.
+// logLevel에 따라 logLevel을 다르게 출력. 하려면 이 log도 kqueue를 사용해야함.
 void ErrorLogger::log(const std::string& msg, const char* func, const int enum__, void* arg) {
 	if (this->_logLevel != enum__)
 		return;
 	const std::string buf = this->makeLogMsg(msg, func, arg);
-
-	if (write(this->fd_, buf.c_str(), buf.size()) == -1)
-		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "ErrorLogger log error");
+	std::cerr << buf << std::endl;
+	// if (write(this->fd_, buf.c_str(), buf.size()) == SYSTEMCALL_ERROR)
+	// 	ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "ErrorLogger log error");
 }

@@ -2,18 +2,20 @@
 
 HttpConfig::HttpConfig() {}
 
-HttpConfig::HttpConfig(const HttpConfig& other) : AConfig(other) {}
+HttpConfig::HttpConfig(const HttpConfig& other) : AConfig(other), _mimeTypes(other._mimeTypes) {}
 
 HttpConfig::~HttpConfig() {}
 
 HttpConfig& HttpConfig::operator=(const HttpConfig& other) {
 	if (this != &other) {
 		AConfig::operator=(other);
+		_mimeTypes = other._mimeTypes;
 	}
 	return *this;
 }
 
 void HttpConfig::setDirectives(const std::string& directive, const std::vector<std::string>& values) {
+	ConfigSyntax::checkSyntax(directive, values);
 	if (directive == "sendfile") {
 		_directives.insert(std::make_pair(SENDFILE, addBooleanValue(values[0])));
 	} else if (directive == "keepalive_timeout") {
@@ -28,6 +30,7 @@ void HttpConfig::setDirectives(const std::string& directive, const std::vector<s
 		_directives.insert(std::make_pair(ERROR_LOG, addLogValue(values)));
 	} else if (directive == "client_max_body_size") {
 		_directives.insert(std::make_pair(CLIENT_MAX_BODY_SIZE, addUnsignedIntValue(values[0])));
+	} else if (directive == "include") {
 	} else {
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid directive" + directive);
 	}
@@ -87,10 +90,24 @@ ConfigValue HttpConfig::getDirectives(Directives method) const {
 			methods.push_back(POST);
 			methods.push_back(DELETE);
 			methods.push_back(PUT);
+			methods.push_back(HEAD);
 			return ConfigValue(methods);
 		} else {
 			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid directive");
 		}
 	}
 	return it->second;
+}
+
+std::string HttpConfig::getMimeTypes(const std::string& extension) const {
+	return this->_mimeTypes->getMimeType(extension) == "" ? this->getDirectives(DEFAULT_TYPE).asString()
+														  : this->_mimeTypes->getMimeType(extension);
+}
+
+void HttpConfig::setMimeTypes(utils::shared_ptr<Mime> mimeTypes) {
+	this->_mimeTypes = mimeTypes;
+}
+
+bool HttpConfig::hasMimeTypes(const std::string& extension) const {
+	return this->_mimeTypes->hasMimeType(extension);
 }

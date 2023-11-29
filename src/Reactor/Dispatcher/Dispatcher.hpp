@@ -24,21 +24,19 @@ namespace reactor {
 		~Dispatcher();
 		template <class Factory>
 		void registerIOHandler(sharedData_t& sharedData) {
-			const handle_t handle = sharedData.get()->getFd();
+			const handle_t handle = sharedData->getFd();
 			Factory factory;
 			u::shared_ptr<AEventHandler> handler = factory.createIOHandler(sharedData);
 
 			this->_ioHandlers[handle].push_back(handler);
 			this->_handlerIndices[handler] = this->_ioHandlers[handle].size() - 1;
-			this->_demultiplexer->requestEvent(handler.get(), sharedData.get()->getType());
+			this->_demultiplexer->requestEvent(handler.get(), sharedData->getType());
 		}
 
 		template <class Factory>
-		void registerExeHandler(sharedData_t sharedData, ...) {
+		void registerExeHandler(sharedData_t sharedData) {
 			Factory factory;
-			va_list args;
-			va_start(args, sharedData);
-			u::shared_ptr<AEventHandler> handler = factory.createExeHandler(sharedData, args);
+			u::shared_ptr<AEventHandler> handler = factory.createExeHandler(sharedData);
 			this->_addHandlers.push_back(handler);
 		}
 		void removeIOHandler(fd_t fd, enum EventType type);
