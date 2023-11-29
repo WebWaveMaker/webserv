@@ -47,7 +47,6 @@ void CgiResponseBuilder::prepare() {
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::ClientReadHandlerFactory>(this->_cgiReadSharedData);
 }
 
-// handleEvent에서 여기가 호출된다.
 bool CgiResponseBuilder::build() {
 	int status;
 	if (this->_sharedData->getState() == TERMINATE) {
@@ -108,7 +107,6 @@ bool CgiResponseBuilder::makeunChunked() {
 			}
 			close(this->_writePipe[0]);
 			close(this->_readPipe[1]);
-			// CGI 프로세스에개 write
 			reactor::Dispatcher::getInstance()->registerIOHandler<reactor::ClientWriteHandlerFactory>(
 				this->_cgiWriteSharedData);
 			this->_forked = true;
@@ -122,7 +120,6 @@ bool CgiResponseBuilder::makeunChunked() {
 	return false;
 }
 
-// 여기에 request가 에러일때 중간에 errorReponseBuilder를 던지는 로직이 필요함.
 bool CgiResponseBuilder::setBody() {
 	if (this->_cgiReadSharedData.get() == u::nullptr_t)
 		return false;
@@ -226,9 +223,7 @@ void CgiResponseBuilder::checkContentLength() {
 			std::string contentLengthHeader = "Content-Length: " + utils::lltos(contentLength) + "\r\n";
 			std::string crlf = "\r\n";
 			clclIt = std::search(readBuffer.begin(), readBuffer.end(), crlf.begin(), crlf.end());
-			// std::cerr << "before readbuffer: " << readBuffer.data() << std::endl;
 			readBuffer.insert(clclIt + crlf.size(), contentLengthHeader.begin(), contentLengthHeader.end());
-			// std::cerr << "readbuffer: " << readBuffer.data() << std::endl;
 			this->_contentLengthState = true;
 			return;
 		}
@@ -260,11 +255,8 @@ std::string CgiResponseBuilder::makeCgiFullPath() {
 	const std::string locRootPath = this->_locationConfig.get()->getDirectives(ROOT).asString();
 	const std::string serverRootPath = this->_serverConfig.get()->getDirectives(ROOT).asString();
 	const std::vector<std::string> cgiIndex = this->_locationConfig.get()->getDirectives(CGI_INDEX).asStrVec();
-	// const std::string uriPath = this->makeUriPath();
 	const std::string locationPath = this->_locationConfig.get()->getPath();
 
-	// 먼저 .확장자가 존재하는지 찾는다. 있으면 /전까지 편집, 없으면 location만 제거하고 cgi실행
-	// size_t dotPos = uriPath.find('.');
 	for (std::vector<std::string>::const_iterator it = cgiIndex.begin(); it != cgiIndex.end(); ++it) {
 		std::string cgiIndexTemp = *it;
 		if ((*it).front() == '/')
@@ -295,8 +287,6 @@ bool CgiResponseBuilder::makeSocketPair() {
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		return false;
 	}
-	std::cerr << "cgi write: " << this->_writePipe[1] << std::endl;
-	std::cerr << "cgi read: " << this->_readPipe[0] << std::endl;
 	return true;
 }
 
@@ -326,10 +316,7 @@ std::string CgiResponseBuilder::makeQueryString() {
 bool CgiResponseBuilder::doFork() {
 	this->_cgiPid = fork();
 	if (this->_cgiPid == -1) {
-		close(this->_writePipe[0]);
-		close(this->_writePipe[1]);
-		close(this->_readPipe[0]);
-		close(this->_readPipe[1]);
+		this->cleanPipes();
 		return false;
 	}
 	this->_cgiTime = std::time(NULL);
@@ -364,7 +351,7 @@ char** CgiResponseBuilder::makeArgs() {
 	argsVec.push_back(this->_cgiFullPath);
 	char** args = new char*[argsVec.size() + 1];
 	for (size_t i = 0; i < argsVec.size(); ++i) {
-		args[i] = strdup(const_cast<char*>(argsVec[i].c_str()));
+		args[i] = strdup((argsVec[i].c_str()));
 	}
 	args[argsVec.size()] = NULL;
 	return args;
@@ -400,9 +387,13 @@ std::string CgiResponseBuilder::makePathTranslated() {
 	if (uriPath.front() == '/')
 		uriPath.erase(0, 1);
 	size_t questPos = uriPath.find('?');
-	if (questPos == std::string::npos)
-		return rootPath + uriPath;
-	uriPath.erase(questPos);
+	if (questPos != std::string::npos)
+		uriPath.erase(questPos);
+	size_t dotPos = uriPath.find('.');
+	if (dotPos == std::string::npos) {
+		std::vector<std::string> indexs = this->_locationConfig->getDirectives(INDEX).asStrVec();
+		return rootPath + indexs[0];
+	}
 	return rootPath + uriPath;
 }
 
@@ -455,7 +446,7 @@ char** CgiResponseBuilder::setEnvp() {
 	for (idx = 0; idx < envpLen; ++idx)
 		newEnvp[idx] = envp[idx];
 	for (size_t i = 0; i < cgiEnvpVec.size(); ++i) {
-		newEnvp[idx] = strdup(const_cast<char*>(cgiEnvpVec[i].c_str()));
+		newEnvp[idx] = strdup((cgiEnvpVec[i].c_str()));
 		idx++;
 	}
 	newEnvp[idx] = NULL;
@@ -469,34 +460,14 @@ void CgiResponseBuilder::addCgiEnvp(std::vector<std::string>& cgiEnvpVec, const 
 
 std::string CgiResponseBuilder::makePathInfo() {
 	std::string pathInfo = this->_request->second.getRequestTarget();
+
+	size_t questPos = pathInfo.find('?');
+	if (questPos == std::string::npos)
+		return pathInfo;
+	pathInfo.erase(questPos);
 	return pathInfo;
-	std::string locPath = this->_locationConfig.get()->getPath();
-
-	pathInfo.erase(0, locPath.size());
-
-	size_t dotPos = pathInfo.find('.');
-	if (dotPos != std::string::npos) {
-		size_t slashPos = pathInfo.find('/', dotPos);
-		if (slashPos != std::string::npos)
-			pathInfo.erase(0, slashPos);
-		size_t questPos = pathInfo.find('?');
-		if (questPos == std::string::npos)
-			return pathInfo;
-		pathInfo.erase(questPos);
-		return pathInfo;
-	} else {
-		if (pathInfo.empty())
-			return pathInfo;
-		pathInfo = "/" + pathInfo;
-		size_t questPos = pathInfo.find('?');
-		if (questPos == std::string::npos)
-			return pathInfo;
-		pathInfo.erase(questPos);
-		return pathInfo;
-	}
 }
 
-//pl = perl, py = python, php = php, rb = ruby 절대경로 필요
 std::string CgiResponseBuilder::makeInterpreter() {
 	std::string extension = this->makeExtension();
 	if (extension.empty())
@@ -535,7 +506,7 @@ std::vector<std::string> CgiResponseBuilder::parsPathEnvp() {
 
 	i = 0;
 	while (envp && envp[i]) {
-		if (std::memcpy(envp[i], "PATH=", 5) == 0)
+		if (std::memcmp(envp[i], "PATH=", 5) == 0)
 			result = utils::split(std::string(envp[i]), ":");
 		i++;
 	}
@@ -543,7 +514,7 @@ std::vector<std::string> CgiResponseBuilder::parsPathEnvp() {
 }
 
 CgiResponseBuilder::~CgiResponseBuilder() {
-	std::cerr << "bye byebyebyebyebyebyebyebyebyebye CGI\n";
+	std::cerr << "CgiResponseBuilder Destructor called\n";
 	close(this->_writePipe[1]);
 	close(this->_readPipe[0]);
 }
