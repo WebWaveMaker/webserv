@@ -17,6 +17,7 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 
 GetResponseBuilder::~GetResponseBuilder() {
 	close(this->_fd);
+	std::cerr << "GetResponseBuilder " << this->_fd << " deleted" << std::endl;
 }
 
 reactor::sharedData_t GetResponseBuilder::getProduct() {

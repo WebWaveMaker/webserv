@@ -18,6 +18,7 @@ PostResponseBuilder::PostResponseBuilder(reactor::sharedData_t sharedData, reque
 	  _response(),
 	  _path() {
 	this->prepare();
+	std::cerr << "PostResponseBuilder" << std::endl;
 };
 
 PostResponseBuilder::~PostResponseBuilder() {

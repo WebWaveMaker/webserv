@@ -90,55 +90,101 @@ namespace reactor {
 		}
 	}
 
+	static utils::shared_ptr<IBuilder<sharedData_t> > createGetResponseBuilder(
+		const sharedData_t& sharedData, const request_t& request, const utils::shared_ptr<ServerConfig>& serverConfig,
+		const utils::shared_ptr<LocationConfig>& locationConfig) {
+		return utils::shared_ptr<IBuilder<sharedData_t> >(
+			new GetResponseBuilder(sharedData, request, serverConfig, locationConfig));
+	}
+
+	static utils::shared_ptr<IBuilder<sharedData_t> > createPostResponseBuilder(
+		const sharedData_t& sharedData, const request_t& request, const utils::shared_ptr<ServerConfig>& serverConfig,
+		const utils::shared_ptr<LocationConfig>& locationConfig) {
+		return utils::shared_ptr<IBuilder<sharedData_t> >(
+			new PostResponseBuilder(sharedData, request, serverConfig, locationConfig));
+	}
+
+	static utils::shared_ptr<IBuilder<sharedData_t> > createDeleteResponseBuilder(
+		const sharedData_t& sharedData, const request_t& request, const utils::shared_ptr<ServerConfig>& serverConfig,
+		const utils::shared_ptr<LocationConfig>& locationConfig) {
+		return utils::shared_ptr<IBuilder<sharedData_t> >(
+			new DeleteResponseBuilder(sharedData, request, serverConfig, locationConfig));
+	}
+
+	static utils::shared_ptr<IBuilder<sharedData_t> > createPutResponseBuilder(
+		const sharedData_t& sharedData, const request_t& request, const utils::shared_ptr<ServerConfig>& serverConfig,
+		const utils::shared_ptr<LocationConfig>& locationConfig) {
+		return utils::shared_ptr<IBuilder<sharedData_t> >(
+			new PutResponseBuilder(sharedData, request, serverConfig, locationConfig));
+	}
+
+	static utils::shared_ptr<IBuilder<sharedData_t> > createHeadResponseBuilder(
+		const sharedData_t& sharedData, const request_t& request, const utils::shared_ptr<ServerConfig>& serverConfig,
+		const utils::shared_ptr<LocationConfig>& locationConfig) {
+		return utils::shared_ptr<IBuilder<sharedData_t> >(
+			new HeadResponseBuilder(sharedData, request, serverConfig, locationConfig));
+	}
+
+	static utils::shared_ptr<IBuilder<sharedData_t> > createErrorResponseBuilder(
+		const int status, const sharedData_t& sharedData, const request_t& request,
+		const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig) {
+		return utils::shared_ptr<IBuilder<sharedData_t> >(
+			new ErrorResponseBuilder(status, sharedData, serverConfig, locationConfig));
+	}
+
+	static utils::shared_ptr<IBuilder<sharedData_t> > createRedirectResponseBuilder(
+		const unsigned int statusCode, const std::string& path, reactor::sharedData_t sharedData, request_t request,
+		const utils::shared_ptr<ServerConfig>& serverConfig) {
+		return utils::shared_ptr<IBuilder<sharedData_t> >(
+			new RedirectResponseBuilder(statusCode, path, sharedData, request, serverConfig));
+	}
+
+	static utils::shared_ptr<IBuilder<sharedData_t> > createCgiResponseBuilder(
+		const sharedData_t& sharedData, const request_t& request, const utils::shared_ptr<ServerConfig>& serverConfig,
+		const utils::shared_ptr<LocationConfig>& locationConfig) {
+		return utils::shared_ptr<IBuilder<sharedData_t> >(
+			new CgiResponseBuilder(sharedData, request, serverConfig, locationConfig));
+	}
+
 	utils::shared_ptr<IBuilder<sharedData_t> > ClientResponseHandler::chooseBuilder() {
 		try {
 			if (_locationConfig.get() == u::nullptr_t)
-				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-					new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+				throw createErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_request, this->_serverConfig,
+												 this->_locationConfig);
 			if (this->_request->first == HTTP_ERROR)
-				throw utils::shared_ptr<IBuilder<sharedData_t> >(
-					new ErrorResponseBuilder(this->_request->second.getErrorCode(), this->_sharedData,
-											 this->_serverConfig, this->_locationConfig));
+				throw createErrorResponseBuilder(this->_request->second.getErrorCode(), this->_sharedData,
+												 this->_request, this->_serverConfig, this->_locationConfig);
 
 			const std::vector<enum HttpMethods> methods = this->_locationConfig->getDirectives(LIMIT_EXCEPT).asMedVec();
 
 			if (std::find(methods.begin(), methods.end(), this->_request->second.getMethod()) == methods.end())
-				throw utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
-					METHOD_NOT_ALLOWED, this->_sharedData, this->_serverConfig, this->_locationConfig));
+				throw createErrorResponseBuilder(METHOD_NOT_ALLOWED, this->_sharedData, this->_request,
+												 this->_serverConfig, this->_locationConfig);
 			if (this->_locationConfig->isRedirect()) {
 				std::vector<std::string> rv = this->_locationConfig->getDirectives(RETURN).asStrVec();
 
-				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new RedirectResponseBuilder(
-					utils::stoui(rv[0]), rv[1], this->_sharedData, this->_request, this->_serverConfig));
+				throw createRedirectResponseBuilder(utils::stoui(rv[0]), rv[1], this->_sharedData, this->_request,
+													this->_serverConfig);
 			}
 			if (this->_locationConfig->isCgi())
-				return utils::shared_ptr<IBuilder<sharedData_t> >(new CgiResponseBuilder(
-					this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
-			switch (this->_request->second.getMethod()) {
-				case GET:
-					return utils::shared_ptr<IBuilder<sharedData_t> >(new GetResponseBuilder(
-						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
-				case POST:
-					return utils::shared_ptr<IBuilder<sharedData_t> >(new PostResponseBuilder(
-						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
-				case DELETE:
-					return utils::shared_ptr<IBuilder<sharedData_t> >(new DeleteResponseBuilder(
-						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
-				case PUT:
-					return utils::shared_ptr<IBuilder<sharedData_t> >(new PutResponseBuilder(
-						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
-				case HEAD:
-					return utils::shared_ptr<IBuilder<sharedData_t> >(new HeadResponseBuilder(
-						this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
-				case UNKNOWN:
-					return utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
-						BAD_REQUEST, this->_sharedData, this->_serverConfig, this->_locationConfig));
-				default:
-					return utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
-						BAD_REQUEST, this->_sharedData, this->_serverConfig, this->_locationConfig));
-					break;
-			}
+				return createCgiResponseBuilder(this->_sharedData, this->_request, this->_serverConfig,
+												this->_locationConfig);
 
+			typedef utils::shared_ptr<IBuilder<sharedData_t> > (*ResponseBuilderFunction)(
+				const sharedData_t&, const request_t&, const utils::shared_ptr<ServerConfig>&,
+				const utils::shared_ptr<LocationConfig>&);
+			ResponseBuilderFunction responseBuilderFunctions[] = {
+				&createGetResponseBuilder, &createHeadResponseBuilder, &createPostResponseBuilder,
+				&createDeleteResponseBuilder, &createPutResponseBuilder};
+
+			enum HttpMethods method = this->_request->second.getMethod();
+			if (method >= 0 && method < sizeof(responseBuilderFunctions) / sizeof(responseBuilderFunctions[0])) {
+				return (*responseBuilderFunctions[method])(this->_sharedData, this->_request, this->_serverConfig,
+														   this->_locationConfig);
+			} else {
+				return utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
+					BAD_REQUEST, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			}
 		} catch (utils::shared_ptr<IBuilder<sharedData_t> >& e) {
 			return e;
 		} catch (...) {

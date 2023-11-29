@@ -1,7 +1,7 @@
 #include "HttpMessage.hpp"
 
 HttpMessage::HttpMessage()
-	: _startLine(3), _headers(), _body(), _errorCode(0), _contentLength(0), _contentLengthReceived(0), _buf() {}
+	: _startLine(3), _headers(), _body(), _errorCode(0), _contentLength(0), _contentLengthReceived(0), _buf(), _isRegistered(false) {}
 
 HttpMessage::HttpMessage(const HttpMessage& obj) {
 	*this = obj;
@@ -16,6 +16,11 @@ HttpMessage& HttpMessage::operator=(const HttpMessage& obj) {
 		this->_startLine = obj._startLine;
 		this->_headers = obj._headers;
 		this->_body = obj._body;
+		this->_errorCode = obj._errorCode;
+		this->_contentLength = obj._contentLength;
+		this->_contentLengthReceived = obj._contentLengthReceived;
+		this->_buf = obj._buf;
+		this->_isRegistered = obj._isRegistered;
 	}
 	return *this;
 }
@@ -114,6 +119,7 @@ void HttpMessage::reset() {
 	this->_contentLength = 0;
 	this->_contentLengthReceived = 0;
 	this->_errorCode = 0;
+	this->_isRegistered = false;
 }
 
 unsigned int HttpMessage::getContentLength(void) const {
@@ -147,4 +153,12 @@ void HttpMessage::setTotalChunkedLength(const unsigned int totalChunkedLength) {
 
 unsigned int HttpMessage::getTotalChunkedLength(void) const {
 	return this->_totalChunkedLength;
+}
+
+void HttpMessage::setIsRegistered(const bool isRegistered) {
+	this->_isRegistered = isRegistered;
+}
+
+bool HttpMessage::getIsRegistered(void) const {
+	return this->_isRegistered;
 }
