@@ -15,7 +15,11 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	std::string _cgiFullPath;
 	std::map<std::string, std::string> _interpreterMap;
 	int _sv[2];
+	int _writePipe[2];
+	int _readPipe[2];
 	pid_t _cgiPid;
+	bool _unchunkedState;
+	bool _forked;
 
 	reactor::sharedData_t _cgiWriteSharedData;
 	reactor::sharedData_t _cgiReadSharedData;
@@ -49,6 +53,7 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	std::string makeCgiFullPath();
 	bool makeSocketPair();
 	void makeWriteSharedData();
+	bool makeunChunked();
 	bool doFork();
 	char** setEnvp();
 	std::string makeQueryString();
@@ -65,6 +70,12 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	void addCgiEnvp(std::vector<std::string>& cgiEnvpVec, const std::string& key, const std::string& value);
 	void setClientHeaders(std::vector<std::string>& cgiEnvVec);
 	void makeHttpHeaders(std::string& key);
+	std::string makePathTranslated();
+
+	void cleanPipes();
+	void removeIOHandlers();
+	void removeReadIO();
+	void removeWriteIO();
 };
 
 // Start Line: GET / HTTP/1.1

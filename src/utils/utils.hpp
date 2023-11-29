@@ -18,6 +18,15 @@ namespace utils {
 	std::string generateRandomString();
 	std::string removeSubstring(const std::string& mainStr, const std::string& substr);
 
+	template <typename T, typename S>
+	void insertData(T& target, const S& source) {
+		target.insert(target.end(), source.begin(), source.end());
+		// target.reserve(target.size() + source.size());	// 성능 최적화를 위해 메모리를 미리 할당
+		// for (typename S::const_iterator it = source.begin(); it != source.end(); ++it) {
+		// 	target.push_back(*it);
+		// }
+	}
+
 	template <typename T>
 	T toHexNum(const std::string& str) {
 		T num;

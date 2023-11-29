@@ -11,7 +11,7 @@ class RequestParser : public IParser<request_t, std::string> {
 	utils::shared_ptr<ServerConfig> _serverConfig;
 
 	void branchParser(const enum HttpMessageState state, std::string& buf);
-	bool errorRequest(void);
+	bool setErrorRequest(const enum HttpMessageState state, const enum HTTP_STATUS code);
 	std::string findAndSubstr(std::string& buf, std::string delim);
 	bool parseStartLine(std::string& buf);
 	bool parseHeader(std::string& buf);

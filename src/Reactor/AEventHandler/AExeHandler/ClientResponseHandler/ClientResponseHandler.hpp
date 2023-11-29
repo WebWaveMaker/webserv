@@ -20,6 +20,7 @@ namespace reactor {
 		ClientResponseHandler(sharedData_t& sharedData);
 		virtual ~ClientResponseHandler();
 		virtual void handleEvent();
+		std::string findLocationBlock();
 	};
 }  // namespace reactor
 #endif
