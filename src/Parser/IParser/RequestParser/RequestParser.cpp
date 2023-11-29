@@ -198,8 +198,6 @@ bool RequestParser::parseChunked(std::string& buf) {
 		_curMsg->get()->first = CHUNKED_DONE;
 	else
 		_curMsg->get()->first = CHUNKED;
-	if (_curMsg->get()->first == CHUNKED && curMsg.getIsRegistered() == false && chunkedLength != 0)
-		_curMsg->get()->first = CHUNKED_FIRST;
 	return true;
 }
 

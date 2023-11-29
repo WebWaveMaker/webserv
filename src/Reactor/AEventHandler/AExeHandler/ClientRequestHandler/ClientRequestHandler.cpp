@@ -28,7 +28,6 @@ namespace reactor {
 		if (request.get() &&
 			!(request->first == LONG_BODY || request->first == LONG_BODY_DONE || request->first == LONG_BODY_ERROR ||
 			  request->first == CHUNKED || request->first == CHUNKED_DONE || request->first == CHUNKED_ERROR)) {
-			request->second.setIsRegistered(true);
 			if (request->first == LONG_FIRST)
 				request->first = LONG_BODY;
 			if (request->first == CHUNKED_FIRST)

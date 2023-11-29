@@ -14,7 +14,6 @@ class HttpMessage {
 	unsigned int _contentLengthReceived;
 	unsigned int _totalChunkedLength;
 	std::string _buf;
-	bool _isRegistered;
 
    public:
 	HttpMessage();
@@ -46,8 +45,6 @@ class HttpMessage {
 	std::string& getBuf(void);
 	void setTotalChunkedLength(const unsigned int totalChunkedLength);
 	unsigned int getTotalChunkedLength(void) const;
-	void setIsRegistered(const bool isRegistered);
-	bool getIsRegistered(void) const;
 };
 
 typedef utils::shared_ptr<HttpMessage> msg_t;
