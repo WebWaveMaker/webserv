@@ -15,5 +15,6 @@ namespace reactor {
 			return;
 		buffer.erase(buffer.begin(), buffer.begin() + numberOfBytes);
 		std::cerr << "client write handler buffer size: " << buffer.size() << std::endl;
+		// std::cerr << "client write handler buffer: " << buffer.data() << std::endl;
 	}
 }  // namespace reactor

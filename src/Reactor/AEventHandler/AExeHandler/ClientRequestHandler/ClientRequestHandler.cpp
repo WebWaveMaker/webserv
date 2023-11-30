@@ -9,7 +9,9 @@ namespace reactor {
 		Dispatcher::getInstance()->registerIOHandler<ClientReadHandlerFactory>(sharedData);
 	}
 
-	ClientRequestHandler::~ClientRequestHandler() {}
+	ClientRequestHandler::~ClientRequestHandler() {
+		std::cerr << "ClientRequestHandler " << this->getHandle() << " deleted" << std::endl;
+	}
 
 	RequestParser& ClientRequestHandler::getRequest() {
 		return this->_requestParser;
@@ -25,18 +27,10 @@ namespace reactor {
 		std::string content = std::string(this->getBuffer().begin(), this->getBuffer().begin() + this->getReadByte());
 		request_t request = this->_requestParser.parse(content);
 		this->getBuffer().clear();
-		if (request.get() &&
-			!(request->first == LONG_BODY || request->first == LONG_BODY_DONE || request->first == LONG_BODY_ERROR ||
-			  request->first == CHUNKED || request->first == CHUNKED_DONE || request->first == CHUNKED_ERROR)) {
+		if (request.get() && request->second.getIsRegistered() == false) {
 			request->second.setIsRegistered(true);
-			if (request->first == LONG_FIRST)
-				request->first = LONG_BODY;
-			if (request->first == CHUNKED_FIRST)
-				request->first = CHUNKED;
 			this->_writeData->setRequest(request);
 			Dispatcher::getInstance()->registerExeHandler<ClientResponseHandlerFactory>(this->_writeData);
-			// std::cerr << "ClientResponse register " << std::endl;
-			return;
 		}
 	}
 }  // namespace reactor

@@ -1,14 +1,7 @@
 #include "HttpMessage.hpp"
 
 HttpMessage::HttpMessage()
-	: _startLine(3),
-	  _headers(),
-	  _body(),
-	  _errorCode(0),
-	  _contentLength(0),
-	  _contentLengthReceived(0),
-	  _buf(),
-	  _isRegistered(false) {}
+	: _startLine(3), _headers(), _body(), _errorCode(0), _contentLength(0), _contentLengthReceived(0), _buf(), _isRegistered(false) {}
 
 HttpMessage::HttpMessage(const HttpMessage& obj) {
 	*this = obj;
@@ -23,6 +16,11 @@ HttpMessage& HttpMessage::operator=(const HttpMessage& obj) {
 		this->_startLine = obj._startLine;
 		this->_headers = obj._headers;
 		this->_body = obj._body;
+		this->_errorCode = obj._errorCode;
+		this->_contentLength = obj._contentLength;
+		this->_contentLengthReceived = obj._contentLengthReceived;
+		this->_buf = obj._buf;
+		this->_isRegistered = obj._isRegistered;
 	}
 	return *this;
 }
