@@ -17,11 +17,17 @@ namespace reactor {
 		addWait(fileFd, filename);
 
 		setStateAll();
-
+		std::cerr << "filename : " << filename << std::endl;
+		std::cerr << "FileAccessManager::makeFd() : " << fileFd << std::endl;
 		return (fileFd);
 	}
 
 	void FileAccessManager::closeFd(fd_t fd) {
+		if (fd < 0) {
+			std::cerr << "FileAccessManager::closeFd() : fd < 0" << std::endl;
+			return;
+		}
+		std::cerr << "FileAccessManager::closeFd() : " << fd << std::endl;
 		eraseWait(fd);
 		eraseFileInfo(fd);
 		setStateAll();
@@ -42,9 +48,9 @@ namespace reactor {
 	}
 
 	void FileAccessManager::eraseFileInfo(fd_t fd) {
+		std::cerr << "FileAccessManager::eraseFileInfo() : " << fd << std::endl;
 		accessMap.erase(fd);
 		if (accessMap.empty()) {
-
 			accessMap.clear();
 		}
 	}
@@ -75,6 +81,7 @@ namespace reactor {
 	}
 
 	void FileAccessManager::eraseWait(fd_t fd) {
+		std::cerr << "FileAccessManager::eraseWait() : " << fd << std::endl;
 		std::string fileName = findFileInfo(fd).get()->fileName;
 		std::map<std::string, std::vector<fd_t> >::iterator it = waitVector.find(fileName);
 
