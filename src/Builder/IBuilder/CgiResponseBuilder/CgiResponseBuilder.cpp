@@ -63,21 +63,56 @@ bool CgiResponseBuilder::build() {
 		if (waitpid(this->_cgiPid, &status, WNOHANG) > 0) {
 			if (WIFEXITED(status) == false) {
 				this->removeIOHandlers();
-				this->_cgiWriteSharedData->setState(TERMINATE);
-				this->_cgiReadSharedData->setState(TERMINATE);
-				throw false;
+				this->cleanPipes();
+				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+					BAD_GATEWAY, this->_sharedData, this->_serverConfig, this->_locationConfig));
 			}
 		} else {
 			if (std::difftime(std::time(NULL), this->_cgiTime) >= 6000) {
 				kill(this->_cgiPid, SIGTERM);
 				this->removeIOHandlers();
-				this->_cgiWriteSharedData->setState(TERMINATE);
-				this->_cgiReadSharedData->setState(TERMINATE);
-				throw false;
+				this->cleanPipes();
+				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+					BAD_GATEWAY, this->_sharedData, this->_serverConfig, this->_locationConfig));
 			}
 		}
 	}
 	return this->setBody();
+}
+
+bool CgiResponseBuilder::setBody() {
+	if (this->_cgiReadSharedData.get() == u::nullptr_t)
+		return false;
+	if (this->makeunChunked() == false) {
+		return false;
+	}
+	if ((this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
+		 this->_request->first == CHUNKED_DONE) &&
+		this->_cgiWriteSharedData->getBuffer().empty() && this->_cgiWriteSharedData->getState() != RESOLVE) {
+		this->removeWriteIO();
+		this->_cgiWriteSharedData->setState(RESOLVE);
+	}
+	if (this->_startLineState == false)
+		this->replaceStartLine();
+	else if (this->_startLineState == true && this->_contentLengthState == false)
+		this->checkContentLength();
+	if (this->_startLineState == true && this->_contentLengthState == true) {
+		utils::insertData<std::vector<char>, std::vector<char> >(this->_sharedData.get()->getBuffer(),
+																 this->_cgiReadSharedData.get()->getBuffer());
+		this->_cgiReadSharedData.get()->getBuffer().clear();
+	}
+	if (this->_cgiReadSharedData.get()->getState() == TERMINATE && this->_cgiWriteSharedData->getState() == RESOLVE) {
+		if (this->_startLineState == false && this->_sharedData->getBuffer().empty()) {
+			this->removeIOHandlers();
+			this->cleanPipes();
+			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+				new ErrorResponseBuilder(BAD_GATEWAY, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		}
+		this->removeReadIO();
+		this->_cgiReadSharedData->setState(RESOLVE);
+		return true;
+	}
+	return true;
 }
 
 bool CgiResponseBuilder::makeunChunked() {
@@ -118,35 +153,6 @@ bool CgiResponseBuilder::makeunChunked() {
 													  this->_request->second.getBody());
 	this->_request->second.getBody().clear();
 	return false;
-}
-
-bool CgiResponseBuilder::setBody() {
-	if (this->_cgiReadSharedData.get() == u::nullptr_t)
-		return false;
-	if (this->makeunChunked() == false) {
-		return false;
-	}
-	if ((this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
-		 this->_request->first == CHUNKED_DONE) &&
-		this->_cgiWriteSharedData->getBuffer().empty() && this->_cgiWriteSharedData->getState() != RESOLVE) {
-		this->removeWriteIO();
-		this->_cgiWriteSharedData->setState(RESOLVE);
-	}
-	if (this->_startLineState == false)
-		this->replaceStartLine();
-	else if (this->_startLineState == true && this->_contentLengthState == false)
-		this->checkContentLength();
-	if (this->_startLineState == true && this->_contentLengthState == true) {
-		utils::insertData<std::vector<char>, std::vector<char> >(this->_sharedData.get()->getBuffer(),
-																 this->_cgiReadSharedData.get()->getBuffer());
-		this->_cgiReadSharedData.get()->getBuffer().clear();
-	}
-	if (this->_cgiReadSharedData.get()->getState() == TERMINATE && this->_cgiWriteSharedData->getState() == RESOLVE) {
-		this->removeReadIO();
-		this->_cgiReadSharedData->setState(RESOLVE);
-		return true;
-	}
-	return true;
 }
 
 void CgiResponseBuilder::cgiStartLineInsert() {
@@ -325,6 +331,8 @@ bool CgiResponseBuilder::doFork() {
 		close(this->_readPipe[0]);
 		char** envp = this->setEnvp();
 		char** args = this->makeArgs();
+		for (int i = 0; args[i] != NULL; ++i)
+			std::cerr << args[i] << std::endl;
 		if (dup2(this->_writePipe[0], STDIN_FILENO) == -1) {
 			close(this->_writePipe[0]);
 			close(this->_readPipe[1]);
