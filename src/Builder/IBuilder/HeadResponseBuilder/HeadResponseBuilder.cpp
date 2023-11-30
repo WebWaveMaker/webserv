@@ -9,20 +9,15 @@ HeadResponseBuilder::HeadResponseBuilder(reactor::sharedData_t sharedData, const
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
 	  _path(),
+	  _sessionData(sessionData),
 	  _readSharedData(),
-	  _response(),
-	  _sessionData(sessionData) {
-	if (_locationConfig.get() == u::nullptr_t)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	if (this->_locationConfig->isRedirect()) {
-		std::vector<std::string> rv = this->_locationConfig->getDirectives(RETURN).asStrVec();
-
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new RedirectResponseBuilder(
-			utils::stoui(rv[0]), rv[1], this->_sharedData, this->_request, this->_serverConfig));
-	}
+	  _response() {
+	if (_sessionData)
+		this->handleSession();
 	this->prepare();
 }
+
+void HeadResponseBuilder::handleSession() {}
 
 HeadResponseBuilder::~HeadResponseBuilder() {}
 
@@ -130,9 +125,15 @@ void HeadResponseBuilder::makeListHtml(const std::string& path, const std::vecto
 			html += "<a href=\"" + *cit + "\"/>" + *cit + "/</a>";
 		else
 			html += "<a href=\"" + *cit + "\">" + *cit + "</a>";
+#if __APPLE__ == 1
 		html += "                                               " +
 				utils::formatTime(fileStat.st_birthtimespec.tv_sec, logTimeFormat::dirListFormat) +
 				"                   " + (S_ISDIR(fileStat.st_mode) ? "-" : utils::lltos(fileStat.st_size)) + "\r\n";
+#else
+		html += "                                               " +
+				utils::formatTime(fileStat.st_ctime, logTimeFormat::dirListFormat) + "                   " +
+				(S_ISDIR(fileStat.st_mode) ? "-" : utils::lltos(fileStat.st_size)) + "\r\n";
+#endif
 	}
 	html += "</pre><hr></body>\r\n</html>";
 	this->setStartLine();

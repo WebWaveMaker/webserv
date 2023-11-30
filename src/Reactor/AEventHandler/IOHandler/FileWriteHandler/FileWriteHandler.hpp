@@ -7,7 +7,6 @@
 namespace reactor {
 	class FileWriteHandler : public AEventHandler {
 	   private:
-		operator=(const FileWriteHandler& obj);
 		FileWriteHandler(const FileWriteHandler& obj);
 
 	   public:

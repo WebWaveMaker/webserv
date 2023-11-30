@@ -16,12 +16,16 @@ PostResponseBuilder::PostResponseBuilder(reactor::sharedData_t sharedData, reque
 	  _writeSharedData(),
 	  _isExist(false),
 	  _isRemoved(false),
+	  _sessionData(sessionData),
 	  _response(),
-	  _path(),
-	  _sessionData(sessionData) {
+	  _path() {
+	if (_sessionData)
+		this->handleSession();
 	this->prepare();
 	std::cerr << "PostResponseBuilder" << std::endl;
 };
+
+void PostResponseBuilder::handleSession(){};
 
 PostResponseBuilder::~PostResponseBuilder() {
 	reactor::FileCloseManager::getInstance()->closeFd(this->_fd);

@@ -13,16 +13,18 @@ class PostResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	reactor::sharedData_t _writeSharedData;
 	bool _isExist;
 	bool _isRemoved;
+	SessionData* _sessionData;
 
 	HttpMessage _response;
 	std::string _path;
-	SessionData* _sessionData;
 	fd_t _fd;
 
 	static const std::string _fileForSignup;
 	static const std::string _folderPath;
 
 	void setPath(const std::string& target, const std::string targetPath);
+
+	void handleSession();
 
 	void doDefaultBehavior();
 	void divideEntryPoint();

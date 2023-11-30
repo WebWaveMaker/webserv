@@ -9,14 +9,15 @@ DeleteResponseBuilder::DeleteResponseBuilder(reactor::sharedData_t sharedData, r
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
 	  _readSharedData(new reactor::SharedData(FD_ERROR, EVENT_READ, std::vector<char>())),
+	  _sessionData(sessionData),
 	  _response(),
-	  _path(),
-	  _sessionData(sessionData) {
-	if (_locationConfig.get() == u::nullptr_t)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	  _path() {
+	if (_sessionData)
+		this->handleSession();
 	this->prepare();
 }
+
+void DeleteResponseBuilder::handleSession() {}
 
 DeleteResponseBuilder::~DeleteResponseBuilder() {}
 

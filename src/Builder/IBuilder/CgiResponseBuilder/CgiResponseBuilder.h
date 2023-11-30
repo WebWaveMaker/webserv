@@ -3,6 +3,7 @@
 #define CGIRESPONSEBUILDER_H
 
 #include <signal.h>
+#include <sys/wait.h>
 #include "ClientReadHandlerFactory.hpp"
 #include "ClientWriteHandlerFactory.hpp"
 #include "DefaultResponseBuilder.hpp"

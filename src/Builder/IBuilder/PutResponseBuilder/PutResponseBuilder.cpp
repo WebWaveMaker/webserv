@@ -11,11 +11,16 @@ PutResponseBuilder::PutResponseBuilder(reactor::sharedData_t sharedData, request
 	  _writeSharedData(),
 	  _isExist(false),
 	  _isRemoved(false),
+	  _sessionData(sessionData),
 	  _response(),
 	  _path(),
-	  _sessionData(sessionData) {
+	  _fd(FD_ERROR) {
+	if (_sessionData)
+		this->handleSession();
 	this->prepare();
 }
+
+void PutResponseBuilder::handleSession(){};
 
 PutResponseBuilder::~PutResponseBuilder() {
 	reactor::FileCloseManager::getInstance()->closeFd(this->_fd);

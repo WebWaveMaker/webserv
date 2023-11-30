@@ -7,7 +7,6 @@
 namespace reactor {
 	class ClientWriteHandler : public AEventHandler {
 	   private:
-		operator=(const ClientWriteHandler& obj);
 		ClientWriteHandler(const ClientWriteHandler& obj);
 
 	   public:

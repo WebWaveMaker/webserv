@@ -2,6 +2,7 @@
 #ifndef FILECLOSEMANAGER_H
 #define FILECLOSEMANAGER_H
 
+#include <cstdio>
 #include <iostream>
 #include <map>
 #include <queue>

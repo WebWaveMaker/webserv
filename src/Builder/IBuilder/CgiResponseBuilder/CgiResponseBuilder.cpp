@@ -287,7 +287,7 @@ std::string CgiResponseBuilder::makeCgiFullPath() {
 
 	for (std::vector<std::string>::const_iterator it = cgiIndex.begin(); it != cgiIndex.end(); ++it) {
 		std::string cgiIndexTemp = *it;
-		if ((*it).front() == '/')
+		if ((*it)[0] == '/')
 			cgiIndexTemp = (*it).substr(1);
 		if (access((locRootPath + cgiIndexTemp).c_str(), X_OK) == 0)
 			return locRootPath + cgiIndexTemp;
@@ -416,7 +416,7 @@ std::string CgiResponseBuilder::makePathTranslated() {
 	std::string rootPath = this->_locationConfig->getDirectives(ROOT).asString();
 	std::string uriPath = this->_request->second.getRequestTarget();
 
-	if (uriPath.front() == '/')
+	if (uriPath[0] == '/')
 		uriPath.erase(0, 1);
 	size_t questPos = uriPath.find('?');
 	if (questPos != std::string::npos)

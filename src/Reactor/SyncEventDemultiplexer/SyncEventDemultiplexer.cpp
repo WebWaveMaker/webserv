@@ -35,7 +35,7 @@ namespace reactor {
 	std::time_t SyncEventDemultiplexer::getFdTime(fd_t fd) {
 		if (this->_fdsTime.find(fd) != this->_fdsTime.end())
 			return this->_fdsTime[fd];
-		return (NULL);
+		return (0);
 	}
 
 	void SyncEventDemultiplexer::waitEvents(void) {

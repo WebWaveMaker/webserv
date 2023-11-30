@@ -16,6 +16,5 @@
 #include "ClientRequestHandlerFactory.hpp"
 // #include "ErrorLogger.hpp"	// For ErrorLogger
 #include "ServerReadHandlerFactory.hpp"
-#include "TestAcceptHandler.hpp"
 
 #endif

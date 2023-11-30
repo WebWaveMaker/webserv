@@ -13,11 +13,13 @@ class PutResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	utils::shared_ptr<reactor::SharedData> _writeSharedData;
 	bool _isExist;
 	bool _isRemoved;
+	SessionData* _sessionData;
 
 	HttpMessage _response;
 	std::string _path;
-	SessionData* _sessionData;
 	fd_t _fd;
+
+	void handleSession();
 
 	void setPath(const std::string& target, const std::string targetPath);
 

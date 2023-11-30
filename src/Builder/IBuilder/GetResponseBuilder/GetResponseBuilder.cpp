@@ -9,12 +9,12 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
 	  _removed(false),
+	  _sessionData(sessionData),
 	  _path(),
 	  _fd(FD_ERROR),
 	  _readSharedData(),
-	  _response(),
-	  _sessionData(sessionData) {
-	if (this->_request->second.isSession() == true)
+	  _response() {
+	if (_sessionData)
 		this->handleSession();
 	this->prepare();
 }
@@ -148,9 +148,16 @@ void GetResponseBuilder::makeListHtml(const std::string& path, const std::vector
 			html += "<a href=\"" + *cit + "\"/>" + *cit + "/</a>";
 		else
 			html += "<a href=\"" + *cit + "\">" + *cit + "</a>";
+
+#if __APPLE__ == 1
 		html += "                                               " +
 				utils::formatTime(fileStat.st_birthtimespec.tv_sec, logTimeFormat::dirListFormat) +
 				"                   " + (S_ISDIR(fileStat.st_mode) ? "-" : utils::lltos(fileStat.st_size)) + "\r\n";
+#else
+		html += "                                               " +
+				utils::formatTime(fileStat.st_ctime, logTimeFormat::dirListFormat) + "                   " +
+				(S_ISDIR(fileStat.st_mode) ? "-" : utils::lltos(fileStat.st_size)) + "\r\n";
+#endif
 	}
 	html += "</pre><hr></body>\r\n</html>";
 	this->setStartLine();
@@ -245,8 +252,6 @@ void GetResponseBuilder::handleSession() {
 	SessionData* sessionData = HttpSession::getInstance()->getSessionData(request.getSessionId());
 	if (sessionData == u::nullptr_t)
 		return;
-	std::cerr << sessionData->getData("username") << sessionData->getData("password") << std::endl;
-
 	if (target == "/login.html") {
 		throw RedirectResponseBuilder::createRedirectResponseBuilder(SEE_OTHER, "/", this->_sharedData, this->_request,
 																	 this->_serverConfig);
