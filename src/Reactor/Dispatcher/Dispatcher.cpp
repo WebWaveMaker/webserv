@@ -35,7 +35,6 @@ namespace reactor {
 		const handle_t handle = handler->getHandle();
 		for (size_t i = 0; i < this->_exeHandlers[handle].size(); ++i) {
 			if (this->_exeHandlers[handle][i].get() == handler) {
-				std::cerr << "add remove: " << this->_exeHandlers[handle][i]->getHandle() << std::endl;
 				this->_removeHandlers.push_back(this->_exeHandlers[handle][i]);
 				return;
 			}
@@ -84,7 +83,6 @@ namespace reactor {
 				}
 
 				this->_ioHandlers.erase(*it);
-				std::cerr << *it << " : was closed\n";
 			}
 		}
 		this->_fdsToClose.clear();
@@ -100,7 +98,6 @@ namespace reactor {
 			const handle_t handle = this->_removeHandlers[i]->getHandle();
 			if (this->_exeHandlers.find(handle) != this->_exeHandlers.end()) {
 				const size_t index = this->_handlerIndices[this->_removeHandlers[i]];
-				std::cerr << "apply remove: " << this->_exeHandlers[handle][index]->getHandle() << std::endl;
 				if (index < this->_exeHandlers[handle].size()) {
 					if (index != this->_exeHandlers[handle].size() - 1) {
 						std::swap(this->_exeHandlers[handle][index], this->_exeHandlers[handle].back());
