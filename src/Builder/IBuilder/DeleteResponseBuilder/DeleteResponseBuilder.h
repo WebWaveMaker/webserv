@@ -7,7 +7,6 @@
 #include "FileReadHandlerFactory.hpp"
 #include "HttpMessage.hpp"
 #include "IBuilder.hpp"
-#include "PipeReadHandlerFactory.hpp"
 #include "RequestParser.h"
 #include "ServerConfig.hpp"
 #include "SharedData.hpp"

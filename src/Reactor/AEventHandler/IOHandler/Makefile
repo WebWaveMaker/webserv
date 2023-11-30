@@ -12,7 +12,6 @@ DIRS := ClientReadHandler \
 		ClientWriteHandler \
 		FileReadHandler \
 		FileWriteHandler \
-		PipeReadHandler \
 		ServerReadHandler \
 		TimerHandler
 
