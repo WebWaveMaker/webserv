@@ -4,7 +4,10 @@
 
 ServerManager::ServerManager() : _configParser(), _servers() {}
 
-void ServerManager::init(const std::string path, char** envp) {
+void ServerManager::init(int ac, char**& av, char**& envp) {
+	if (2 < ac || ac < 1)
+		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Usage: ./webserv [config_file] or just ./webserv");
+	const std::string path = (ac == 1) ? DEFAULT_PATH : av[1];
 	this->_envp = envp;
 	this->_serverConfigs = this->_configParser.parse(path);
 	try {

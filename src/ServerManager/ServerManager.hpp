@@ -13,12 +13,9 @@ class ServerManager : public u::TSingleton<ServerManager> {
 	std::map<int, Server*> _servers;
 	char** _envp;
 
-	ServerManager(const ServerManager& obj);
-	ServerManager& operator=(const ServerManager& obj);
-
    public:
 	ServerManager();
-	void init(const std::string path, char** envp);
+	void init(int ac, char**&, char**& envp);
 	void handleSigPipe();
 	void createServer(config_t& serverConfigs);
 	void createClient(int serverFd, int clientFd, struct sockaddr_in& clientAddr);
