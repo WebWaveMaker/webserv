@@ -171,8 +171,6 @@ bool ConfigValue::asBool() const {
 }
 
 unsigned int ConfigValue::asUint() const {
-	// std::cerr << type << std::endl;
-	// std::cerr << data.integer << std::endl;
 	if (type != UINT) {
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid type asUint");
 	}

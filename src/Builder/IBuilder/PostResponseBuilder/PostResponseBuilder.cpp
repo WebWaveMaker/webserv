@@ -22,7 +22,6 @@ PostResponseBuilder::PostResponseBuilder(reactor::sharedData_t sharedData, reque
 	if (_sessionData)
 		this->handleSession();
 	this->prepare();
-	std::cerr << "PostResponseBuilder" << std::endl;
 };
 
 void PostResponseBuilder::handleSession(){};

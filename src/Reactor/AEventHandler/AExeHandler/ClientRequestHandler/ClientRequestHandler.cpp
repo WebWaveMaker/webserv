@@ -9,9 +9,7 @@ namespace reactor {
 		Dispatcher::getInstance()->registerIOHandler<ClientReadHandlerFactory>(sharedData);
 	}
 
-	ClientRequestHandler::~ClientRequestHandler() {
-		std::cerr << "ClientRequestHandler " << this->getHandle() << " deleted" << std::endl;
-	}
+	ClientRequestHandler::~ClientRequestHandler() {}
 
 	RequestParser& ClientRequestHandler::getRequest() {
 		return this->_requestParser;

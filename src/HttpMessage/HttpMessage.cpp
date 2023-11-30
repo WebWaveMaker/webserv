@@ -140,7 +140,6 @@ unsigned int HttpMessage::getContentLengthReceived(void) const {
 }
 
 void HttpMessage::setContentLengthReceived(const unsigned int contentLengthReceived) {
-	// std::cerr << "setcontentlengthreceived: " << contentLengthReceived << "\n";
 	this->_contentLengthReceived = contentLengthReceived;
 }
 
