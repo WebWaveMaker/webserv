@@ -28,7 +28,6 @@ namespace reactor {
 		}
 		if (fcntl(clientFd, F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
 			ServerManager::getInstance()->eraseClient(clientFd);
-			close(clientFd);
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 			return;
 		}

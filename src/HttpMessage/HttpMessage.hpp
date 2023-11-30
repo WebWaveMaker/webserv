@@ -48,6 +48,7 @@ class HttpMessage {
 	unsigned int getTotalChunkedLength(void) const;
 	void setIsRegistered(const bool isRegistered);
 	bool getIsRegistered(void) const;
+	std::string getUserAgent(void) const;
 };
 
 typedef utils::shared_ptr<HttpMessage> msg_t;

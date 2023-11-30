@@ -14,9 +14,7 @@ HttpMessage::HttpMessage(const HttpMessage& obj) {
 	*this = obj;
 }
 
-HttpMessage::~HttpMessage() {
-	std::cerr << "httpMessage destructor" << std::endl;
-}
+HttpMessage::~HttpMessage() {}
 
 HttpMessage& HttpMessage::operator=(const HttpMessage& obj) {
 	if (this != &obj) {
@@ -163,4 +161,12 @@ void HttpMessage::setIsRegistered(const bool isRegistered) {
 
 bool HttpMessage::getIsRegistered(void) const {
 	return this->_isRegistered;
+}
+
+std::string HttpMessage::getUserAgent() const {
+	std::map<std::string, std::string>::const_iterator it = this->_headers.find("User-Agent");
+
+	if (it == this->_headers.end())
+		return std::string("");
+	return it->second;
 }

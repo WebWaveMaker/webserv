@@ -10,11 +10,15 @@ namespace reactor {
 		  _keepalive(true),
 		  _director(this->chooseBuilder()),
 		  _registered(false) {
-		std::cerr << "ClientResponseHandler create" << std::endl;
+		std::cout << "[" << this->_request->second.getUserAgent() << " " << this->_request->second.getMethodStr() << " "
+				  << this->_request->second.getRequestTarget() << "] "
+				  << "Response start..." << std::endl;
 	}
 
 	ClientResponseHandler::~ClientResponseHandler() {
-		std::cerr << "ClientReasponseHandler destructor" << std::endl;
+		std::cout << "[" << this->_request->second.getUserAgent() << " " << this->_request->second.getMethodStr() << " "
+				  << this->_request->second.getRequestTarget() << "] "
+				  << "Response end" << std::endl;
 	}
 
 	std::string ClientResponseHandler::findLocationBlock() {

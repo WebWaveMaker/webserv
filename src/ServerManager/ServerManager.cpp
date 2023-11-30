@@ -46,7 +46,6 @@ void ServerManager::eraseClient(fd_t fd) {
 		 ++serverIt) {
 		if (serverIt->second->hasClient(fd)) {
 			serverIt->second->eraseClient(fd);
-			std::cerr << "erase in Server :" << fd << std::endl;
 			break;
 		}
 	}

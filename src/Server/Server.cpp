@@ -1,7 +1,6 @@
 #include "Server.hpp"
 
 Server::Server(utils::shared_ptr<ServerConfig>& serverConfig) : _serverConfig(serverConfig) {
-	// std::cout << "server constructor called\n";
 	try {
 		this->listenServer();
 	} catch (std::exception& e) {
@@ -113,6 +112,8 @@ void Server::removeClient(int key) {
 	std::map<int, utils::shared_ptr<Client> >::iterator it = this->_clients->find(key);
 
 	if (it != this->_clients->end()) {
+		this->_accessLogger->log(this->_serverConfig->getDirectives(SERVER_NAME).asString(), __func__, UNKNOWN,
+								 it->second.get());
 		this->_clients->erase(it);
 	} else {
 		this->_errorLogger->log("Not Found client\n", __func__, LOG_ERROR, NULL);

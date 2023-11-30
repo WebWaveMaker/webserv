@@ -30,7 +30,7 @@ std::string AccessLogger::makeLogMsg(const std::string& msg, const std::string& 
 	const Client* client = static_cast<Client*>(arg);
 
 	return utils::getCurTime(logTimeFormat::accessTimeFormat) + msg + " " + func + " " +
-		   inet_ntoa(client->getAddr().sin_addr) + "\n";
+		   inet_ntoa(client->getAddr().sin_addr) + " Fd: " + utils::itos(client->getFd()) + "\n";
 }
 
 /**
