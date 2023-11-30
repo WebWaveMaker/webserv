@@ -24,17 +24,23 @@ void ServerManager::handleSigPipe() {
 };
 
 void ServerManager::createServer(config_t& ServerConfigs) {
+	std::set<unsigned int> usePort;
 	try {
 		for (config_t::iterator it = ServerConfigs.begin(); it != ServerConfigs.end(); ++it) {
-			Server* server = new Server(*it);
-			std::map<int, Server*>::iterator sIt = this->_servers.find(server->getFd());
+			unsigned int port = it->get()->getDirectives(LISTEN).asUint();
+			if (usePort.find(port) == usePort.end()) {
+				usePort.insert(port);
+				Server* server = new Server(*it);
+				std::map<int, Server*>::iterator sIt = this->_servers.find(server->getFd());
 
-			if (sIt == this->_servers.end()) {
-				this->_servers[server->getFd()] = server;
-			} else {
-				delete server;
+				if (sIt == this->_servers.end()) {
+					this->_servers[server->getFd()] = server;
+				} else {
+					delete server;
+				}
 			}
 		}
+		usePort.clear();
 	} catch (std::exception& e) {
 		throw;
 	}
@@ -65,6 +71,44 @@ Server* ServerManager::getServer(int serverFD) const {
 
 config_t ServerManager::getServerConfigs() const {
 	return (this->_serverConfigs);
+}
+
+// server_name default값 확인, host없는 경우 확인
+utils::shared_ptr<ServerConfig> ServerManager::getServerConfig(const int clientFd, request_t request) const {
+	std::string host = request->second.getHeaders()["Host"];
+	std::string portStr = "80";
+	if (host.empty())
+		return this->getServerConfig(clientFd);
+	size_t colPos = host.find(':');
+	if (colPos != std::string::npos) {
+		portStr = host.substr(colPos);
+		host.erase(colPos);
+	}
+	unsigned int port = utils::stoui(portStr);
+	unsigned int mainPort = 0;
+	std::string mainName;
+
+	for (std::map<int, Server*>::const_iterator serverIt = this->_servers.begin(); serverIt != this->_servers.end();
+		 ++serverIt) {
+		if (serverIt->second->hasClient(clientFd)) {
+			mainPort = serverIt->second->getPort();
+			mainName = serverIt->second->getServerName();
+			break;
+		}
+	}
+	if (port != mainPort) {
+		// clientResponse에 에러생성
+	}
+	if (port == mainPort && host.compare(mainName) == 0)
+		return this->getServerConfig(clientFd);
+
+	for (config_t::const_iterator it = this->_serverConfigs.begin(); it != this->_serverConfigs.end(); ++it) {
+		if (it->get()->getDirectives(LISTEN).asUint() == mainPort &&
+			it->get()->getDirectives(SERVER_NAME).asString().compare(host) == 0) {
+			return *it;
+		}
+	}
+	return this->getServerConfig(clientFd);
 }
 
 utils::shared_ptr<ServerConfig> ServerManager::getServerConfig(const int clientFd) const {

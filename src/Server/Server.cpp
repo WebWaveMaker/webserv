@@ -3,6 +3,8 @@
 Server::Server(utils::shared_ptr<ServerConfig>& serverConfig) : _serverConfig(serverConfig) {
 	try {
 		this->listenServer();
+		this->_port = this->_serverConfig->getDirectives(LISTEN).asUint();
+		this->_serverName = this->_serverConfig->getDirectives(SERVER_NAME).asString();
 	} catch (std::exception& e) {
 		throw;
 	}
@@ -156,6 +158,14 @@ std::string Server::getClientIP(fd_t fd) {
 		return std::string(clientIP);
 	}
 	return "";
+}
+
+unsigned int Server::getPort() const {
+	return this->_port;
+}
+
+std::string Server::getServerName() const {
+	return this->_serverName;
 }
 
 Server::~Server() {

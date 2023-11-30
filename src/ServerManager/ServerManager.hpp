@@ -22,6 +22,7 @@ class ServerManager : public u::TSingleton<ServerManager> {
 	void eraseClient(fd_t fd);
 	Server* getServer(int serverFd) const;
 	utils::shared_ptr<ServerConfig> getServerConfig(const int clientFd) const;
+	utils::shared_ptr<ServerConfig> getServerConfig(const int clientFd, request_t request) const;
 	config_t getServerConfigs() const;
 	utils::shared_ptr<std::vector<fd_t> > getClientFds();
 	void registerReadEvent(fd_t fd);

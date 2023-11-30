@@ -5,7 +5,7 @@ namespace reactor {
 	ClientResponseHandler::ClientResponseHandler(sharedData_t& sharedData)
 		: AExeHandler(sharedData),
 		  _request(sharedData->getRequest()),
-		  _serverConfig(ServerManager::getInstance()->getServerConfig(this->getHandle())),
+		  _serverConfig(ServerManager::getInstance()->getServerConfig(this->getHandle(), this->_request)),
 		  _locationConfig(_serverConfig->getLocationConfig(this->findLocationBlock())),
 		  _keepalive(true),
 		  _director(this->chooseBuilder()),
