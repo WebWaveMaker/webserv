@@ -15,7 +15,7 @@ HttpMessage::HttpMessage(const HttpMessage& obj) {
 }
 
 HttpMessage::~HttpMessage() {
-	std::cerr << this->getRawStr() << "httpMessage destructor" << std::endl;
+	std::cerr << "httpMessage destructor" << std::endl;
 }
 
 HttpMessage& HttpMessage::operator=(const HttpMessage& obj) {

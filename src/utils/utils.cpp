@@ -1,6 +1,6 @@
 #include "utils.hpp"
 
-const char* logTimeFormat::accessTimeFormat = " [%d/%b/%Y:%H:%M:%S] ";
+const char* logTimeFormat::accessTimeFormat = "[%d/%b/%Y %H:%M:%S] ";
 const char* logTimeFormat::errorTimeFormat = " %Y/%m/%d %H:%M:%S ";
 const char* logTimeFormat::systemTimeFormat = " %a, %d %b %Y %H:%M:%S ";
 const char* logTimeFormat::GMTtimeFormat = "%a, %d %b %Y %H:%M:%S GMT";

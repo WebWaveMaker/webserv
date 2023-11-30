@@ -160,16 +160,13 @@ bool RequestParser::parseChunked(std::string& buf) {
 	curMsg.getBuf().clear();
 	std::string::size_type crlf_pos = buf.find(CRLF);
 
-	// std::cerr << buf.data();
 	if (crlf_pos == std::string::npos) {
 		saveBufAndClear(buf);
 		return false;
 	}
 	unsigned int chunkedLength = 0;
 	try {
-		std::cerr << "received: " << curMsg.getContentLengthReceived() << std::endl;
 		chunkedLength = utils::toHexNum<unsigned int>(buf.substr(0, crlf_pos));
-		std::cerr << "chunked Length: " << chunkedLength << std::endl;
 	} catch (const std::invalid_argument& ex) {
 		ErrorLogger::parseError(__FILE__, __LINE__, __func__, "chunked length is not hex");
 		return setErrorRequest(HTTP_ERROR, BAD_REQUEST);
@@ -182,7 +179,6 @@ bool RequestParser::parseChunked(std::string& buf) {
 
 	curMsg.setContentLengthReceived(curMsg.getContentLengthReceived() + chunkedLength);
 	curMsg.setTotalChunkedLength(curMsg.getTotalChunkedLength() + chunkedLength);
-	std::cerr << "total chunked length: " << curMsg.getTotalChunkedLength() << std::endl;
 	if (curMsg.getTotalChunkedLength() >= _serverConfig->getDirectives(CLIENT_MAX_BODY_SIZE).asUint())
 		return setErrorRequest(HTTP_ERROR, PAYLOAD_TOO_LARGE);
 	cutBuf(buf, crlf_pos + CRLF_LEN);
@@ -264,7 +260,6 @@ request_t RequestParser::parse(std::string& content) {
 	}
 	while (content.empty() == false) {
 		this->branchParser(this->_msgs.back()->first, content);
-		std::cerr << "request state: " << this->_msgs.back()->first << std::endl;
 		if (this->_msgs.back()->first == DONE && content.empty() == false) {
 			_msgs.push(utils::shared_ptr<std::pair<enum HttpMessageState, HttpMessage> >(
 				new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
