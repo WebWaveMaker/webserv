@@ -10,13 +10,11 @@ namespace reactor {
 		  _keepalive(true),
 		  _director(this->chooseBuilder()),
 		  _registered(false) {
-		std::cerr << "make resesrioesjorijsoerijsoeijr" << std::endl;
+		std::cerr << "ClientResponseHandler create" << std::endl;
 	}
 
 	ClientResponseHandler::~ClientResponseHandler() {
-		std::cerr << "REsponse removeREsponse removeREsponse removeREsponse removeREsponse removeREsponse "
-					 "removeREsponse removeREsponse remove"
-				  << std::endl;
+		std::cerr << "ClientReasponseHandler destructor" << std::endl;
 	}
 
 	std::string ClientResponseHandler::findLocationBlock() {
@@ -74,8 +72,9 @@ namespace reactor {
 				return;
 			}
 			// std::cout << "this one?" << std::endl;
-			if (this->_director.buildProduct() == false)
+			if (this->_director.buildProduct() == false) {
 				return;
+			}
 			// std::cout << "client response handler try catch" << std::endl;
 		} catch (utils::shared_ptr<IBuilder<sharedData_t> >& builder) {
 			this->_director.setBuilder(builder);

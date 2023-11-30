@@ -5,7 +5,12 @@ namespace reactor {
 	Dispatcher::Dispatcher() : _demultiplexer(SyncEventDemultiplexer::getInstance()) {}
 
 	Dispatcher::~Dispatcher() {}
-	/*IOhandler 하나만 Dispatcher, kevent에서 삭제합니다.*/
+
+	/*
+	 * IOHandler를 kqueue에서 Delete합니다.
+	 * @param fd 삭제할 IOHandler의 fd
+	 * @param type 삭제할 IOHandler의 EventType
+	 */
 	void Dispatcher::removeIOHandler(fd_t fd, enum EventType type) {
 		if (this->_ioHandlers.find(fd) == this->_ioHandlers.end())
 			return;
@@ -30,7 +35,7 @@ namespace reactor {
 		this->_ioHandlers[fd].pop_back();
 		this->_handlerIndices.erase(handler);
 	}
-	/*Exehandler 하나만 Dispatcher에서 삭제합니다.*/
+
 	void Dispatcher::removeExeHandler(AEventHandler* handler) {
 		const handle_t handle = handler->getHandle();
 		for (size_t i = 0; i < this->_exeHandlers[handle].size(); ++i) {
