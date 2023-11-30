@@ -26,6 +26,10 @@ class ErrorResponseBuilder : public IBuilder<reactor::sharedData_t> {
 						 const utils::shared_ptr<LocationConfig>& locationConfig);
 	~ErrorResponseBuilder();
 
+	static utils::shared_ptr<IBuilder<reactor::sharedData_t> > createErrorResponseBuilder(
+		const int status, const reactor::sharedData_t& sharedData, const utils::shared_ptr<ServerConfig>& serverConfig,
+		const utils::shared_ptr<LocationConfig>& locationConfig);
+
 	virtual enum AsyncState getReadState() const { return this->_readSharedData->getState(); }
 	virtual void setReadState(enum AsyncState state) { this->_readSharedData->setState(state); }
 	virtual reactor::sharedData_t getProduct();

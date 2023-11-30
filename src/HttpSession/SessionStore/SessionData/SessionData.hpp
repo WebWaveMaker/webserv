@@ -18,6 +18,7 @@ class SessionData {
 	bool isExpired();
 	void setData(const std::string& key, const std::string& value);
 	std::string& getData(const std::string& key);
+	std::map<std::string, std::string>& getData();
 };
 
 #endif

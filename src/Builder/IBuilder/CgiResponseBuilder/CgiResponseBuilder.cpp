@@ -17,7 +17,30 @@ CgiResponseBuilder::CgiResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _forked(false),
 	  _cgiReadSharedData(),
 	  _startLineState(false),
-	  _contentLengthState(false) {
+	  _contentLengthState(false),
+	  _sessionData(u::nullptr_t) {
+	if (_locationConfig.get() == u::nullptr_t)
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	this->_pendingBuf.clear();
+	this->inItInterpreterMap();
+	this->prepare();
+}
+
+CgiResponseBuilder::CgiResponseBuilder(reactor::sharedData_t sharedData, const request_t request,
+									   const utils::shared_ptr<ServerConfig>& serverConfig,
+									   const utils::shared_ptr<LocationConfig>& locationConfig,
+									   SessionData* sessionData)
+	: _sharedData(sharedData),
+	  _request(request),
+	  _serverConfig(serverConfig),
+	  _locationConfig(locationConfig),
+	  _unchunkedState(false),
+	  _forked(false),
+	  _cgiReadSharedData(),
+	  _startLineState(false),
+	  _contentLengthState(false),
+	  _sessionData(sessionData) {
 	if (_locationConfig.get() == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
@@ -403,11 +426,23 @@ std::string CgiResponseBuilder::makePathTranslated() {
 	return rootPath + uriPath;
 }
 
+void CgiResponseBuilder::setEnvpSessionData(std::vector<std::string>& cgiEnvpVec) {
+	if (this->_sessionData == u::nullptr_t)
+		return;
+	for (std::map<std::string, std::string>::const_iterator cit = this->_sessionData->getData().begin();
+		 cit != this->_sessionData->getData().end(); ++cit) {
+		std::string key = "X_" + cit->first;
+		std::string value = cit->second;
+		this->addCgiEnvp(cgiEnvpVec, key, value);
+	}
+}
+
 char** CgiResponseBuilder::setEnvp() {
 	char** envp = ServerManager::getInstance()->getEnvp();
 
 	std::vector<std::string> cgiEnvpVec;
 	this->setClientHeaders(cgiEnvpVec);
+	this->setEnvpSessionData(cgiEnvpVec);
 
 	std::map<std::string, std::string>& headers = this->_request.get()->second.getHeaders();
 	std::string serverName = this->_serverConfig->getDirectives(SERVER_NAME).asString();
@@ -549,4 +584,19 @@ void CgiResponseBuilder::removeReadIO() {
 void CgiResponseBuilder::removeWriteIO() {
 	reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
 														this->_cgiWriteSharedData->getType());
+}
+
+utils::shared_ptr<IBuilder<reactor::sharedData_t> > CgiResponseBuilder::createCgiResponseBuilder(
+	const reactor::sharedData_t& sharedData, const request_t& request,
+	const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig) {
+	return utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		new CgiResponseBuilder(sharedData, request, serverConfig, locationConfig));
+}
+
+utils::shared_ptr<IBuilder<reactor::sharedData_t> > CgiResponseBuilder::createCgiResponseBuilder(
+	const reactor::sharedData_t& sharedData, const request_t& request,
+	const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig,
+	SessionData* sessionData) {
+	return utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		new CgiResponseBuilder(sharedData, request, serverConfig, locationConfig, sessionData));
 }

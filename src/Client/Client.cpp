@@ -12,4 +12,5 @@ struct sockaddr_in Client::getAddr() const {
 
 Client::~Client() {
 	close(this->_clientFd);
+	std::cerr << "Client " << this->_clientFd << " deleted" << std::endl;
 }

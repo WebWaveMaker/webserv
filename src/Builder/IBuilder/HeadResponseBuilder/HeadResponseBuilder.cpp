@@ -2,14 +2,16 @@
 
 HeadResponseBuilder::HeadResponseBuilder(reactor::sharedData_t sharedData, const request_t request,
 										 const utils::shared_ptr<ServerConfig>& serverConfig,
-										 const utils::shared_ptr<LocationConfig>& locationConfig)
+										 const utils::shared_ptr<LocationConfig>& locationConfig,
+										 SessionData* sessionData)
 	: _sharedData(sharedData),
 	  _request(request),
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
 	  _path(),
 	  _readSharedData(),
-	  _response() {
+	  _response(),
+	  _sessionData(sessionData) {
 	if (_locationConfig.get() == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
@@ -36,8 +38,8 @@ void HeadResponseBuilder::setHeader() {
 	struct stat fileInfo;
 
 	if (stat(this->_path.c_str(), &fileInfo) == SYSTEMCALL_ERROR) {
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData,
+															   this->_serverConfig, this->_locationConfig);
 	}
 	std::map<std::string, std::string> headers =
 		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
@@ -201,4 +203,12 @@ void HeadResponseBuilder::prepare() {
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(FD_ERROR, EVENT_READ, std::vector<char>()));
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
 	this->setReadState(RESOLVE);
+}
+
+utils::shared_ptr<IBuilder<reactor::sharedData_t> > HeadResponseBuilder::createHeadResponseBuilder(
+	const reactor::sharedData_t& sharedData, const request_t& request,
+	const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig,
+	SessionData* sessionData) {
+	return utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		new HeadResponseBuilder(sharedData, request, serverConfig, locationConfig, sessionData));
 }

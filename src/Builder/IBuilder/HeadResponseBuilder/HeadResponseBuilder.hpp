@@ -11,6 +11,7 @@ class HeadResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	const utils::shared_ptr<ServerConfig> _serverConfig;
 	const utils::shared_ptr<LocationConfig> _locationConfig;
 	std::string _path;
+	SessionData* _sessionData;
 
 	reactor::sharedData_t _readSharedData;	// for file, pipe read
 	HttpMessage _response;	// for startLine, headers // defaultResponseBuilder가 기본적인 것들을 채울 예정.
@@ -28,8 +29,13 @@ class HeadResponseBuilder : public IBuilder<reactor::sharedData_t> {
    public:
 	HeadResponseBuilder(reactor::sharedData_t sharedData, request_t request,
 						const utils::shared_ptr<ServerConfig>& serverConfig,
-						const utils::shared_ptr<LocationConfig>& locationConfig);
+						const utils::shared_ptr<LocationConfig>& locationConfig, SessionData* sessionData);
 	~HeadResponseBuilder();
+
+	static utils::shared_ptr<IBuilder<reactor::sharedData_t> > createHeadResponseBuilder(
+		const reactor::sharedData_t& sharedData, const request_t& request,
+		const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig,
+		SessionData* sessionData);
 
 	// fileread RESOLVE, write empty
 	virtual enum AsyncState getReadState() const { return this->_readSharedData->getState(); }

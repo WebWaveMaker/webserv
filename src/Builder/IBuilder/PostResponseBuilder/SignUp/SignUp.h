@@ -3,6 +3,7 @@
 #define SIGNUP_H
 
 #include "PostResponseBuilder.hpp"
+#include "UserDB.hpp"
 #include "utils.hpp"
 
 #endif

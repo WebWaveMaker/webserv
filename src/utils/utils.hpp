@@ -17,6 +17,7 @@ namespace utils {
 	fd_t makeFd(const char* path, const char* option);
 	std::string generateRandomString();
 	std::string removeSubstring(const std::string& mainStr, const std::string& substr);
+	std::string generateRandomHexColor();
 
 	template <typename T, typename S>
 	void insertData(T& target, const S& source) {
