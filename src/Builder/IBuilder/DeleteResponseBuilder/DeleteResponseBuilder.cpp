@@ -2,14 +2,16 @@
 
 DeleteResponseBuilder::DeleteResponseBuilder(reactor::sharedData_t sharedData, request_t request,
 											 const utils::shared_ptr<ServerConfig>& serverConfig,
-											 const utils::shared_ptr<LocationConfig>& locationConfig)
+											 const utils::shared_ptr<LocationConfig>& locationConfig,
+											 SessionData* sessionData)
 	: _sharedData(sharedData),
 	  _request(request),
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
 	  _readSharedData(new reactor::SharedData(FD_ERROR, EVENT_READ, std::vector<char>())),
 	  _response(),
-	  _path() {
+	  _path(),
+	  _sessionData(sessionData) {
 	if (_locationConfig.get() == u::nullptr_t)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
 			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
@@ -89,3 +91,11 @@ void DeleteResponseBuilder::prepare() {
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
 	this->_readSharedData->setState(RESOLVE);
 }
+
+utils::shared_ptr<IBuilder<reactor::sharedData_t> > DeleteResponseBuilder::createDeleteResponseBuilder(
+	const reactor::sharedData_t& sharedData, const request_t& request,
+	const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig,
+	SessionData* sessionData) {
+	return utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		new DeleteResponseBuilder(sharedData, request, serverConfig, locationConfig, sessionData));
+};

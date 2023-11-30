@@ -4,5 +4,6 @@
 
 #include "HttpSession.hpp"
 #include "PostResponseBuilder.hpp"
+#include "UserDB.hpp"
 
 #endif

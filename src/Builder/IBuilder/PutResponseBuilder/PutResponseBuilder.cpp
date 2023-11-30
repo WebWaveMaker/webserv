@@ -2,7 +2,8 @@
 
 PutResponseBuilder::PutResponseBuilder(reactor::sharedData_t sharedData, request_t request,
 									   const utils::shared_ptr<ServerConfig>& serverConfig,
-									   const utils::shared_ptr<LocationConfig>& locationConfig)
+									   const utils::shared_ptr<LocationConfig>& locationConfig,
+									   SessionData* sessionData)
 	: _sharedData(sharedData),
 	  _request(request),
 	  _serverConfig(serverConfig),
@@ -11,7 +12,8 @@ PutResponseBuilder::PutResponseBuilder(reactor::sharedData_t sharedData, request
 	  _isExist(false),
 	  _isRemoved(false),
 	  _response(),
-	  _path() {
+	  _path(),
+	  _sessionData(sessionData) {
 	this->prepare();
 }
 
@@ -111,4 +113,12 @@ void PutResponseBuilder::prepare() {
 	this->_writeSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(_fd, EVENT_WRITE, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileWriteHandlerFactory>(this->_writeSharedData);
+}
+
+utils::shared_ptr<IBuilder<reactor::sharedData_t> > PutResponseBuilder::createPutResponseBuilder(
+	const reactor::sharedData_t& sharedData, const request_t& request,
+	const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig,
+	SessionData* sessionData) {
+	return utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		new PutResponseBuilder(sharedData, request, serverConfig, locationConfig, sessionData));
 }

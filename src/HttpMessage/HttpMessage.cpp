@@ -1,7 +1,14 @@
 #include "HttpMessage.hpp"
 
 HttpMessage::HttpMessage()
-	: _startLine(3), _headers(), _body(), _errorCode(0), _contentLength(0), _contentLengthReceived(0), _buf(), _isRegistered(false) {}
+	: _startLine(3),
+	  _headers(),
+	  _body(),
+	  _errorCode(0),
+	  _contentLength(0),
+	  _contentLengthReceived(0),
+	  _buf(),
+	  _isRegistered(false) {}
 
 HttpMessage::HttpMessage(const HttpMessage& obj) {
 	*this = obj;
@@ -161,4 +168,21 @@ void HttpMessage::setIsRegistered(const bool isRegistered) {
 
 bool HttpMessage::getIsRegistered(void) const {
 	return this->_isRegistered;
+}
+
+bool HttpMessage::isSession(void) const {
+	return (this->_headers.find(COOKIE) != this->_headers.end());
+}
+
+std::string HttpMessage::getSessionId(void) const {
+	std::string cookie = this->_headers.find(COOKIE)->second;
+	if (cookie == "")
+		return "";
+	std::string::size_type pos = cookie.find("session_id=");
+
+	return cookie.substr(pos + 11, cookie.find(';', pos) - pos - 11);
+}
+
+void HttpMessage::setRequestTarget(const std::string& requestTarget) {
+	this->_startLine[1] = requestTarget;
 }

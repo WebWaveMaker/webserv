@@ -3,10 +3,12 @@
 #define GETRESPONSEBUILDER_H
 
 #include <dirent.h>
+#include "CgiResponseBuilder.hpp"
 #include "DefaultResponseBuilder.hpp"
 #include "ErrorResponseBuilder.hpp"
 #include "FileReadHandlerFactory.hpp"
 #include "HttpMessage.hpp"
+#include "HttpSession.hpp"
 #include "IBuilder.hpp"
 #include "PipeReadHandlerFactory.hpp"
 #include "RedirectResponseBuilder.hpp"

@@ -32,6 +32,7 @@ class HttpMessage {
 	enum HttpMethods getMethod(void) const;
 	std::string getMethodStr(void) const;
 	std::string getRequestTarget(void) const;
+	void setRequestTarget(const std::string& requestTarget);
 	std::string getTargetFile(void) const;
 	std::string getTargetPath(void) const;
 	std::string& getBody(void);
@@ -48,6 +49,8 @@ class HttpMessage {
 	unsigned int getTotalChunkedLength(void) const;
 	void setIsRegistered(const bool isRegistered);
 	bool getIsRegistered(void) const;
+	bool isSession(void) const;
+	std::string getSessionId(void) const;
 };
 
 typedef utils::shared_ptr<HttpMessage> msg_t;

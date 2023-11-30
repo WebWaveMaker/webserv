@@ -30,15 +30,30 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	bool _contentLengthState;
 	std::vector<char> _pendingBuf;
 	std::time_t _cgiTime;
+	SessionData* _sessionData;
 
 	CgiResponseBuilder(const CgiResponseBuilder& obj);
 	CgiResponseBuilder& operator=(const CgiResponseBuilder& obj);
+
+	void setEnvpSessionData(std::vector<std::string>& cgiEnvpVec);
 
    public:
 	CgiResponseBuilder(reactor::sharedData_t sharedData, request_t request,
 					   const utils::shared_ptr<ServerConfig>& serverConfig,
 					   const utils::shared_ptr<LocationConfig>& locationConfig);
+	CgiResponseBuilder(reactor::sharedData_t sharedData, request_t request,
+					   const utils::shared_ptr<ServerConfig>& serverConfig,
+					   const utils::shared_ptr<LocationConfig>& locationConfig, SessionData* sessionData);
 	~CgiResponseBuilder();
+
+	static utils::shared_ptr<IBuilder<reactor::sharedData_t> > createCgiResponseBuilder(
+		const reactor::sharedData_t& sharedData, const request_t& request,
+		const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig);
+
+	static utils::shared_ptr<IBuilder<reactor::sharedData_t> > createCgiResponseBuilder(
+		const reactor::sharedData_t& sharedData, const request_t& request,
+		const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig,
+		SessionData* sessionData);
 
 	virtual enum AsyncState getReadState() const { return this->_cgiReadSharedData.get()->getState(); }
 	virtual void setReadState(enum AsyncState state) { this->_cgiReadSharedData.get()->setState(state); }

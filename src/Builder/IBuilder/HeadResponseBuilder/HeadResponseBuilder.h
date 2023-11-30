@@ -12,6 +12,7 @@
 #include "RedirectResponseBuilder.hpp"
 #include "RequestParser.h"
 #include "ServerConfig.hpp"
+#include "SessionData.hpp"
 #include "SharedData.hpp"
 #include "shared_ptr.hpp"
 #include "utils.hpp"

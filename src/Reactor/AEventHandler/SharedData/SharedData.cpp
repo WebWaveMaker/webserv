@@ -2,9 +2,9 @@
 
 namespace reactor {
 	SharedData::SharedData(const fd_t fd, const enum EventType type, std::vector<char> buffer)
-		: _fd(fd), _type(type), _buffer(buffer), _state(PENDING), _readByte(0), _request(){
+		: _fd(fd), _type(type), _buffer(buffer), _state(PENDING), _readByte(0), _request() {
 		std::cerr << "SharedData " << this->_fd << " created" << std::endl;
-		};
+	};
 
 	SharedData::SharedData(const fd_t fd, const enum EventType type, std::vector<char> buffer, request_t request)
 		: _fd(fd), _type(type), _buffer(buffer), _state(PENDING), _readByte(0), _request(request){};
@@ -12,7 +12,7 @@ namespace reactor {
 	SharedData::SharedData(const SharedData& obj)
 		: _fd(obj._fd), _type(obj._type), _buffer(obj._buffer), _state(obj._state){};
 
-	SharedData::~SharedData(){
+	SharedData::~SharedData() {
 		std::cerr << "SharedData " << this->_fd << " deleted" << std::endl;
 	};
 

@@ -7,7 +7,8 @@ const std::string PostResponseBuilder::_fileForSignup = "for_users";
 
 PostResponseBuilder::PostResponseBuilder(reactor::sharedData_t sharedData, request_t request,
 										 const utils::shared_ptr<ServerConfig>& serverConfig,
-										 const utils::shared_ptr<LocationConfig>& locationConfig)
+										 const utils::shared_ptr<LocationConfig>& locationConfig,
+										 SessionData* sessionData)
 	: _sharedData(sharedData),
 	  _request(request),
 	  _serverConfig(serverConfig),
@@ -16,7 +17,8 @@ PostResponseBuilder::PostResponseBuilder(reactor::sharedData_t sharedData, reque
 	  _isExist(false),
 	  _isRemoved(false),
 	  _response(),
-	  _path() {
+	  _path(),
+	  _sessionData(sessionData) {
 	this->prepare();
 	std::cerr << "PostResponseBuilder" << std::endl;
 };
@@ -48,8 +50,8 @@ bool PostResponseBuilder::findUser(const std::string& username) {
 	struct dirent* dp;
 
 	if ((dirp = opendir(_folderPath.c_str())) == u::nullptr_t)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData,
+															   this->_serverConfig, this->_locationConfig);
 	while ((dp = readdir(dirp)) != u::nullptr_t) {
 		if (dp->d_name[0] == '.' || dp->d_name == _fileForSignup)
 			continue;
@@ -65,11 +67,11 @@ bool PostResponseBuilder::findUser(const std::string& username) {
 void PostResponseBuilder::doDefaultBehavior() {}
 
 void PostResponseBuilder::divideEntryPoint() {
-	std::string targetTarget = this->_request->second.getRequestTarget();
+	std::string target = this->_request->second.getRequestTarget();
 
-	if (targetTarget == "/signup")
+	if (target == "/signup")
 		SignUp(this);
-	if (targetTarget == "/login")
+	if (target == "/login")
 		Login(this);
 }
 
@@ -138,8 +140,6 @@ void PostResponseBuilder::prepare() {
 	if (target[target.size() - 1] == '/')
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			UNSUPPORTED_MEDIA_TYPE, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	// this->setPath(target.substr(1),
-	// 			  utils::removeSubstring(this->_request->second.getRequestTarget(), this->_locationConfig->getPath()));
 	this->setPath(target.substr(1), this->_request->second.getTargetPath().substr(1));
 	if (checkFileMode(this->_path) == MODE_FILE)
 		this->_isExist = true;
@@ -149,4 +149,12 @@ void PostResponseBuilder::prepare() {
 	this->_writeSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(_fd, EVENT_WRITE, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileWriteHandlerFactory>(this->_writeSharedData);
+}
+
+utils::shared_ptr<IBuilder<reactor::sharedData_t> > PostResponseBuilder::createPostResponseBuilder(
+	const reactor::sharedData_t& sharedData, const request_t& request,
+	const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig,
+	SessionData* sessionData) {
+	return utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		new PostResponseBuilder(sharedData, request, serverConfig, locationConfig, sessionData));
 }

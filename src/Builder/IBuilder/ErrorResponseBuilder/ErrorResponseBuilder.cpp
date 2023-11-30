@@ -27,8 +27,8 @@ void ErrorResponseBuilder::setHeader() {
 	struct stat fileInfo;
 
 	if (stat(this->_path.c_str(), &fileInfo) == SYSTEMCALL_ERROR) {
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData,
+															   this->_serverConfig, this->_locationConfig);
 	}
 	std::map<std::string, std::string> headers;
 	headers = DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
@@ -114,4 +114,11 @@ void ErrorResponseBuilder::prepare() {
 	this->_readSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(_fd, EVENT_READ, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileReadHandlerFactory>(this->_readSharedData);
+}
+
+utils::shared_ptr<IBuilder<reactor::sharedData_t> > ErrorResponseBuilder::createErrorResponseBuilder(
+	const int status, const reactor::sharedData_t& sharedData, const utils::shared_ptr<ServerConfig>& serverConfig,
+	const utils::shared_ptr<LocationConfig>& locationConfig) {
+	return utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		new ErrorResponseBuilder(status, sharedData, serverConfig, locationConfig));
 }
