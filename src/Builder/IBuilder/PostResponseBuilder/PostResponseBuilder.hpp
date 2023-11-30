@@ -13,10 +13,10 @@ class PostResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	reactor::sharedData_t _writeSharedData;
 	bool _isExist;
 	bool _isRemoved;
-	SessionData* _sessionData;
 
 	HttpMessage _response;
 	std::string _path;
+	SessionData* _sessionData;
 	fd_t _fd;
 
 	static const std::string _fileForSignup;

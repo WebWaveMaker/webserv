@@ -183,7 +183,6 @@ fd_t GetResponseBuilder::directoryListing() {
 fd_t GetResponseBuilder::directoryProcessing() {
 	std::string middle =
 		utils::removeSubstring(this->_request->second.getRequestTarget(), this->_locationConfig->getPath());
-	// std::cerr << middle << std::endl;
 	if (middle[0] == '/')
 		middle = "";
 	if (this->checkFileMode(this->_locationConfig->getDirectives(ROOT).asString() +

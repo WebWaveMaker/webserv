@@ -49,7 +49,7 @@ print("""
 """)
 
 # 환경 변수에서 X_color 가져와서 Pantone 색상으로 표시
-color_code = os.environ.get('X_color')
+color_code = os.environ.get('X_COLOR')
 if color_code:
     # RGB 색상
     print("<div class='color-box' style='background-color: %s;'></div>" % color_code)

@@ -35,9 +35,9 @@ void PostResponseBuilder::Login::login(const std::string& username, const std::s
 			FOUND, "/login.html", _builder->_sharedData, _builder->_request, _builder->_serverConfig));
 	const sessionId_t sessionId = _httpSession->createSession(SESSION_EXPIRED_TIME + std::time(u::nullptr_t));
 	SessionData* data = _httpSession->getSessionData(sessionId);
-	data->setData("username", username);
-	data->setData("password", password);
-	data->setData("color", utils::generateRandomHexColor());
+	data->setData("USERNAME", username);
+	data->setData("PASSWORD", password);
+	data->setData("COLOR", utils::generateRandomHexColor());
 	throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new RedirectResponseBuilder(
 		SEE_OTHER, "/index.html", _builder->_sharedData, _builder->_request, _builder->_serverConfig, sessionId));
 }

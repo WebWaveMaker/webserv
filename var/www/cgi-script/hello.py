@@ -78,8 +78,8 @@ print("""
 """)
 
 # 환경 변수에서 username과 password 가져와서 출력
-username = os.environ.get('X_username')
-password = os.environ.get('X_password')
+username = os.environ.get('X_USERNAME')
+password = os.environ.get('X_PASSWORD')
 
 if username and password:
     print("<p>Username: %s</p>" % username)

@@ -100,6 +100,8 @@ enum EventType {
 	// EVFILT_EXCEPT = -15
 };
 
+enum PipeType { PIPE_CLOSE = -1, PIPE_PREAD = 0, PIPE_PWRITE = 1, PIPE_CREAD = 2, PIPE_CWRITE = 3 };
+
 enum AccessType { Read, Write };
 
 #endif

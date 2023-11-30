@@ -262,7 +262,6 @@ request_t RequestParser::parse(std::string& content) {
 		this->push();
 	while (content.empty() == false) {
 		this->branchParser(this->_msgs.back()->first, content);
-		std::cerr << "request state: " << this->_msgs.back()->first << std::endl;
 		if (this->_msgs.back()->first == DONE && content.empty() == false)
 			this->push();
 	}

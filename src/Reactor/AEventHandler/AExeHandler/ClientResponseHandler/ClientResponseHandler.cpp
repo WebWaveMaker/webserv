@@ -62,7 +62,6 @@ namespace reactor {
 			Dispatcher::getInstance()->registerIOHandler<ClientWriteHandlerFactory>(this->_sharedData);
 			this->_registered = true;
 		}
-		// std::cout << "client response handler" << std::endl;
 		try {
 			if (this->getBuffer().empty() && this->_director.getProduct()->getBuffer().empty() &&
 				this->_director.getBuilderReadState() == RESOLVE) {
@@ -72,19 +71,14 @@ namespace reactor {
 					this->_sharedData->setState(TERMINATE);
 					Dispatcher::getInstance()->addFdToClose(this->getHandle());
 				}
-				// std::cout << "remove responseHandler" << std::endl;
 				return;
 			}
-			// std::cout << "this one?" << std::endl;
 			if (this->_director.buildProduct() == false) {
 				return;
 			}
-			// std::cout << "client response handler try catch" << std::endl;
 		} catch (utils::shared_ptr<IBuilder<sharedData_t> >& builder) {
 			this->_director.setBuilder(builder);
 		} catch (...) {
-			// build 도중 에러가 발생하면 ClientWriteHandler와 자신을 삭제하고 clientFd를 연결종료에 등록합니다.
-			// builder는 에러르 throw하기전에 자신이 사용중이던 handler와 자원들을 적절히 정리하고 throw해야합니다.
 			this->setState(TERMINATE);
 			this->_director.setBuilderReadState(TERMINATE);
 			Dispatcher::getInstance()->removeIOHandler(this->getHandle(), this->getType());
@@ -104,6 +98,8 @@ namespace reactor {
 				throw ErrorResponseBuilder::createErrorResponseBuilder(this->_request->second.getErrorCode(),
 																	   this->_sharedData, this->_serverConfig,
 																	   this->_locationConfig);
+			if (this->_request->second.getHeaders()["Keep-Alive"] == "close")
+				this->_keepalive = false;
 
 			const std::vector<enum HttpMethods> methods = this->_locationConfig->getDirectives(LIMIT_EXCEPT).asMedVec();
 

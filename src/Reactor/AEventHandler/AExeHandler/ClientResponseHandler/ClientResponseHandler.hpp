@@ -15,16 +15,12 @@ namespace reactor {
 		bool _registered;
 
 		utils::shared_ptr<IBuilder<sharedData_t> > chooseBuilder();
+		std::string findLocationBlock();
 
 	   public:
-		static utils::shared_ptr<IBuilder<sharedData_t> > createRedirectResponseBuilder(
-			const unsigned int statusCode, const std::string& path, reactor::sharedData_t sharedData, request_t request,
-			const utils::shared_ptr<ServerConfig>& serverConfig);
-
 		ClientResponseHandler(sharedData_t& sharedData);
 		virtual ~ClientResponseHandler();
 		virtual void handleEvent();
-		std::string findLocationBlock();
 	};
 }  // namespace reactor
 #endif

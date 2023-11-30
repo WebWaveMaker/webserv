@@ -11,7 +11,6 @@ class RedirectResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	reactor::sharedData_t _sharedData;
 	const request_t _request;
 	const utils::shared_ptr<ServerConfig> _serverConfig;
-	// const utils::shared_ptr<LocationConfig> _locationConfig;
 	reactor::sharedData_t _readSharedData;
 	HttpMessage _response;
 	const sessionId_t _sessionId;

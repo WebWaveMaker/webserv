@@ -71,7 +71,6 @@ void RedirectResponseBuilder::prepare() {
 	this->setHeader();
 	const std::string raw = this->_response.getRawStr();
 
-	// std::cout << raw << std::endl;
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
 	this->_readSharedData->setState(RESOLVE);
 }

@@ -11,10 +11,10 @@ class DeleteResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	const utils::shared_ptr<ServerConfig> _serverConfig;
 	const utils::shared_ptr<LocationConfig> _locationConfig;
 	reactor::sharedData_t _readSharedData;
-	SessionData* _sessionData;
 
 	HttpMessage _response;
 	std::string _path;
+	SessionData* _sessionData;
 
    public:
 	DeleteResponseBuilder(reactor::sharedData_t sharedData, request_t request,

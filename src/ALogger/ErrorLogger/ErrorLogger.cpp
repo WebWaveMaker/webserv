@@ -91,6 +91,4 @@ void ErrorLogger::log(const std::string& msg, const char* func, const int enum__
 		return;
 	const std::string buf = this->makeLogMsg(msg, func, arg);
 	std::cerr << buf << std::endl;
-	// if (write(this->fd_, buf.c_str(), buf.size()) == SYSTEMCALL_ERROR)
-	// 	ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "ErrorLogger log error");
 }
