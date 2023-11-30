@@ -8,7 +8,7 @@ ErrorResponseBuilder::ErrorResponseBuilder(const int errorCode, reactor::sharedD
 	this->prepare();
 }
 ErrorResponseBuilder::~ErrorResponseBuilder() {
-	close(this->_fd);
+	reactor::FileCloseManager::getInstance()->closeFd(this->_fd);
 }
 
 reactor::sharedData_t ErrorResponseBuilder::getProduct() {
@@ -42,8 +42,6 @@ bool ErrorResponseBuilder::setBody() {
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().end(),
 										  this->_readSharedData->getBuffer().begin(),
 										  this->_readSharedData->getBuffer().end());
-	std::cerr << "errorResponseBuiler:"
-			  << std::string(this->_sharedData->getBuffer().begin(), this->_sharedData->getBuffer().end()) << std::endl;
 	this->_readSharedData->getBuffer().clear();
 	if (this->_readSharedData->getState() == RESOLVE) {
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData->getFd(),
@@ -61,7 +59,6 @@ void ErrorResponseBuilder::reset() {
 }
 
 bool ErrorResponseBuilder::build() {
-	std::cerr << "errorResponseBuiler: " << (this->_readSharedData->getState()) << std::endl;
 	if (this->_readSharedData->getState() == TERMINATE) {
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData.get()->getFd(),
 															this->_readSharedData.get()->getType());
@@ -80,10 +77,10 @@ fd_t ErrorResponseBuilder::findReadFile() {
 
 	this->_path = locPath + errorPage;
 	if (access(this->_path.c_str(), R_OK) == 0)
-		return utils::makeFd(this->_path.c_str(), "r");
+		return reactor::FileCloseManager::getInstance()->makeFd(this->_path, "r");
 	this->_path = serverPath + errorPage;
 	if (access(this->_path.c_str(), R_OK) == 0)
-		return utils::makeFd(this->_path.c_str(), "r");
+		return reactor::FileCloseManager::getInstance()->makeFd(this->_path, "r");
 	return FD_ERROR;
 }
 

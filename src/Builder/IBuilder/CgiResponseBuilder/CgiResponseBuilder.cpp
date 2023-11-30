@@ -331,8 +331,6 @@ bool CgiResponseBuilder::doFork() {
 		close(this->_readPipe[0]);
 		char** envp = this->setEnvp();
 		char** args = this->makeArgs();
-		for (int i = 0; args[i] != NULL; ++i)
-			std::cerr << args[i] << std::endl;
 		if (dup2(this->_writePipe[0], STDIN_FILENO) == -1) {
 			close(this->_writePipe[0]);
 			close(this->_readPipe[1]);

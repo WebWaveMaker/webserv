@@ -21,7 +21,7 @@ PostResponseBuilder::PostResponseBuilder(reactor::sharedData_t sharedData, reque
 };
 
 PostResponseBuilder::~PostResponseBuilder() {
-	close(this->_fd);
+	reactor::FileCloseManager::getInstance()->closeFd(this->_fd);
 }
 
 reactor::sharedData_t PostResponseBuilder::getProduct() {
@@ -144,7 +144,7 @@ void PostResponseBuilder::prepare() {
 		this->_isExist = true;
 	else
 		this->_isExist = false;
-	this->_fd = utils::makeFd(this->_path.c_str(), "w");
+	this->_fd = reactor::FileCloseManager::getInstance()->makeFd(this->_path, "w");
 	this->_writeSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(_fd, EVENT_WRITE, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileWriteHandlerFactory>(this->_writeSharedData);

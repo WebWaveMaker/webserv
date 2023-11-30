@@ -6,7 +6,6 @@
 
 namespace reactor {
 	class FileReadHandler : public AEventHandler {
-	   private:
 	   public:
 		FileReadHandler(sharedData_t& sharedData);
 		virtual ~FileReadHandler();

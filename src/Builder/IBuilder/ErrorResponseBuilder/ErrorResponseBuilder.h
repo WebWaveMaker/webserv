@@ -4,6 +4,7 @@
 
 #include <sys/stat.h>
 #include "DefaultResponseBuilder.hpp"
+#include "FileCloseManager.hpp"
 #include "FileReadHandlerFactory.hpp"
 #include "HttpMessage.hpp"
 #include "IBuilder.hpp"

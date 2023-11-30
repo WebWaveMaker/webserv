@@ -13,6 +13,7 @@ DIRS := ClientReadHandler \
 		FileReadHandler \
 		FileWriteHandler \
 		ServerReadHandler \
-		TimerHandler
+		TimerHandler \
+		FileCloseManager
 
 include $(TOPDIR)/config/makefile/objRecipes.mk

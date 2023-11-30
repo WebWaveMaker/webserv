@@ -3,7 +3,7 @@
 namespace reactor {
 	FileReadHandler::FileReadHandler(sharedData_t& sharedData) : AEventHandler(sharedData) {
 		if (fcntl(this->getHandle(), F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
-			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "fcntl failed");
+			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 			this->setState(TERMINATE);
 		}
 	}
