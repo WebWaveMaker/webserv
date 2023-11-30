@@ -9,6 +9,20 @@ Server::Server(utils::shared_ptr<ServerConfig>& serverConfig) : _serverConfig(se
 	}
 }
 
+Server::Server(const Server& obj) {
+	*this = obj;
+}
+
+Server& Server::operator=(const Server& obj) {
+	this->_serverConfig = obj._serverConfig;
+	this->_fd = obj._fd;
+	this->_serverAddr = obj._serverAddr;
+	this->_clients = obj._clients;
+	this->_accessLogger = obj._accessLogger;
+	this->_errorLogger = obj._errorLogger;
+	return (*this);
+}
+
 void Server::listenServer() {
 
 	this->makeSocket();
@@ -36,12 +50,12 @@ void Server::bindListen() {
 
 	if (bind(this->_fd, (struct sockaddr*)&this->_serverAddr, sizeof(this->_serverAddr)) < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
-		throw std::runtime_error("bind() error\n");
+		throw;
 	}
 
 	if (listen(this->_fd, 128) < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
-		throw std::runtime_error("listen() error\n");
+		throw;
 	}
 }
 
@@ -60,7 +74,8 @@ void Server::makeSocket() {
 
 	int opt = 1;
 	if (setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-		throw std::runtime_error("setsockopt() failed\n");
+		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
+		throw;
 	}
 }
 
@@ -79,7 +94,8 @@ void Server::createClient(int clientFd, struct sockaddr_in& clientAddr) {
 	try {
 		utils::shared_ptr<Client> newClient(new Client(clientFd, clientAddr));
 		(*this->_clients.get())[clientFd] = newClient;
-		this->_accessLogger->log("New client connected\n", __func__, LOG_INFO, newClient.get());
+		this->_accessLogger->log(this->_serverConfig->getDirectives(SERVER_NAME).asString(), __func__, UNKNOWN,
+								 newClient.get());
 	} catch (std::exception& e) {
 		throw;
 	}
@@ -142,7 +158,5 @@ std::string Server::getClientIP(fd_t fd) {
 }
 
 Server::~Server() {
-	// std::cout << "Server destructor called\n";
-
 	this->_clients->clear();
 }
