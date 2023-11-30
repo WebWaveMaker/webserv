@@ -5,10 +5,7 @@ RequestParser::RequestParser(utils::shared_ptr<ServerConfig> serverConfig)
 	_msgs.push(utils::shared_ptr<std::pair<enum HttpMessageState, HttpMessage> >(
 		new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 	_curMsg = &_msgs.back();
-	_curMsg->get()->second.setContentLengthReceived(0);
-	_curMsg->get()->second.setContentLength(0);
-	_curMsg->get()->second.setTotalChunkedLength(0);
-	_curMsg->get()->second.getBuf().clear();
+	_curMsg->get()->second.reset();
 }
 
 RequestParser::~RequestParser() {}
@@ -25,9 +22,9 @@ enum AsyncState RequestParser::getState(void) const {
 	return this->_msgs.empty() ? RESOLVE : PENDING;
 }
 
-bool RequestParser::errorRequest(void) {
-	_curMsg->get()->first = HTTP_ERROR;
-	getCurMsg().setErrorCode(BAD_REQUEST);
+bool RequestParser::setErrorRequest(const enum HttpMessageState state, const enum HTTP_STATUS code) {
+	_curMsg->get()->first = state;
+	getCurMsg().setErrorCode(code);
 	return false;
 }
 
@@ -65,7 +62,8 @@ request_t RequestParser::pop(void) {
 		return elem;
 	elem = this->_msgs.front();
 	if (this->_msgs.front()->first == DONE || this->_msgs.front()->first == HTTP_ERROR ||
-		this->_msgs.front()->first == LONG_BODY_DONE)
+		this->_msgs.front()->first == LONG_BODY_DONE || this->_msgs.front()->first == CHUNKED_DONE ||
+		this->_msgs.front()->first == LONG_BODY_ERROR || this->_msgs.front()->first == CHUNKED_ERROR)
 		this->_msgs.pop();
 	return elem;
 }
@@ -79,9 +77,7 @@ bool RequestParser::parseStartLine(std::string& buf) {
 
 	ss >> startLine[0] >> startLine[1] >> startLine[2];
 	if (startLine[0].empty() || startLine[1].empty() || startLine[2].empty()) {
-		_curMsg->get()->first = HTTP_ERROR;
-		getCurMsg().setErrorCode(BAD_REQUEST);
-		return errorRequest();
+		return setErrorRequest(HTTP_ERROR, BAD_REQUEST);
 	}
 	getCurMsg().setStartLine(startLine);
 	_curMsg->get()->first = HEADER;
@@ -106,11 +102,10 @@ bool RequestParser::parseHeader(std::string& buf) {
 		headers[key] = val;
 	}
 	if ((getCurMsg().getMethod() == POST || getCurMsg().getMethod() == PUT) && this->checkContentLengthZero(headers) &&
-		headers[TRANSFER_ENCODING] != "chunked") {
-		_curMsg->get()->first = HTTP_ERROR;
-		getCurMsg().setErrorCode(LENGTH_REQUIRED);
-		return false;
-	}
+		headers[TRANSFER_ENCODING] != "chunked")
+		return setErrorRequest(HTTP_ERROR, LENGTH_REQUIRED);
+	if (headers[CONTENT_TYPE] == MULTIPART_FORM_DATA)
+		return setErrorRequest(HTTP_ERROR, UNSUPPORTED_MEDIA_TYPE);
 	if (headers.count(CONTENT_LENGTH) == 0)
 		headers[CONTENT_LENGTH] = "0";
 	getCurMsg().setContentLength(utils::stoui(headers[CONTENT_LENGTH]));
@@ -133,11 +128,8 @@ bool RequestParser::parseBody(std::string& buf) {
 	if (this->checkContentLengthZero(headers))
 		return true;
 	const unsigned int contentLength = getCurMsg().getContentLength();
-	if (contentLength > _serverConfig->getDirectives(CLIENT_MAX_BODY_SIZE).asUint()) {
-		_curMsg->get()->first = HTTP_ERROR;
-		getCurMsg().setErrorCode(PAYLOAD_TOO_LARGE);
-		return false;
-	};
+	if (contentLength > _serverConfig->getDirectives(CLIENT_MAX_BODY_SIZE).asUint())
+		return setErrorRequest(HTTP_ERROR, PAYLOAD_TOO_LARGE);
 	try {
 		const std::string str = buf.substr(0, contentLength);
 		buf.erase(0, contentLength);
@@ -150,15 +142,6 @@ bool RequestParser::parseBody(std::string& buf) {
 	}
 	return true;
 }
-
-// if (contentLength == 0) {
-// 	_curMsg->get()->first = DONE;
-// 	buf.clear();
-// 	return true;
-// }
-// const std::string str = buf.substr(0, contentLength - 1);
-// buf.erase(0, contentLength - 1);
-// _curMsg->get()->second.setChunkedBody(str);
 
 inline void RequestParser::saveBufAndClear(std::string& buf) {
 	getCurMsg().setBuf(buf);
@@ -183,14 +166,13 @@ bool RequestParser::parseChunked(std::string& buf) {
 		return false;
 	}
 	unsigned int chunkedLength = 0;
-
 	try {
 		std::cerr << "received: " << curMsg.getContentLengthReceived() << std::endl;
 		chunkedLength = utils::toHexNum<unsigned int>(buf.substr(0, crlf_pos));
 		std::cerr << "chunked Length: " << chunkedLength << std::endl;
 	} catch (const std::invalid_argument& ex) {
 		ErrorLogger::parseError(__FILE__, __LINE__, __func__, "chunked length is not hex");
-		return errorRequest();
+		return setErrorRequest(HTTP_ERROR, BAD_REQUEST);
 	}
 
 	if (buf.size() < crlf_pos + CRLF_LEN + chunkedLength + CRLF_LEN) {
@@ -200,25 +182,24 @@ bool RequestParser::parseChunked(std::string& buf) {
 
 	curMsg.setContentLengthReceived(curMsg.getContentLengthReceived() + chunkedLength);
 	curMsg.setTotalChunkedLength(curMsg.getTotalChunkedLength() + chunkedLength);
-
-	if (curMsg.getTotalChunkedLength() >= _serverConfig->getDirectives(CLIENT_MAX_BODY_SIZE).asUint()) {
-		_curMsg->get()->first = HTTP_ERROR;
-		getCurMsg().setErrorCode(PAYLOAD_TOO_LARGE);
-		return false;
-	}
+	std::cerr << "total chunked length: " << curMsg.getTotalChunkedLength() << std::endl;
+	if (curMsg.getTotalChunkedLength() >= _serverConfig->getDirectives(CLIENT_MAX_BODY_SIZE).asUint())
+		return setErrorRequest(HTTP_ERROR, PAYLOAD_TOO_LARGE);
 	cutBuf(buf, crlf_pos + CRLF_LEN);
 	curMsg.setChunkedBody(cutBuf(buf, chunkedLength));
 	if (cutBuf(buf, CRLF_LEN) != CRLF) {
 		ErrorLogger::parseError(__FILE__, __LINE__, __func__, "chunked body is not CRLF");
-		return errorRequest();
+		return setErrorRequest(HTTP_ERROR, BAD_REQUEST);
 	}
-
-	if (chunkedLength == 0 && curMsg.getTotalChunkedLength() == 0)
+	if (chunkedLength == 0 && curMsg.getTotalChunkedLength() < BUFFER_SIZE) {
 		_curMsg->get()->first = DONE;
-	else if (chunkedLength == 0)
+		return true;
+	} else if (chunkedLength == 0)
 		_curMsg->get()->first = CHUNKED_DONE;
 	else
 		_curMsg->get()->first = CHUNKED;
+	if (_curMsg->get()->first == CHUNKED && curMsg.getIsRegistered() == false && chunkedLength != 0)
+		_curMsg->get()->first = CHUNKED_FIRST;
 	return true;
 }
 
@@ -228,14 +209,10 @@ bool RequestParser::parseLongBody(std::string& buf) {
 	const unsigned int contentLength = getCurMsg().getContentLength();
 	const unsigned int contentLengthReceived = getCurMsg().getContentLengthReceived();
 
-	if (contentLength == contentLengthReceived) {
+	if (contentLength == contentLengthReceived)
 		_curMsg->get()->first = LONG_BODY_DONE;
-	}
-	if (contentLength > _serverConfig->getDirectives(CLIENT_MAX_BODY_SIZE).asUint()) {
-		_curMsg->get()->first = LONG_BODY_ERROR;
-		getCurMsg().setErrorCode(PAYLOAD_TOO_LARGE);
-		return false;
-	};
+	if (contentLength > _serverConfig->getDirectives(CLIENT_MAX_BODY_SIZE).asUint())
+		return setErrorRequest(LONG_BODY_ERROR, PAYLOAD_TOO_LARGE);
 	buf.clear();
 	return true;
 }
@@ -265,6 +242,13 @@ void RequestParser::branchParser(const enum HttpMessageState state, std::string&
 			break;
 		case HTTP_ERROR:
 			buf.clear();
+			break;
+		case LONG_BODY_ERROR:
+			buf.clear();
+			break;
+		case CHUNKED_ERROR:
+			buf.clear();
+			break;
 		default:
 			break;
 	}
@@ -278,17 +262,16 @@ request_t RequestParser::parse(std::string& content) {
 			new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 		_curMsg = &_msgs.back();
 	}
-
 	while (content.empty() == false) {
 		this->branchParser(this->_msgs.back()->first, content);
+		std::cerr << "request state: " << this->_msgs.back()->first << std::endl;
 		if (this->_msgs.back()->first == DONE && content.empty() == false) {
 			_msgs.push(utils::shared_ptr<std::pair<enum HttpMessageState, HttpMessage> >(
 				new std::pair<enum HttpMessageState, HttpMessage>(START_LINE, HttpMessage())));
 			_curMsg = &_msgs.back();
 		}
 	}
-	if (this->_curMsg->get()->first == BODY &&
-		(getCurMsg().getHeaders().count(CONTENT_LENGTH) == 0 || getCurMsg().getHeaders().at(CONTENT_LENGTH) == "0"))
+	if (this->_curMsg->get()->first == BODY && checkContentLengthZero(getCurMsg().getHeaders()))
 		this->_curMsg->get()->first = DONE;
 	return this->pop();
 }

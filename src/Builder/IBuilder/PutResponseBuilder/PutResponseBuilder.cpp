@@ -12,9 +12,6 @@ PutResponseBuilder::PutResponseBuilder(reactor::sharedData_t sharedData, request
 	  _isRemoved(false),
 	  _response(),
 	  _path() {
-	if (_locationConfig.get() == u::nullptr_t)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
 	this->prepare();
 }
 
@@ -54,12 +51,6 @@ void PutResponseBuilder::setHeader() {
 }
 
 bool PutResponseBuilder::setBody() {
-	if (this->_writeSharedData->getState() == TERMINATE) {
-		reactor::Dispatcher::getInstance()->removeIOHandler(this->_writeSharedData->getFd(),
-															this->_writeSharedData->getType());
-		this->_sharedData->setState(TERMINATE);
-		return false;
-	}
 	this->_writeSharedData->getBuffer().insert(this->_writeSharedData->getBuffer().end(),
 											   this->_request->second.getBody().begin(),
 											   this->_request->second.getBody().end());
@@ -81,6 +72,24 @@ bool PutResponseBuilder::setBody() {
 }
 
 bool PutResponseBuilder::build() {
+	if (this->_writeSharedData.get() == u::nullptr_t)
+		return false;
+	if (this->_writeSharedData->getState() == TERMINATE) {
+		reactor::Dispatcher::getInstance()->removeIOHandler(this->_writeSharedData->getFd(),
+															this->_writeSharedData->getType());
+		this->_sharedData->setState(TERMINATE);
+		return false;
+	}
+	if ((this->_request->first == HTTP_ERROR || this->_request->first == LONG_BODY_ERROR ||
+		 this->_request->first == CHUNKED_ERROR) &&
+		_isRemoved == false) {
+		std::remove(this->_path.c_str());
+		_isRemoved = true;
+		reactor::Dispatcher::getInstance()->removeIOHandler(this->_writeSharedData->getFd(),
+															this->_writeSharedData->getType());
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			this->_request->second.getErrorCode(), this->_sharedData, this->_serverConfig, this->_locationConfig));
+	}
 	return this->setBody();
 }
 

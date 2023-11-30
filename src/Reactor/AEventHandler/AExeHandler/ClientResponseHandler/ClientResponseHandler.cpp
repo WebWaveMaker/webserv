@@ -9,7 +9,9 @@ namespace reactor {
 		  _locationConfig(_serverConfig->getLocationConfig(this->findLocationBlock())),
 		  _keepalive(true),
 		  _director(this->chooseBuilder()),
-		  _registered(false) {}
+		  _registered(false) {
+		std::cerr << "make resesrioesjorijsoerijsoeijr" << std::endl;
+	}
 
 	ClientResponseHandler::~ClientResponseHandler() {
 		// std::cerr << "REsponse removeREsponse removeREsponse removeREsponse removeREsponse removeREsponse "
@@ -60,7 +62,8 @@ namespace reactor {
 		}
 		// std::cout << "client response handler" << std::endl;
 		try {
-			if (this->getBuffer().empty() && this->_director.getBuilderReadState() == RESOLVE) {
+			if (this->getBuffer().empty() && this->_director.getProduct()->getBuffer().empty() &&
+				this->_director.getBuilderReadState() == RESOLVE) {
 				Dispatcher::getInstance()->removeIOHandler(this->getHandle(), this->getType());
 				Dispatcher::getInstance()->removeExeHandler(this);
 				if (this->_keepalive == false) {
@@ -89,26 +92,28 @@ namespace reactor {
 
 	utils::shared_ptr<IBuilder<sharedData_t> > ClientResponseHandler::chooseBuilder() {
 		try {
+			if (_locationConfig.get() == u::nullptr_t)
+				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+					new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
 			if (this->_request->first == HTTP_ERROR)
 				throw utils::shared_ptr<IBuilder<sharedData_t> >(
 					new ErrorResponseBuilder(this->_request->second.getErrorCode(), this->_sharedData,
 											 this->_serverConfig, this->_locationConfig));
 
-			// if ((this->_request->second.getHeaders())["Connection"].compare("Keep-Alive") != 0)
-			// 	this->_keepalive = false;
-			std::vector<enum HttpMethods> methods = this->_locationConfig->getDirectives(LIMIT_EXCEPT).asMedVec();
+			const std::vector<enum HttpMethods> methods = this->_locationConfig->getDirectives(LIMIT_EXCEPT).asMedVec();
 
 			if (std::find(methods.begin(), methods.end(), this->_request->second.getMethod()) == methods.end())
 				throw utils::shared_ptr<IBuilder<sharedData_t> >(new ErrorResponseBuilder(
 					METHOD_NOT_ALLOWED, this->_sharedData, this->_serverConfig, this->_locationConfig));
-			if (this->_locationConfig->isCgi()) {
-				std::cerr << "cgi incgi incgi incgi incgi incgi incgi incgi incgi incgi incgi incgi incgi incgi incgi "
-							 "incgi in"
-						  << std::endl;
+			if (this->_locationConfig->isRedirect()) {
+				std::vector<std::string> rv = this->_locationConfig->getDirectives(RETURN).asStrVec();
+
+				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new RedirectResponseBuilder(
+					utils::stoui(rv[0]), rv[1], this->_sharedData, this->_request, this->_serverConfig));
+			}
+			if (this->_locationConfig->isCgi())
 				return utils::shared_ptr<IBuilder<sharedData_t> >(new CgiResponseBuilder(
 					this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
-			}
-			// std::cerr << "nocginocginocginocginocginocginocginocginocginocginocgi" << std::endl;
 			switch (this->_request->second.getMethod()) {
 				case GET:
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new GetResponseBuilder(

@@ -7,6 +7,7 @@
 #include "ClientWriteHandlerFactory.hpp"
 #include "DefaultResponseBuilder.hpp"
 #include "ErrorResponseBuilder.hpp"
+#include "FileWriteHandlerFactory.hpp"
 #include "HttpMessage.hpp"
 #include "IBuilder.hpp"
 #include "RequestParser.h"

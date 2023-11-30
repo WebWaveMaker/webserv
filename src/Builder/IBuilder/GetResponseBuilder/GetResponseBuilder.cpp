@@ -12,15 +12,6 @@ GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _fd(FD_ERROR),
 	  _readSharedData(),
 	  _response() {
-	if (_locationConfig.get() == u::nullptr_t)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	if (this->_locationConfig->isRedirect()) {
-		std::vector<std::string> rv = this->_locationConfig->getDirectives(RETURN).asStrVec();
-
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new RedirectResponseBuilder(
-			utils::stoui(rv[0]), rv[1], this->_sharedData, this->_request, this->_serverConfig));
-	}
 	this->prepare();
 }
 
@@ -54,8 +45,6 @@ void GetResponseBuilder::setHeader() {
 }
 
 bool GetResponseBuilder::setBody() {
-	if (this->_readSharedData.get() == u::nullptr_t)
-		return false;
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().end(),
 										  this->_readSharedData->getBuffer().begin(),
 										  this->_readSharedData->getBuffer().end());
@@ -75,6 +64,8 @@ void GetResponseBuilder::reset() {
 	this->_readSharedData->getBuffer().clear();
 }
 bool GetResponseBuilder::build() {
+	if (this->_readSharedData.get() == u::nullptr_t)
+		return false;
 	if (this->_readSharedData->getState() == TERMINATE) {
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData.get()->getFd(),
 															this->_readSharedData.get()->getType());
