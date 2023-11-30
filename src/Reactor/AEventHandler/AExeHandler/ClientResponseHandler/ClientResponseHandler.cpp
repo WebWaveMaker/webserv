@@ -12,9 +12,9 @@ namespace reactor {
 		  _registered(false) {}
 
 	ClientResponseHandler::~ClientResponseHandler() {
-		std::cerr << "REsponse removeREsponse removeREsponse removeREsponse removeREsponse removeREsponse "
-					 "removeREsponse removeREsponse remove"
-				  << std::endl;
+		// std::cerr << "REsponse removeREsponse removeREsponse removeREsponse removeREsponse removeREsponse "
+		//  "removeREsponse removeREsponse remove"
+		// << std::endl;
 	}
 
 	std::string ClientResponseHandler::findLocationBlock() {
@@ -108,7 +108,7 @@ namespace reactor {
 				return utils::shared_ptr<IBuilder<sharedData_t> >(new CgiResponseBuilder(
 					this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 			}
-			std::cerr << "nocginocginocginocginocginocginocginocginocginocginocgi" << std::endl;
+			// std::cerr << "nocginocginocginocginocginocginocginocginocginocginocgi" << std::endl;
 			switch (this->_request->second.getMethod()) {
 				case GET:
 					return utils::shared_ptr<IBuilder<sharedData_t> >(new GetResponseBuilder(

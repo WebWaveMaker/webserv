@@ -8,6 +8,7 @@
 #include <string>
 #include "TSingleton.hpp"
 #include "enum.h"
+#include "shared_ptr.hpp"
 #include "utils.hpp"
 
 #endif

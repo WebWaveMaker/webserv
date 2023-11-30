@@ -39,16 +39,16 @@ namespace reactor {
 
 	   private:
 		// 접근 중인 파일 목록
-		std::map<std::string, std::vector<fd_t> > waitVector;  // 대기열
-		std::map<fd_t, FileInfo> accessMap;
+		std::map<std::string, std::vector<fd_t> > waitVector;	 // 대기열
+		std::map<fd_t, utils::shared_ptr<FileInfo> > accessMap;	 // 접근 중인 파일 목록
 		// FileInfo를 생성하는 함수
-		FileInfo makeFileInfo(std::string& fileName, FILE* fp, FileAccessState state);
+		utils::shared_ptr<FileInfo> makeFileInfo(std::string& fileName, FILE* fp, FileAccessState state);
 		// FileInfo를 accessMap에 추가
-		void addFileInfo(fd_t fd, FileInfo fileInfo);
+		void addFileInfo(fd_t fd, utils::shared_ptr<FileInfo> fileInfo);
 		// fd_t값으로 FileInfo를 accessMap에서 찾아 삭제하는 함수
 		void eraseFileInfo(fd_t fd);
 		// fd_t값으로 FileInfo를 찾는 함수
-		FileInfo& findFileInfo(fd_t fd);
+		utils::shared_ptr<FileInfo> findFileInfo(fd_t fd);
 
 		// 대기열에 fd_t값을 추가하는 함수
 		void addWait(fd_t fd);
@@ -65,8 +65,6 @@ namespace reactor {
 		void setStateAll();
 		// 모든 맴버 변수를 지우는 함수
 		void clear();
-
-		void test_print_all_fd();
 	};
 }  // namespace reactor
 #endif
