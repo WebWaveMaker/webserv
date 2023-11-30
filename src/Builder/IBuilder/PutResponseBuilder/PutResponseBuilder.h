@@ -4,7 +4,7 @@
 
 #include "DefaultResponseBuilder.hpp"
 #include "ErrorResponseBuilder.hpp"
-#include "FileAccessManager.hpp"
+#include "FileCloseManager.hpp"
 #include "FileWriteHandlerFactory.hpp"
 #include "IBuilder.hpp"
 #include "PutResponseBuilder.hpp"

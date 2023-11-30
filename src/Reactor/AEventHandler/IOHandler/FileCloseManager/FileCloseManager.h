@@ -1,6 +1,6 @@
 #pragma once
-#ifndef FILEACCESSMANAGER_H
-#define FILEACCESSMANAGER_H
+#ifndef FILECLOSEMANAGER_H
+#define FILECLOSEMANAGER_H
 
 #include <iostream>
 #include <map>

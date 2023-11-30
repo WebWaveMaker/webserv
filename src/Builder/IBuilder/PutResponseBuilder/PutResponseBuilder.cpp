@@ -19,7 +19,7 @@ PutResponseBuilder::PutResponseBuilder(reactor::sharedData_t sharedData, request
 }
 
 PutResponseBuilder::~PutResponseBuilder() {
-	reactor::FileAccessManager::getInstance()->closeFd(this->_fd);
+	reactor::FileCloseManager::getInstance()->closeFd(this->_fd);
 }
 
 void PutResponseBuilder::setPath(const std::string& target, const std::string targetPath) {
@@ -98,7 +98,7 @@ void PutResponseBuilder::prepare() {
 		this->_isExist = true;
 	else
 		this->_isExist = false;
-	this->_fd = reactor::FileAccessManager::getInstance()->makeFd(this->_path, "w");
+	this->_fd = reactor::FileCloseManager::getInstance()->makeFd(this->_path, "w");
 	this->_writeSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(_fd, EVENT_WRITE, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileWriteHandlerFactory>(this->_writeSharedData);

@@ -101,6 +101,4 @@ enum EventType {
 
 enum AccessType { Read, Write };
 
-enum FileAccessState { FILE_ACCESS, FILE_WAIT, FILE_CLOSE };
-
 #endif
