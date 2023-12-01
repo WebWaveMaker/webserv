@@ -45,7 +45,10 @@ void RedirectResponseBuilder::setHeader() {
 	std::map<std::string, std::string> headers =
 		DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig);
 
-	headers["Location"] = "http://" + this->_request->second.getHeaders()["Host"] + this->_path;
+	if (this->_path.compare(0, 5, "/http") == 0)
+		headers["Location"] = this->_path.substr(1);
+	else
+		headers["Location"] = "http://" + this->_request->second.getHeaders()["Host"] + this->_path;
 	headers[CONTENT_LENGTH] = "0";
 	if (this->_sessionId != "")
 		headers[SET_COOKIE] = "sessionId=" + this->_sessionId + "; httponly; Max-Age=60;";
