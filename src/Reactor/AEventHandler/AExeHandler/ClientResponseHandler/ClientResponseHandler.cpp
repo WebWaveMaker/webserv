@@ -70,7 +70,7 @@ namespace reactor {
 			if (_locationConfig.get() == u::nullptr_t)
 				throw ErrorResponseBuilder::createErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_request,
 																	   this->_serverConfig, this->_locationConfig);
-			if (this->_request->second.getHeaders()["Keep-Alive"] == "close")
+			if (this->_request->second.getHeaders()["Keep-Alive"].compare("keep-alive") != 0)
 				this->_keepalive = false;
 
 			const std::vector<enum HttpMethods> methods = this->_locationConfig->getDirectives(LIMIT_EXCEPT).asMedVec();
