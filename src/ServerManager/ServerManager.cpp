@@ -73,12 +73,11 @@ config_t ServerManager::getServerConfigs() const {
 	return (this->_serverConfigs);
 }
 
-// server_name default값 확인, host없는 경우 확인
-utils::shared_ptr<ServerConfig> ServerManager::getServerConfig(const int clientFd, request_t request) const {
-	std::string host = request->second.getHeaders()["Host"];
+utils::shared_ptr<ServerConfig> ServerManager::getServerConfig(const int clientFd, std::string host) const {
+	std::string host = host;
 	std::string portStr = "80";
 	if (host.empty())
-		return this->getServerConfig(clientFd);
+		return utils::shared_ptr<ServerConfig>();
 	size_t colPos = host.find(':');
 	if (colPos != std::string::npos) {
 		portStr = host.substr(colPos);
@@ -96,11 +95,11 @@ utils::shared_ptr<ServerConfig> ServerManager::getServerConfig(const int clientF
 			break;
 		}
 	}
-	if (port != mainPort) {
-		// clientResponse에 에러생성
-	}
+	if (port != mainPort)
+		return utils::shared_ptr<ServerConfig>();
+
 	if (port == mainPort && host.compare(mainName) == 0)
-		return this->getServerConfig(clientFd);
+		return this->getServerDefaultConfig(clientFd);
 
 	for (config_t::const_iterator it = this->_serverConfigs.begin(); it != this->_serverConfigs.end(); ++it) {
 		if (it->get()->getDirectives(LISTEN).asUint() == mainPort &&
@@ -108,10 +107,10 @@ utils::shared_ptr<ServerConfig> ServerManager::getServerConfig(const int clientF
 			return *it;
 		}
 	}
-	return this->getServerConfig(clientFd);
+	return this->getServerDefaultConfig(clientFd);
 }
 
-utils::shared_ptr<ServerConfig> ServerManager::getServerConfig(const int clientFd) const {
+utils::shared_ptr<ServerConfig> ServerManager::getServerDefaultConfig(const int clientFd) const {
 	for (std::map<int, Server*>::const_iterator serverIt = this->_servers.begin(); serverIt != this->_servers.end();
 		 ++serverIt) {
 		if (serverIt->second->hasClient(clientFd)) {
