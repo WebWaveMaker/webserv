@@ -23,9 +23,7 @@ void LocationConfig::setDirectives(const std::string& directive, const std::vect
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
 									  "LocationConfig :Invalid number of parameters for " + directive);
 	ConfigSyntax::checkSyntax(directive, values);
-	if (directive == "sendfile") {
-		_directives.insert(std::make_pair(SENDFILE, addBooleanValue(values[0])));
-	} else if (directive == "return") {
+	if (directive == "return") {
 		_directives.insert(std::make_pair(RETURN, addStrVecValue(values)));
 	} else if (directive == "cgi_index") {
 		_directives.insert(std::make_pair(CGI_INDEX, addStrVecValue(values)));
@@ -88,9 +86,7 @@ std::string LocationConfig::getErrorPage(unsigned int error_code) const {
 ConfigValue LocationConfig::getDirectives(Directives method) const {
 	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(method);
 	if (it == _directives.end()) {
-		if (method == SENDFILE) {
-			return _parent->getDirectives(SENDFILE);
-		} else if (method == KEEPALIVE_TIMEOUT) {
+		if (method == KEEPALIVE_TIMEOUT) {
 			return _parent->getDirectives(KEEPALIVE_TIMEOUT);
 		} else if (method == DEFAULT_TYPE) {
 			return _parent->getDirectives(DEFAULT_TYPE);

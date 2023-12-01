@@ -16,9 +16,7 @@ HttpConfig& HttpConfig::operator=(const HttpConfig& other) {
 
 void HttpConfig::setDirectives(const std::string& directive, const std::vector<std::string>& values) {
 	ConfigSyntax::checkSyntax(directive, values);
-	if (directive == "sendfile") {
-		_directives.insert(std::make_pair(SENDFILE, addBooleanValue(values[0])));
-	} else if (directive == "keepalive_timeout") {
+	if (directive == "keepalive_timeout") {
 		_directives.insert(std::make_pair(KEEPALIVE_TIMEOUT, addUnsignedIntValue(values[0])));
 	} else if (directive == "error_page") {
 		setErrorPage(values);
@@ -61,9 +59,7 @@ std::string HttpConfig::getErrorPage(unsigned int error_code) const {
 ConfigValue HttpConfig::getDirectives(Directives method) const {
 	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(method);
 	if (it == _directives.end()) {
-		if (method == SENDFILE) {
-			return ConfigValue(DEF_SENDFILE);
-		} else if (method == KEEPALIVE_TIMEOUT) {
+		if (method == KEEPALIVE_TIMEOUT) {
 			return ConfigValue(DEF_KEEPALIVE_TIMEOUT);
 		} else if (method == DEFAULT_TYPE) {
 			return ConfigValue(std::string(DEF_DEFAULT_TYPE));

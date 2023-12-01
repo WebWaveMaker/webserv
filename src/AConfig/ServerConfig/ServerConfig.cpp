@@ -30,9 +30,7 @@ void ServerConfig::setDirectives(const std::string& directive, const std::vector
 	if (values.empty())
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid number of parameters for " + directive);
 	ConfigSyntax::checkSyntax(directive, values);
-	if (directive == "sendfile") {
-		_directives.insert(std::make_pair(SENDFILE, addBooleanValue(values[0])));
-	} else if (directive == "keepalive_timeout") {
+	if (directive == "keepalive_timeout") {
 		_directives.insert(std::make_pair(KEEPALIVE_TIMEOUT, addUnsignedIntValue(values[0])));
 	} else if (directive == "error_page") {
 		setErrorPage(values);
@@ -104,9 +102,7 @@ std::string ServerConfig::getErrorPage(unsigned int error_code) const {
 ConfigValue ServerConfig::getDirectives(Directives method) const {
 	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(method);
 	if (it == _directives.end()) {
-		if (method == SENDFILE) {
-			return _parent->getDirectives(SENDFILE);
-		} else if (method == KEEPALIVE_TIMEOUT) {
+		if (method == KEEPALIVE_TIMEOUT) {
 			return _parent->getDirectives(KEEPALIVE_TIMEOUT);
 		} else if (method == DEFAULT_TYPE) {
 			return _parent->getDirectives(DEFAULT_TYPE);

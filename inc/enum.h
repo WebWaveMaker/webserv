@@ -3,7 +3,6 @@
 #define ENUM_H
 
 enum Directives {
-	SENDFILE,			   // http, server, location	on : true, off : false default : true
 	ERROR_PAGE,			   // http, server, location	int, string default : specific to error codes
 	KEEPALIVE_TIMEOUT,	   // http, server	int default : 75
 	DEFAULT_TYPE,		   // http, server	string default : application/octet-stream
@@ -101,7 +100,5 @@ enum EventType {
 };
 
 enum PipeType { PIPE_CLOSE = -1, PIPE_PREAD = 0, PIPE_PWRITE = 1, PIPE_CREAD = 2, PIPE_CWRITE = 3 };
-
-enum AccessType { Read, Write };
 
 #endif

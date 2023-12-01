@@ -13,7 +13,6 @@
 #include <vector>
 #include "enum.h"
 
-#define DEF_SENDFILE bool(true)
 #define DEF_KEEPALIVE_TIMEOUT static_cast<unsigned int>(75)
 #define DEF_DEFAULT_TYPE "application/octet-stream"
 #define DEF_ERROR_LOG_PATH "logs/error.log"
