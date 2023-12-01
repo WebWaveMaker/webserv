@@ -104,8 +104,6 @@ std::string ServerConfig::getErrorPage(unsigned int error_code) const {
 ConfigValue ServerConfig::getDirectives(Directives method) const {
 	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(method);
 	if (it == _directives.end()) {
-		// if (_parent.get() == u::nullptr_t)
-		// throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid error code");
 		if (method == SENDFILE) {
 			return _parent->getDirectives(SENDFILE);
 		} else if (method == KEEPALIVE_TIMEOUT) {
@@ -145,7 +143,6 @@ void ServerConfig::setLocations(std::string identifier, utils::shared_ptr<Locati
 utils::shared_ptr<LocationConfig> ServerConfig::getLocation(const std::string& identifier) {
 	std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = _locations.find(identifier);
 	if (it == _locations.end()) {
-		// throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid location identifier");
 		return utils::shared_ptr<LocationConfig>();
 	}
 	return it->second;

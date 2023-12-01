@@ -2,13 +2,7 @@
 #ifndef SERVERCONFIG_HPP
 #define SERVERCONFIG_HPP
 
-#include "AConfig.hpp"	// Include IConfig class
-#include "ErrorLogger.hpp"
-#include "HttpConfig.hpp"  // Include CommonConfig class
-#include "LocationConfig.hpp"
-#include "Parser.h"
-#include "shared_ptr.hpp"
-#include "utils.hpp"
+#include "ServerConfig.h"
 
 class HttpConfig;
 class LocationConfig;
@@ -20,7 +14,7 @@ class ServerConfig : public AConfig {
 
    public:
 	ServerConfig();
-	ServerConfig(utils::shared_ptr<HttpConfig> parent);	 // Moved initialization to constructor initializer list
+	ServerConfig(utils::shared_ptr<HttpConfig> parent);
 	ServerConfig(const ServerConfig& other);
 	~ServerConfig();
 	ServerConfig& operator=(const ServerConfig& other);

@@ -1,6 +1,4 @@
 #include "ConfigValue.hpp"
-//all test passed
-// Constructors for each type
 
 ConfigValue::ConfigValue(bool b) : type(BOOL) {
 	data.boolean = b;
@@ -153,8 +151,6 @@ ConfigValue& ConfigValue::operator=(const ConfigValue& other) {
 	}
 	return *this;
 }
-
-// Getter functions
 
 void* ConfigValue::asNULL() const {
 	if (type != NONE) {

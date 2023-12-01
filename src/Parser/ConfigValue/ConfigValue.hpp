@@ -2,8 +2,7 @@
 #ifndef CONFIGVALUE_HPP
 #define CONFIGVALUE_HPP
 
-#include "ErrorLogger.hpp"	// For LogLevels
-#include "Parser.h"			// For LogLevels
+#include "ConfigValue.h"
 
 class ConfigValue {
    public:
