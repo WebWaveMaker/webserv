@@ -86,7 +86,7 @@ bool CgiResponseBuilder::build() {
 					BAD_GATEWAY, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 			}
 		} else {
-			if (std::difftime(std::time(NULL), this->_cgiTime) >= 300) {
+			if (std::difftime(std::time(NULL), this->_cgiTime) >= 10) {
 				kill(this->_cgiPid, SIGTERM);
 				this->removeIOHandlers();
 				close(this->_pipes[PIPE_PREAD]);
