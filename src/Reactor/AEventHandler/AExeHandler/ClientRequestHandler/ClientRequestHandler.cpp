@@ -4,14 +4,13 @@
 namespace reactor {
 	ClientRequestHandler::ClientRequestHandler(sharedData_t& sharedData)
 		: AExeHandler(sharedData),
-		  _requestParser(ServerManager::getInstance()->getServerConfig(sharedData->getFd())),
+		  _requestParser(sharedData->getFd(),
+						 ServerManager::getInstance()->getServerDefaultConfig(sharedData->getFd())),
 		  _writeData(new SharedData(this->getHandle(), EVENT_WRITE, std::vector<char>())) {
 		Dispatcher::getInstance()->registerIOHandler<ClientReadHandlerFactory>(sharedData);
 	}
 
-	ClientRequestHandler::~ClientRequestHandler() {
-		std::cerr << "ClientRequestHandler " << this->getHandle() << " deleted" << std::endl;
-	}
+	ClientRequestHandler::~ClientRequestHandler() {}
 
 	RequestParser& ClientRequestHandler::getRequest() {
 		return this->_requestParser;

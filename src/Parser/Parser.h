@@ -13,10 +13,8 @@
 #include <vector>
 #include "enum.h"
 
-#define DEF_SENDFILE bool(true)
 #define DEF_KEEPALIVE_TIMEOUT static_cast<unsigned int>(75)
 #define DEF_DEFAULT_TYPE "application/octet-stream"
-#define DEF_ERROR_LOG_PATH "logs/error.log"
 #define DEF_CLIENT_MAX_BODY_SIZE static_cast<unsigned int>(1048576)	 // 1m
 #define DEF_LISTEN static_cast<unsigned int>(80)
 #define DEF_SERVER_NAME ""

@@ -6,4 +6,4 @@ WORKDIR /app
 
 COPY . .
 
-CMD [ "sh", "-c", "make fclean && make check && make fclean" ]
+CMD [ "sh", "-c", "make check JOB=8 && make fclean" ]

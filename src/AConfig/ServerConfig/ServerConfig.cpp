@@ -30,18 +30,12 @@ void ServerConfig::setDirectives(const std::string& directive, const std::vector
 	if (values.empty())
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid number of parameters for " + directive);
 	ConfigSyntax::checkSyntax(directive, values);
-	if (directive == "sendfile") {
-		_directives.insert(std::make_pair(SENDFILE, addBooleanValue(values[0])));
-	} else if (directive == "keepalive_timeout") {
+	if (directive == "keepalive_timeout") {
 		_directives.insert(std::make_pair(KEEPALIVE_TIMEOUT, addUnsignedIntValue(values[0])));
 	} else if (directive == "error_page") {
 		setErrorPage(values);
 	} else if (directive == "default_type") {
 		_directives.insert(std::make_pair(DEFAULT_TYPE, addStringValue(values[0])));
-	} else if (directive == "error_log") {
-		if (values.size() != 2)
-			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid number of parameters for error_log");
-		_directives.insert(std::make_pair(ERROR_LOG, addLogValue(values)));
 	} else if (directive == "client_max_body_size") {
 		_directives.insert(std::make_pair(CLIENT_MAX_BODY_SIZE, addUnsignedIntValue(values[0])));
 	} else if (directive == "listen") {
@@ -104,16 +98,10 @@ std::string ServerConfig::getErrorPage(unsigned int error_code) const {
 ConfigValue ServerConfig::getDirectives(Directives method) const {
 	std::map<Directives, ConfigValue>::const_iterator it = _directives.find(method);
 	if (it == _directives.end()) {
-		// if (_parent.get() == u::nullptr_t)
-		// throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid error code");
-		if (method == SENDFILE) {
-			return _parent->getDirectives(SENDFILE);
-		} else if (method == KEEPALIVE_TIMEOUT) {
+		if (method == KEEPALIVE_TIMEOUT) {
 			return _parent->getDirectives(KEEPALIVE_TIMEOUT);
 		} else if (method == DEFAULT_TYPE) {
 			return _parent->getDirectives(DEFAULT_TYPE);
-		} else if (method == ERROR_LOG) {
-			return _parent->getDirectives(ERROR_LOG);
 		} else if (method == CLIENT_MAX_BODY_SIZE) {
 			return _parent->getDirectives(CLIENT_MAX_BODY_SIZE);
 		} else if (method == LIMIT_EXCEPT) {
@@ -145,7 +133,6 @@ void ServerConfig::setLocations(std::string identifier, utils::shared_ptr<Locati
 utils::shared_ptr<LocationConfig> ServerConfig::getLocation(const std::string& identifier) {
 	std::map<std::string, utils::shared_ptr<LocationConfig> >::const_iterator it = _locations.find(identifier);
 	if (it == _locations.end()) {
-		// throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid location identifier");
 		return utils::shared_ptr<LocationConfig>();
 	}
 	return it->second;

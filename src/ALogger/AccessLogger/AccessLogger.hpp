@@ -20,6 +20,7 @@ class AccessLogger : public ALogger {
 
 	// override
 	virtual void log(const std::string& msg, const char* func, const int enum__, void* arg);
+	void log(const std::string& msg, const char* func, void* arg);
 };
 
 #endif

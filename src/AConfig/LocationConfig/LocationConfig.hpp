@@ -2,11 +2,7 @@
 #ifndef LOCATIONCONFIG_HPP
 #define LOCATIONCONFIG_HPP
 
-#include "ErrorLogger.hpp"
-#include "Parser.h"
-#include "ServerConfig.hpp"
-#include "shared_ptr.hpp"
-#include "utils.hpp"
+#include "LocationConfig.h"
 
 class ServerConfig;
 
@@ -17,7 +13,7 @@ class LocationConfig : public AConfig {
 
    public:
 	LocationConfig();
-	LocationConfig(utils::shared_ptr<ServerConfig> parent);	 // Moved initialization to constructor initializer list
+	LocationConfig(utils::shared_ptr<ServerConfig> parent);
 	LocationConfig(const LocationConfig& other);
 	~LocationConfig();
 	LocationConfig& operator=(const LocationConfig& other);

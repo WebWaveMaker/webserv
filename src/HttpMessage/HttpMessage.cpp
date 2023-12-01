@@ -1,15 +1,20 @@
 #include "HttpMessage.hpp"
 
 HttpMessage::HttpMessage()
-	: _startLine(3), _headers(), _body(), _errorCode(0), _contentLength(0), _contentLengthReceived(0), _buf(), _isRegistered(false) {}
+	: _startLine(3),
+	  _headers(),
+	  _body(),
+	  _errorCode(0),
+	  _contentLength(0),
+	  _contentLengthReceived(0),
+	  _buf(),
+	  _isRegistered(false) {}
 
 HttpMessage::HttpMessage(const HttpMessage& obj) {
 	*this = obj;
 }
 
-HttpMessage::~HttpMessage() {
-	std::cerr << "http http http http http http http http http \n";
-}
+HttpMessage::~HttpMessage() {}
 
 HttpMessage& HttpMessage::operator=(const HttpMessage& obj) {
 	if (this != &obj) {
@@ -135,7 +140,6 @@ unsigned int HttpMessage::getContentLengthReceived(void) const {
 }
 
 void HttpMessage::setContentLengthReceived(const unsigned int contentLengthReceived) {
-	// std::cerr << "setcontentlengthreceived: " << contentLengthReceived << "\n";
 	this->_contentLengthReceived = contentLengthReceived;
 }
 
@@ -161,4 +165,29 @@ void HttpMessage::setIsRegistered(const bool isRegistered) {
 
 bool HttpMessage::getIsRegistered(void) const {
 	return this->_isRegistered;
+}
+
+std::string HttpMessage::getUserAgent() const {
+	std::map<std::string, std::string>::const_iterator it = this->_headers.find("User-Agent");
+
+	if (it == this->_headers.end())
+		return std::string("");
+	return it->second;
+}
+
+bool HttpMessage::isSession(void) const {
+	return (this->_headers.find(COOKIE) != this->_headers.end());
+}
+
+std::string HttpMessage::getSessionId(void) const {
+	std::string cookie = this->_headers.find(COOKIE)->second;
+	if (cookie == "")
+		return "";
+	std::string::size_type pos = cookie.find("session_id=");
+
+	return cookie.substr(pos + 11, cookie.find(';', pos) - pos - 11);
+}
+
+void HttpMessage::setRequestTarget(const std::string& requestTarget) {
+	this->_startLine[1] = requestTarget;
 }

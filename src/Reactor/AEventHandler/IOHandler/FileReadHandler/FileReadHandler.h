@@ -7,6 +7,8 @@
 #include <cstdio>
 #include "AEventHandler.hpp"
 #include "ErrorLogger.hpp"
+#include "FileCloseManager.hpp"
 #include "const.h"
+#include "enum.h"
 
 #endif

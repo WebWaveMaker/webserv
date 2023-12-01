@@ -12,7 +12,6 @@ DIRS := ClientReadHandlerFactory \
 		ClientWriteHandlerFactory \
 		FileReadHandlerFactory \
 		FileWriteHandlerFactory \
-		PipeReadHandlerFactory \
 		ServerReadHandlerFactory \
 		TimerHandlerFactory
 

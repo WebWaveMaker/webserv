@@ -1,14 +1,24 @@
 #include "ErrorResponseBuilder.hpp"
+#include "ServerManager.hpp"
 
-ErrorResponseBuilder::ErrorResponseBuilder(const int errorCode, reactor::sharedData_t sharedData,
+ErrorResponseBuilder::ErrorResponseBuilder(const int errorCode, reactor::sharedData_t sharedData, request_t request,
 										   const utils::shared_ptr<ServerConfig>& config,
 										   const utils::shared_ptr<LocationConfig>& locationConfig)
-	: _errorCode(errorCode), _sharedData(sharedData), _serverConfig(config), _locationConfig(locationConfig) {
+	: _errorCode(errorCode),
+	  _sharedData(sharedData),
+	  _request(request),
+	  _serverConfig(config),
+	  _locationConfig(locationConfig) {
+	if (this->_serverConfig.get() == u::nullptr_t)
+		this->_serverConfig = ServerManager::getInstance()->getServerDefaultConfig(this->_sharedData->getFd());
+	if (this->_locationConfig.get() == u::nullptr_t)
+		this->_locationConfig =
+			_serverConfig->getLocationConfig(ServerManager::findLocationBlock(this->_request, _serverConfig));
 	this->reset();
 	this->prepare();
 }
 ErrorResponseBuilder::~ErrorResponseBuilder() {
-	close(this->_fd);
+	reactor::FileCloseManager::getInstance()->closeFd(this->_fd);
 }
 
 reactor::sharedData_t ErrorResponseBuilder::getProduct() {
@@ -27,8 +37,8 @@ void ErrorResponseBuilder::setHeader() {
 	struct stat fileInfo;
 
 	if (stat(this->_path.c_str(), &fileInfo) == SYSTEMCALL_ERROR) {
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData, this->_request,
+															   this->_serverConfig, this->_locationConfig);
 	}
 	std::map<std::string, std::string> headers;
 	headers = DefaultResponseBuilder::getInstance()->setDefaultHeader(this->_serverConfig, this->_path);
@@ -42,8 +52,6 @@ bool ErrorResponseBuilder::setBody() {
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().end(),
 										  this->_readSharedData->getBuffer().begin(),
 										  this->_readSharedData->getBuffer().end());
-	std::cerr << "errorResponseBuiler:"
-			  << std::string(this->_sharedData->getBuffer().begin(), this->_sharedData->getBuffer().end()) << std::endl;
 	this->_readSharedData->getBuffer().clear();
 	if (this->_readSharedData->getState() == RESOLVE) {
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData->getFd(),
@@ -61,7 +69,6 @@ void ErrorResponseBuilder::reset() {
 }
 
 bool ErrorResponseBuilder::build() {
-	std::cerr << "errorResponseBuiler: " << (this->_readSharedData->getState()) << std::endl;
 	if (this->_readSharedData->getState() == TERMINATE) {
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_readSharedData.get()->getFd(),
 															this->_readSharedData.get()->getType());
@@ -80,10 +87,10 @@ fd_t ErrorResponseBuilder::findReadFile() {
 
 	this->_path = locPath + errorPage;
 	if (access(this->_path.c_str(), R_OK) == 0)
-		return utils::makeFd(this->_path.c_str(), "r");
+		return reactor::FileCloseManager::getInstance()->makeFd(this->_path, "r");
 	this->_path = serverPath + errorPage;
 	if (access(this->_path.c_str(), R_OK) == 0)
-		return utils::makeFd(this->_path.c_str(), "r");
+		return reactor::FileCloseManager::getInstance()->makeFd(this->_path, "r");
 	return FD_ERROR;
 }
 
@@ -114,4 +121,11 @@ void ErrorResponseBuilder::prepare() {
 	this->_readSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(_fd, EVENT_READ, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileReadHandlerFactory>(this->_readSharedData);
+}
+
+utils::shared_ptr<IBuilder<reactor::sharedData_t> > ErrorResponseBuilder::createErrorResponseBuilder(
+	const int status, const reactor::sharedData_t& sharedData, request_t request,
+	const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig) {
+	return utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		new ErrorResponseBuilder(status, sharedData, request, serverConfig, locationConfig));
 }

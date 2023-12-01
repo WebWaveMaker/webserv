@@ -27,7 +27,6 @@ class Director {
 	}
 
 	bool buildProduct() {
-		// std::cout << "buildProduct" << std::endl;
 		if (this->_builder.get() == utils::nullptr_t)
 			return false;
 		return this->_builder->build();

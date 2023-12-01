@@ -15,7 +15,6 @@ namespace reactor {
 		socklen_t clientAddrLen = sizeof(clientAddr);
 
 		int clientFd = accept(this->getHandle(), (struct sockaddr*)&clientAddr, &clientAddrLen);
-		std::cerr << clientFd << "Accept!" << std::endl;
 		if (clientFd < 0) {
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 			return;
@@ -29,7 +28,6 @@ namespace reactor {
 		}
 		if (fcntl(clientFd, F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
 			ServerManager::getInstance()->eraseClient(clientFd);
-			close(clientFd);
 			ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 			return;
 		}
@@ -37,7 +35,6 @@ namespace reactor {
 			sharedData_t(new SharedData(clientFd, EVENT_READ, std::vector<char>())));
 		SyncEventDemultiplexer::getInstance()->setFdTime(clientFd, std::time(NULL));
 		this->setState(PENDING);
-		// Dispatcher::getInstance()->removeExeHandler(u::shared_ptr<AEventHandler>(this));
 	}
 
 	ServerAcceptHandler::~ServerAcceptHandler() {}

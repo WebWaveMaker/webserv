@@ -6,6 +6,8 @@
 #include <cstdio>
 #include "AEventHandler.hpp"
 #include "ErrorLogger.hpp"
+#include "FileCloseManager.hpp"
 #include "SyncEventDemultiplexer.hpp"
+#include "enum.h"
 
 #endif

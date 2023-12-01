@@ -2,22 +2,25 @@
 
 GetResponseBuilder::GetResponseBuilder(reactor::sharedData_t sharedData, const request_t request,
 									   const utils::shared_ptr<ServerConfig>& serverConfig,
-									   const utils::shared_ptr<LocationConfig>& locationConfig)
+									   const utils::shared_ptr<LocationConfig>& locationConfig,
+									   SessionData* sessionData)
 	: _sharedData(sharedData),
 	  _request(request),
 	  _serverConfig(serverConfig),
 	  _locationConfig(locationConfig),
 	  _removed(false),
+	  _sessionData(sessionData),
 	  _path(),
 	  _fd(FD_ERROR),
 	  _readSharedData(),
 	  _response() {
+	if (_sessionData)
+		this->handleSession();
 	this->prepare();
 }
 
 GetResponseBuilder::~GetResponseBuilder() {
-	close(this->_fd);
-	std::cerr << "GetResponseBuilder " << this->_fd << " deleted" << std::endl;
+	reactor::FileCloseManager::getInstance()->closeFd(this->_fd);
 }
 
 reactor::sharedData_t GetResponseBuilder::getProduct() {
@@ -32,11 +35,11 @@ void GetResponseBuilder::setHeader() {
 	struct stat fileInfo;
 
 	if (stat(this->_path.c_str(), &fileInfo) == SYSTEMCALL_ERROR) {
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData, this->_request,
+															   this->_serverConfig, this->_locationConfig);
 	}
 	if (fileInfo.st_size == 0) {
-		close(this->_fd);
+		reactor::FileCloseManager::getInstance()->closeFd(this->_fd);
 		this->_fd = FD_ZERO_;
 	}
 	std::map<std::string, std::string> headers =
@@ -84,10 +87,10 @@ fd_t GetResponseBuilder::findReadFile() {
 
 	this->_path = locPath + targetFile;
 	if (access(this->_path.c_str(), R_OK) == 0)
-		return utils::makeFd(this->_path.c_str(), "r");
+		return reactor::FileCloseManager::getInstance()->makeFd(this->_path, "r");
 	this->_path = serverPath + targetFile;
 	if (access(this->_path.c_str(), R_OK) == 0)
-		return utils::makeFd(this->_path.c_str(), "r");
+		return reactor::FileCloseManager::getInstance()->makeFd(this->_path, "r");
 	return FD_ERROR;
 }
 
@@ -99,32 +102,34 @@ fd_t GetResponseBuilder::fileProcessing() {
 		this->_serverConfig->getDirectives(ROOT).asString() +
 		utils::removeSubstring(this->_request->second.getRequestTarget(), this->_locationConfig->getPath()));
 	if (this->_locationConfig->getPath() == this->_request->second.getRequestTarget() + '/')
-		return directoryProcessing();
+		throw RedirectResponseBuilder::createRedirectResponseBuilder(
+			SEE_OTHER, this->_request->second.getRequestTarget() + '/', this->_sharedData, this->_request,
+			this->_serverConfig);
 	if (mode == MODE_DIRECTORY)
 		return directoryProcessing();
 	if (mode == MODE_ERROR && serverMode == MODE_ERROR)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			NOT_FOUND, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 	return this->findReadFile();
 }
 
 std::vector<std::string> GetResponseBuilder::readDir(const std::string& path) {
 	if (path == "")
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(FORBIDDEN, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw ErrorResponseBuilder::createErrorResponseBuilder(FORBIDDEN, this->_sharedData, this->_request,
+															   this->_serverConfig, this->_locationConfig);
 	DIR* dirp;
 	struct dirent* dp;
 
 	if ((dirp = opendir(path.c_str())) == u::nullptr_t)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw ErrorResponseBuilder::createErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_request,
+															   this->_serverConfig, this->_locationConfig);
 	std::vector<std::string> dirVec;
 	while ((dp = readdir(dirp)) != u::nullptr_t) {
 		if (dp->d_name[0] == '.')
 			continue;
 		if (dp == u::nullptr_t)
-			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-				INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			throw ErrorResponseBuilder::createErrorResponseBuilder(
+				INTERNAL_SERVER_ERROR, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig);
 		dirVec.push_back(dp->d_name);
 	}
 	closedir(dirp);
@@ -139,15 +144,22 @@ void GetResponseBuilder::makeListHtml(const std::string& path, const std::vector
 
 	for (std::vector<std::string>::const_iterator cit = dirVec.begin(); cit != dirVec.end(); ++cit) {
 		if (stat((path + "/" + *cit).c_str(), &fileStat) == SYSTEMCALL_ERROR)
-			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-				INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			throw ErrorResponseBuilder::createErrorResponseBuilder(
+				INTERNAL_SERVER_ERROR, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig);
 		if (S_ISDIR(fileStat.st_mode))
 			html += "<a href=\"" + *cit + "\"/>" + *cit + "/</a>";
 		else
 			html += "<a href=\"" + *cit + "\">" + *cit + "</a>";
+
+#if __APPLE__ == 1
 		html += "                                               " +
 				utils::formatTime(fileStat.st_birthtimespec.tv_sec, logTimeFormat::dirListFormat) +
 				"                   " + (S_ISDIR(fileStat.st_mode) ? "-" : utils::lltos(fileStat.st_size)) + "\r\n";
+#else
+		html += "                                               " +
+				utils::formatTime(fileStat.st_ctime, logTimeFormat::dirListFormat) + "                   " +
+				(S_ISDIR(fileStat.st_mode) ? "-" : utils::lltos(fileStat.st_size)) + "\r\n";
+#endif
 	}
 	html += "</pre><hr></body>\r\n</html>";
 	this->setStartLine();
@@ -166,8 +178,8 @@ void GetResponseBuilder::makeListHtml(const std::string& path, const std::vector
 
 fd_t GetResponseBuilder::directoryListing() {
 	if (this->_locationConfig->getDirectives(AUTOINDEX).asBool() == false)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(FORBIDDEN, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			FORBIDDEN, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 	const std::string path = this->_locationConfig->getPath() == this->_request->second.getRequestTarget()
 								 ? this->_locationConfig->getOwnRoot()
 								 : "";
@@ -180,13 +192,12 @@ fd_t GetResponseBuilder::directoryListing() {
 fd_t GetResponseBuilder::directoryProcessing() {
 	std::string middle =
 		utils::removeSubstring(this->_request->second.getRequestTarget(), this->_locationConfig->getPath());
-	// std::cerr << middle << std::endl;
 	if (middle[0] == '/')
 		middle = "";
 	if (this->checkFileMode(this->_locationConfig->getDirectives(ROOT).asString() +
 							this->_request->second.getTargetFile()) == MODE_FILE)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			NOT_FOUND, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 	if (this->_locationConfig->getOwnIndex().empty())
 		return this->directoryListing();
 	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString() + middle;
@@ -196,12 +207,12 @@ fd_t GetResponseBuilder::directoryProcessing() {
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {
 		this->_path = locPath + *cit;
 		if (access(this->_path.c_str(), R_OK) == 0)
-			return utils::makeFd(this->_path.c_str(), "r");
+			return reactor::FileCloseManager::getInstance()->makeFd(this->_path, "r");
 	}
 	for (std::vector<std::string>::const_iterator cit = indexVec.begin(); cit != indexVec.end(); ++cit) {
 		this->_path = serverPath + *cit;
 		if (access(this->_path.c_str(), R_OK) == 0)
-			return utils::makeFd(this->_path.c_str(), "r");
+			return reactor::FileCloseManager::getInstance()->makeFd(this->_path, "r");
 	}
 	return FD_ERROR;
 }
@@ -211,8 +222,8 @@ void GetResponseBuilder::prepare() {
 					? this->fileProcessing()
 					: this->directoryProcessing();
 	if (this->_fd == FD_ERROR)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw ErrorResponseBuilder::createErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_request,
+															   this->_serverConfig, this->_locationConfig);
 	if (this->_fd == FD_LISTING)
 		return;
 	this->setStartLine();
@@ -228,3 +239,23 @@ void GetResponseBuilder::prepare() {
 	}
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileReadHandlerFactory>(this->_readSharedData);
 }
+
+utils::shared_ptr<IBuilder<reactor::sharedData_t> > GetResponseBuilder::createGetResponseBuilder(
+	const reactor::sharedData_t& sharedData, const request_t& request,
+	const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig,
+	SessionData* sessionData) {
+	return utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		new GetResponseBuilder(sharedData, request, serverConfig, locationConfig, sessionData));
+};
+
+void GetResponseBuilder::handleSession() {
+	HttpMessage& request = this->_request->second;
+	std::string target = request.getRequestTarget();
+	SessionData* sessionData = HttpSession::getInstance()->getSessionData(request.getSessionId());
+	if (sessionData == u::nullptr_t)
+		return;
+	if (target == "/login.html") {
+		throw RedirectResponseBuilder::createRedirectResponseBuilder(SEE_OTHER, "/", this->_sharedData, this->_request,
+																	 this->_serverConfig);
+	}
+};

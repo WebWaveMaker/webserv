@@ -3,6 +3,7 @@
 #define UTILS_H
 
 #include <algorithm>
+#include <cstdio>
 #include <ctime>
 #include <iostream>
 #include <sstream>

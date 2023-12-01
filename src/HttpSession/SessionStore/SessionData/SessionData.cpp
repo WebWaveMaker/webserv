@@ -29,3 +29,7 @@ void SessionData::setData(const std::string& key, const std::string& value) {
 std::string& SessionData::getData(const std::string& key) {
 	return this->_data[key];
 }
+
+std::map<std::string, std::string>& SessionData::getData() {
+	return this->_data;
+}

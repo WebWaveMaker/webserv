@@ -12,6 +12,8 @@ class Server {
 	utils::shared_ptr<std::map<int, utils::shared_ptr<Client> > > _clients;
 	utils::shared_ptr<AccessLogger> _accessLogger;
 	utils::shared_ptr<ErrorLogger> _errorLogger;
+	unsigned int _port;
+	std::string _serverName;
 
 	Server(const Server& obj);
 	Server& operator=(const Server& obj);
@@ -37,6 +39,8 @@ class Server {
 	ErrorLogger& getErrorLogger() const;
 	utils::shared_ptr<std::vector<fd_t> > getClientFds();
 	std::string getClientIP(fd_t fd);
+	unsigned int getPort() const;
+	std::string getServerName() const;
 
 	~Server();
 };

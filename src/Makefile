@@ -18,7 +18,8 @@ DIRS :=	AConfig \
 		Server \
 		ServerManager \
 		Mime \
-		utils
+		utils \
+		UserDB
 
 LIBS :=	$(addsuffix .a, $(addprefix lib/, $(DIRS)))
 SRCS := main.cpp

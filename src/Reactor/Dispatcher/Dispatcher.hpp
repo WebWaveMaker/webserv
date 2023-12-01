@@ -19,6 +19,9 @@ namespace reactor {
 		Dispatcher(const Dispatcher& obj);
 		Dispatcher& operator=(const Dispatcher& obj);
 
+		void exeHandlerexe();
+		void applyHandlersChanges();
+
 	   public:
 		Dispatcher();
 		~Dispatcher();
@@ -45,8 +48,6 @@ namespace reactor {
 		void removeFdToClose(fd_t fd);
 		bool isFdMarkedToClose(fd_t fd) const;
 		void closePendingFds();
-		void exeHandlerexe();
-		void applyHandlersChanges();
 		bool isWriting(fd_t fd) const;
 
 		void handleEvent();

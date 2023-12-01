@@ -7,6 +7,8 @@
 namespace reactor {
 	class ClientWriteHandler : public AEventHandler {
 	   private:
+		ClientWriteHandler(const ClientWriteHandler& obj);
+
 	   public:
 		ClientWriteHandler(sharedData_t& sharedData);
 		~ClientWriteHandler();

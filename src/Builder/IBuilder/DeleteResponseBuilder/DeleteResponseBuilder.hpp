@@ -11,15 +11,23 @@ class DeleteResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	const utils::shared_ptr<ServerConfig> _serverConfig;
 	const utils::shared_ptr<LocationConfig> _locationConfig;
 	reactor::sharedData_t _readSharedData;
+	SessionData* _sessionData;
 
 	HttpMessage _response;
 	std::string _path;
 
+	void handleSession();
+
    public:
 	DeleteResponseBuilder(reactor::sharedData_t sharedData, request_t request,
 						  const utils::shared_ptr<ServerConfig>& serverConfig,
-						  const utils::shared_ptr<LocationConfig>& locationConfig);
+						  const utils::shared_ptr<LocationConfig>& locationConfig, SessionData* sessionData);
 	~DeleteResponseBuilder();
+
+	static utils::shared_ptr<IBuilder<reactor::sharedData_t> > createDeleteResponseBuilder(
+		const reactor::sharedData_t& sharedData, const request_t& request,
+		const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig,
+		SessionData* sessionData);
 
 	bool implDeleteFile(const std::string& path);
 	void deleteFile();

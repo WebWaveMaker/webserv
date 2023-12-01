@@ -17,6 +17,7 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	int _sv[2];
 	int _writePipe[2];
 	int _readPipe[2];
+	int _pipes[4];
 	pid_t _cgiPid;
 	bool _unchunkedState;
 	bool _forked;
@@ -30,28 +31,14 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	bool _contentLengthState;
 	std::vector<char> _pendingBuf;
 	std::time_t _cgiTime;
+	SessionData* _sessionData;
 
 	CgiResponseBuilder(const CgiResponseBuilder& obj);
 	CgiResponseBuilder& operator=(const CgiResponseBuilder& obj);
 
-   public:
-	CgiResponseBuilder(reactor::sharedData_t sharedData, request_t request,
-					   const utils::shared_ptr<ServerConfig>& serverConfig,
-					   const utils::shared_ptr<LocationConfig>& locationConfig);
-	~CgiResponseBuilder();
-
-	virtual enum AsyncState getReadState() const { return this->_cgiReadSharedData.get()->getState(); }
-	virtual void setReadState(enum AsyncState state) { this->_cgiReadSharedData.get()->setState(state); }
-	virtual reactor::sharedData_t getProduct();
-	virtual void setStartLine();
-	virtual void setHeader();
-	virtual bool setBody();
-	virtual void reset();
-	virtual bool build();
-	virtual void prepare();
-
+	void setEnvpSessionData(std::vector<std::string>& cgiEnvpVec);
 	std::string makeCgiFullPath();
-	bool makeSocketPair();
+	bool makePipes();
 	void makeWriteSharedData();
 	bool makeunChunked();
 	bool doFork();
@@ -76,6 +63,34 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	void removeIOHandlers();
 	void removeReadIO();
 	void removeWriteIO();
+
+   public:
+	CgiResponseBuilder(reactor::sharedData_t sharedData, request_t request,
+					   const utils::shared_ptr<ServerConfig>& serverConfig,
+					   const utils::shared_ptr<LocationConfig>& locationConfig);
+	CgiResponseBuilder(reactor::sharedData_t sharedData, request_t request,
+					   const utils::shared_ptr<ServerConfig>& serverConfig,
+					   const utils::shared_ptr<LocationConfig>& locationConfig, SessionData* sessionData);
+	~CgiResponseBuilder();
+
+	static utils::shared_ptr<IBuilder<reactor::sharedData_t> > createCgiResponseBuilder(
+		const reactor::sharedData_t& sharedData, const request_t& request,
+		const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig);
+
+	static utils::shared_ptr<IBuilder<reactor::sharedData_t> > createCgiResponseBuilder(
+		const reactor::sharedData_t& sharedData, const request_t& request,
+		const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig,
+		SessionData* sessionData);
+
+	virtual enum AsyncState getReadState() const { return this->_cgiReadSharedData.get()->getState(); }
+	virtual void setReadState(enum AsyncState state) { this->_cgiReadSharedData.get()->setState(state); }
+	virtual reactor::sharedData_t getProduct();
+	virtual void setStartLine();
+	virtual void setHeader();
+	virtual bool setBody();
+	virtual void reset();
+	virtual void prepare();
+	virtual bool build();
 };
 
 // Start Line: GET / HTTP/1.1

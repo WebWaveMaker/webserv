@@ -13,18 +13,26 @@ class PutResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	utils::shared_ptr<reactor::SharedData> _writeSharedData;
 	bool _isExist;
 	bool _isRemoved;
+	SessionData* _sessionData;
 
 	HttpMessage _response;
 	std::string _path;
 	fd_t _fd;
 
-	void setPath(const std::string& target, const std::string targetPath);
+	void handleSession();
+
+	void setPath(const std::string& target);
 
    public:
 	PutResponseBuilder(reactor::sharedData_t sharedData, request_t request,
 					   const utils::shared_ptr<ServerConfig>& serverConfig,
-					   const utils::shared_ptr<LocationConfig>& locationConfig);
+					   const utils::shared_ptr<LocationConfig>& locationConfig, SessionData* sessionData);
 	~PutResponseBuilder();
+
+	static utils::shared_ptr<IBuilder<reactor::sharedData_t> > createPutResponseBuilder(
+		const reactor::sharedData_t& sharedData, const request_t& request,
+		const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig,
+		SessionData* sessionData);
 
 	virtual enum AsyncState getReadState() const { return this->_writeSharedData->getState(); }
 	virtual void setReadState(enum AsyncState state) { this->_writeSharedData->setState(state); }

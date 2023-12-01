@@ -71,7 +71,13 @@ void RedirectResponseBuilder::prepare() {
 	this->setHeader();
 	const std::string raw = this->_response.getRawStr();
 
-	// std::cout << raw << std::endl;
 	this->_sharedData->getBuffer().insert(this->_sharedData->getBuffer().begin(), raw.begin(), raw.end());
 	this->_readSharedData->setState(RESOLVE);
+}
+
+utils::shared_ptr<IBuilder<reactor::sharedData_t> > RedirectResponseBuilder::createRedirectResponseBuilder(
+	const unsigned int statusCode, const std::string& path, reactor::sharedData_t sharedData, request_t request,
+	const utils::shared_ptr<ServerConfig>& serverConfig) {
+	return utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		new RedirectResponseBuilder(statusCode, path, sharedData, request, serverConfig));
 }

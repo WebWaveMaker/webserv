@@ -1,6 +1,6 @@
 #include "utils.hpp"
 
-const char* logTimeFormat::accessTimeFormat = " [%d/%b/%Y:%H:%M:%S] ";
+const char* logTimeFormat::accessTimeFormat = "[%d/%b/%Y %H:%M:%S] ";
 const char* logTimeFormat::errorTimeFormat = " %Y/%m/%d %H:%M:%S ";
 const char* logTimeFormat::systemTimeFormat = " %a, %d %b %Y %H:%M:%S ";
 const char* logTimeFormat::GMTtimeFormat = "%a, %d %b %Y %H:%M:%S GMT";
@@ -119,7 +119,7 @@ namespace utils {
 			"abcdefghijklmnopqrstuvwxyz";
 
 		std::string randomString;
-		srand(static_cast<unsigned int>(time(NULL)));
+		std::srand(static_cast<unsigned int>(std::time(NULL)));
 
 		for (int i = 0; i < 32; ++i) {
 			randomString += alphanum[rand() % (sizeof(alphanum) - 1)];
@@ -138,6 +138,22 @@ namespace utils {
 		}
 
 		return result;
+	}
+
+	std::string generateRandomHexColor() {
+		std::string hexColor = "#";
+
+		// srand를 호출하여 시드를 설정합니다.
+		std::srand(static_cast<unsigned int>(std::time(NULL)));
+
+		// 6번 반복하여 6자리의 랜덤한 Hex 값을 생성합니다.
+		for (int i = 0; i < 6; ++i) {
+			int randomValue = std::rand() % 16;	 // 0부터 15 사이의 값
+			char hexDigit = randomValue < 10 ? '0' + randomValue : 'A' + (randomValue - 10);
+			hexColor += hexDigit;
+		}
+
+		return hexColor;
 	}
 
 }  // namespace utils

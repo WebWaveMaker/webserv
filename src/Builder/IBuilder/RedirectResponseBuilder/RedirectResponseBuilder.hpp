@@ -11,7 +11,6 @@ class RedirectResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	reactor::sharedData_t _sharedData;
 	const request_t _request;
 	const utils::shared_ptr<ServerConfig> _serverConfig;
-	// const utils::shared_ptr<LocationConfig> _locationConfig;
 	reactor::sharedData_t _readSharedData;
 	HttpMessage _response;
 	const sessionId_t _sessionId;
@@ -22,6 +21,10 @@ class RedirectResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	RedirectResponseBuilder(const unsigned int statusCode, const std::string& path, reactor::sharedData_t sharedData,
 							request_t request, const utils::shared_ptr<ServerConfig>& serverConfig,
 							const sessionId_t sessionId);
+
+	static utils::shared_ptr<IBuilder<reactor::sharedData_t> > createRedirectResponseBuilder(
+		const unsigned int statusCode, const std::string& path, reactor::sharedData_t sharedData, request_t request,
+		const utils::shared_ptr<ServerConfig>& serverConfig);
 
 	~RedirectResponseBuilder();
 	virtual enum AsyncState getReadState() const { return this->_readSharedData->getState(); }

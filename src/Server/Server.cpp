@@ -1,12 +1,27 @@
 #include "Server.hpp"
 
 Server::Server(utils::shared_ptr<ServerConfig>& serverConfig) : _serverConfig(serverConfig) {
-	// std::cout << "server constructor called\n";
 	try {
 		this->listenServer();
+		this->_port = this->_serverConfig->getDirectives(LISTEN).asUint();
+		this->_serverName = this->_serverConfig->getDirectives(SERVER_NAME).asString();
 	} catch (std::exception& e) {
-		throw;
+		throw std::runtime_error("Server error");
 	}
+}
+
+Server::Server(const Server& obj) {
+	*this = obj;
+}
+
+Server& Server::operator=(const Server& obj) {
+	this->_serverConfig = obj._serverConfig;
+	this->_fd = obj._fd;
+	this->_serverAddr = obj._serverAddr;
+	this->_clients = obj._clients;
+	this->_accessLogger = obj._accessLogger;
+	this->_errorLogger = obj._errorLogger;
+	return (*this);
 }
 
 void Server::listenServer() {
@@ -19,7 +34,7 @@ void Server::listenServer() {
 		this->registerReadEvent();
 	} catch (std::exception& e) {
 		close(this->_fd);
-		throw;
+		throw std::runtime_error("listenServer error");
 	}
 }
 
@@ -36,12 +51,12 @@ void Server::bindListen() {
 
 	if (bind(this->_fd, (struct sockaddr*)&this->_serverAddr, sizeof(this->_serverAddr)) < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
-		throw std::runtime_error("bind() error\n");
+		throw std::runtime_error("bind error");
 	}
 
 	if (listen(this->_fd, 128) < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
-		throw std::runtime_error("listen() error\n");
+		throw std::runtime_error("listen error");
 	}
 }
 
@@ -51,37 +66,35 @@ void Server::makeSocket() {
 
 	if (this->_fd < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
-		throw;
+		throw std::runtime_error("socket error");
 	}
 	if (fcntl(this->_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
-		throw;
+		throw std::runtime_error("fcntl error");
 	}
 
 	int opt = 1;
 	if (setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-		throw std::runtime_error("setsockopt() failed\n");
+		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
+		throw std::runtime_error("setsockopt error");
 	}
 }
 
 void Server::mallocParameter() {
-
-	std::pair<std::string, LogLevels> errorLog = this->_serverConfig->getDirectives(ERROR_LOG).asLog();
-	const int errorFd = utils::makeFd(errorLog.first.c_str(), "w");
-
 	this->_clients =
 		utils::shared_ptr<std::map<int, utils::shared_ptr<Client> > >(new std::map<int, utils::shared_ptr<Client> >);
 	this->_accessLogger = utils::shared_ptr<AccessLogger>(new AccessLogger(STDOUT_FILENO));
-	this->_errorLogger = utils::shared_ptr<ErrorLogger>(new ErrorLogger(errorFd, errorLog.second));
+	this->_errorLogger = utils::shared_ptr<ErrorLogger>(new ErrorLogger(STDERR_FILENO, LOG_INFO));
 }
 
 void Server::createClient(int clientFd, struct sockaddr_in& clientAddr) {
 	try {
 		utils::shared_ptr<Client> newClient(new Client(clientFd, clientAddr));
 		(*this->_clients.get())[clientFd] = newClient;
-		this->_accessLogger->log("New client connected\n", __func__, LOG_INFO, newClient.get());
+		this->_accessLogger->log(this->_serverConfig->getDirectives(SERVER_NAME).asString(), __func__, UNKNOWN,
+								 newClient.get());
 	} catch (std::exception& e) {
-		throw;
+		throw std::runtime_error("createClient error");
 	}
 }
 
@@ -97,6 +110,8 @@ void Server::removeClient(int key) {
 	std::map<int, utils::shared_ptr<Client> >::iterator it = this->_clients->find(key);
 
 	if (it != this->_clients->end()) {
+		this->_accessLogger->log(this->_serverConfig->getDirectives(SERVER_NAME).asString(), __func__,
+								 it->second.get());
 		this->_clients->erase(it);
 	} else {
 		this->_errorLogger->log("Not Found client\n", __func__, LOG_ERROR, NULL);
@@ -141,8 +156,14 @@ std::string Server::getClientIP(fd_t fd) {
 	return "";
 }
 
-Server::~Server() {
-	// std::cout << "Server destructor called\n";
+unsigned int Server::getPort() const {
+	return this->_port;
+}
 
+std::string Server::getServerName() const {
+	return this->_serverName;
+}
+
+Server::~Server() {
 	this->_clients->clear();
 }

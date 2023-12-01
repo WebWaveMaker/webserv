@@ -17,10 +17,27 @@ CgiResponseBuilder::CgiResponseBuilder(reactor::sharedData_t sharedData, const r
 	  _forked(false),
 	  _cgiReadSharedData(),
 	  _startLineState(false),
-	  _contentLengthState(false) {
-	if (_locationConfig.get() == u::nullptr_t)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	  _contentLengthState(false),
+	  _sessionData(u::nullptr_t) {
+	this->_pendingBuf.clear();
+	this->inItInterpreterMap();
+	this->prepare();
+}
+
+CgiResponseBuilder::CgiResponseBuilder(reactor::sharedData_t sharedData, const request_t request,
+									   const utils::shared_ptr<ServerConfig>& serverConfig,
+									   const utils::shared_ptr<LocationConfig>& locationConfig,
+									   SessionData* sessionData)
+	: _sharedData(sharedData),
+	  _request(request),
+	  _serverConfig(serverConfig),
+	  _locationConfig(locationConfig),
+	  _unchunkedState(false),
+	  _forked(false),
+	  _cgiReadSharedData(),
+	  _startLineState(false),
+	  _contentLengthState(false),
+	  _sessionData(sessionData) {
 	this->_pendingBuf.clear();
 	this->inItInterpreterMap();
 	this->prepare();
@@ -36,14 +53,14 @@ void CgiResponseBuilder::inItInterpreterMap() {
 void CgiResponseBuilder::prepare() {
 	this->_cgiFullPath = this->makeCgiFullPath();
 	if (this->_cgiFullPath.empty())
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(404, this->_sharedData, this->_serverConfig, this->_locationConfig));
-	if (this->makeSocketPair() == false)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			NOT_FOUND, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
+	if (this->makePipes() == false)
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			INTERNAL_SERVER_ERROR, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 	this->makeWriteSharedData();
 	this->_cgiReadSharedData = utils::shared_ptr<reactor::SharedData>(
-		new reactor::SharedData(this->_readPipe[0], EVENT_READ, std::vector<char>()));
+		new reactor::SharedData(this->_pipes[PIPE_PREAD], EVENT_READ, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::ClientReadHandlerFactory>(this->_cgiReadSharedData);
 }
 
@@ -63,61 +80,23 @@ bool CgiResponseBuilder::build() {
 		if (waitpid(this->_cgiPid, &status, WNOHANG) > 0) {
 			if (WIFEXITED(status) == false) {
 				this->removeIOHandlers();
-				this->_cgiWriteSharedData->setState(TERMINATE);
-				this->_cgiReadSharedData->setState(TERMINATE);
-				throw false;
+				close(this->_pipes[PIPE_PREAD]);
+				close(this->_pipes[PIPE_PWRITE]);
+				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+					BAD_GATEWAY, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 			}
 		} else {
-			if (std::difftime(std::time(NULL), this->_cgiTime) >= 6000) {
+			if (std::difftime(std::time(NULL), this->_cgiTime) >= 300) {
 				kill(this->_cgiPid, SIGTERM);
 				this->removeIOHandlers();
-				this->_cgiWriteSharedData->setState(TERMINATE);
-				this->_cgiReadSharedData->setState(TERMINATE);
-				throw false;
+				close(this->_pipes[PIPE_PREAD]);
+				close(this->_pipes[PIPE_PWRITE]);
+				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+					BAD_GATEWAY, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 			}
 		}
 	}
 	return this->setBody();
-}
-
-bool CgiResponseBuilder::makeunChunked() {
-	if (this->_unchunkedState == true)
-		return this->_unchunkedState;
-	if (this->_request->first == CHUNKED_ERROR || this->_request->first == HTTP_ERROR) {
-		this->removeReadIO();
-		this->cleanPipes();
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			this->_request->second.getErrorCode(), this->_sharedData, this->_serverConfig, this->_locationConfig));
-	}
-
-	if ((this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
-		 this->_request->first == CHUNKED_DONE)) {
-		this->_request->second.getBody().append("\0");
-		this->_request->second.getHeaders()[CONTENT_LENGTH] =
-			utils::lltos(this->_request->second.getContentLengthReceived());
-		utils::insertData<std::vector<char>, std::string>(this->_cgiWriteSharedData->getBuffer(),
-														  this->_request->second.getBody());
-		this->_request->second.getBody().clear();
-		if (this->_forked == false) {
-			if (this->doFork() == false) {
-				close(this->_writePipe[1]);
-				close(this->_readPipe[0]);
-				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-					new ErrorResponseBuilder(500, this->_sharedData, this->_serverConfig, this->_locationConfig));
-			}
-			close(this->_writePipe[0]);
-			close(this->_readPipe[1]);
-			reactor::Dispatcher::getInstance()->registerIOHandler<reactor::ClientWriteHandlerFactory>(
-				this->_cgiWriteSharedData);
-			this->_forked = true;
-			this->_unchunkedState = true;
-		}
-		return true;
-	}
-	utils::insertData<std::vector<char>, std::string>(this->_cgiWriteSharedData->getBuffer(),
-													  this->_request->second.getBody());
-	this->_request->second.getBody().clear();
-	return false;
 }
 
 bool CgiResponseBuilder::setBody() {
@@ -130,6 +109,7 @@ bool CgiResponseBuilder::setBody() {
 		 this->_request->first == CHUNKED_DONE) &&
 		this->_cgiWriteSharedData->getBuffer().empty() && this->_cgiWriteSharedData->getState() != RESOLVE) {
 		this->removeWriteIO();
+		close(this->_pipes[PIPE_PWRITE]);
 		this->_cgiWriteSharedData->setState(RESOLVE);
 	}
 	if (this->_startLineState == false)
@@ -142,11 +122,59 @@ bool CgiResponseBuilder::setBody() {
 		this->_cgiReadSharedData.get()->getBuffer().clear();
 	}
 	if (this->_cgiReadSharedData.get()->getState() == TERMINATE && this->_cgiWriteSharedData->getState() == RESOLVE) {
+		if (this->_startLineState == false && this->_sharedData->getBuffer().empty()) {
+			this->removeIOHandlers();
+			this->cleanPipes();
+			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+				BAD_GATEWAY, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
+		}
 		this->removeReadIO();
+		close(this->_pipes[PIPE_PREAD]);
 		this->_cgiReadSharedData->setState(RESOLVE);
 		return true;
 	}
 	return true;
+}
+
+bool CgiResponseBuilder::makeunChunked() {
+	if (this->_unchunkedState == true)
+		return this->_unchunkedState;
+	if (this->_request->first == CHUNKED_ERROR || this->_request->first == HTTP_ERROR) {
+		this->removeReadIO();
+		this->cleanPipes();
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+			new ErrorResponseBuilder(this->_request->second.getErrorCode(), this->_sharedData, this->_request,
+									 this->_serverConfig, this->_locationConfig));
+	}
+
+	if ((this->_request->first == DONE || this->_request->first == LONG_BODY_DONE ||
+		 this->_request->first == CHUNKED_DONE)) {
+		this->_request->second.getBody().append("\0");
+		this->_request->second.getHeaders()[CONTENT_LENGTH] =
+			utils::lltos(this->_request->second.getContentLengthReceived());
+		utils::insertData<std::vector<char>, std::string>(this->_cgiWriteSharedData->getBuffer(),
+														  this->_request->second.getBody());
+		this->_request->second.getBody().clear();
+		if (this->_forked == false) {
+			if (this->doFork() == false) {
+				this->cleanPipes();
+				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+					new ErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData, this->_request,
+											 this->_serverConfig, this->_locationConfig));
+			}
+			close(this->_pipes[PIPE_CREAD]);
+			close(this->_pipes[PIPE_CWRITE]);
+			reactor::Dispatcher::getInstance()->registerIOHandler<reactor::ClientWriteHandlerFactory>(
+				this->_cgiWriteSharedData);
+			this->_forked = true;
+			this->_unchunkedState = true;
+		}
+		return true;
+	}
+	utils::insertData<std::vector<char>, std::string>(this->_cgiWriteSharedData->getBuffer(),
+													  this->_request->second.getBody());
+	this->_request->second.getBody().clear();
+	return false;
 }
 
 void CgiResponseBuilder::cgiStartLineInsert() {
@@ -259,7 +287,7 @@ std::string CgiResponseBuilder::makeCgiFullPath() {
 
 	for (std::vector<std::string>::const_iterator it = cgiIndex.begin(); it != cgiIndex.end(); ++it) {
 		std::string cgiIndexTemp = *it;
-		if ((*it).front() == '/')
+		if ((*it)[0] == '/')
 			cgiIndexTemp = (*it).substr(1);
 		if (access((locRootPath + cgiIndexTemp).c_str(), X_OK) == 0)
 			return locRootPath + cgiIndexTemp;
@@ -277,7 +305,7 @@ void CgiResponseBuilder::setStartLine() {
 	this->_response.setStartLine(DefaultResponseBuilder::getInstance()->setDefaultStartLine(200));
 }
 
-bool CgiResponseBuilder::makeSocketPair() {
+bool CgiResponseBuilder::makePipes() {
 	if (pipe(this->_writePipe) < 0 || pipe(this->_readPipe) < 0) {
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		return false;
@@ -287,12 +315,16 @@ bool CgiResponseBuilder::makeSocketPair() {
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		return false;
 	}
+	this->_pipes[PIPE_PREAD] = this->_readPipe[0];
+	this->_pipes[PIPE_CREAD] = this->_writePipe[0];
+	this->_pipes[PIPE_PWRITE] = this->_writePipe[1];
+	this->_pipes[PIPE_CWRITE] = this->_readPipe[1];
 	return true;
 }
 
 void CgiResponseBuilder::makeWriteSharedData() {
 	this->_cgiWriteSharedData = utils::shared_ptr<reactor::SharedData>(
-		new reactor::SharedData(this->_writePipe[1], EVENT_WRITE, std::vector<char>()));
+		new reactor::SharedData(this->_pipes[PIPE_PWRITE], EVENT_WRITE, std::vector<char>()));
 	utils::insertData<std::vector<char>, std::string>(this->_cgiWriteSharedData->getBuffer(),
 													  this->_request->second.getBody());
 	this->_request->second.getBody().clear();
@@ -321,22 +353,22 @@ bool CgiResponseBuilder::doFork() {
 	}
 	this->_cgiTime = std::time(NULL);
 	if (this->_cgiPid == 0) {
-		close(this->_writePipe[1]);
-		close(this->_readPipe[0]);
+		close(this->_pipes[PIPE_PWRITE]);
+		close(this->_pipes[PIPE_PREAD]);
 		char** envp = this->setEnvp();
 		char** args = this->makeArgs();
-		if (dup2(this->_writePipe[0], STDIN_FILENO) == -1) {
-			close(this->_writePipe[0]);
-			close(this->_readPipe[1]);
+		if (dup2(this->_pipes[PIPE_CREAD], STDIN_FILENO) == -1) {
+			close(this->_pipes[PIPE_CREAD]);
+			close(this->_pipes[PIPE_CWRITE]);
 			exit(1);
 		}
-		if (dup2(this->_readPipe[1], STDOUT_FILENO) == -1) {
-			close(this->_writePipe[0]);
-			close(this->_readPipe[1]);
+		if (dup2(this->_pipes[PIPE_CWRITE], STDOUT_FILENO) == -1) {
+			close(this->_pipes[PIPE_CREAD]);
+			close(this->_pipes[PIPE_CWRITE]);
 			exit(1);
 		}
-		close(this->_writePipe[0]);
-		close(this->_readPipe[1]);
+		close(this->_pipes[PIPE_CREAD]);
+		close(this->_pipes[PIPE_CWRITE]);
 		execve(args[0], args, envp);
 		exit(1);
 	}
@@ -384,7 +416,7 @@ std::string CgiResponseBuilder::makePathTranslated() {
 	std::string rootPath = this->_locationConfig->getDirectives(ROOT).asString();
 	std::string uriPath = this->_request->second.getRequestTarget();
 
-	if (uriPath.front() == '/')
+	if (uriPath[0] == '/')
 		uriPath.erase(0, 1);
 	size_t questPos = uriPath.find('?');
 	if (questPos != std::string::npos)
@@ -397,11 +429,23 @@ std::string CgiResponseBuilder::makePathTranslated() {
 	return rootPath + uriPath;
 }
 
+void CgiResponseBuilder::setEnvpSessionData(std::vector<std::string>& cgiEnvpVec) {
+	if (this->_sessionData == u::nullptr_t)
+		return;
+	for (std::map<std::string, std::string>::const_iterator cit = this->_sessionData->getData().begin();
+		 cit != this->_sessionData->getData().end(); ++cit) {
+		std::string key = "X_" + cit->first;
+		std::string value = cit->second;
+		this->addCgiEnvp(cgiEnvpVec, key, value);
+	}
+}
+
 char** CgiResponseBuilder::setEnvp() {
 	char** envp = ServerManager::getInstance()->getEnvp();
 
 	std::vector<std::string> cgiEnvpVec;
 	this->setClientHeaders(cgiEnvpVec);
+	this->setEnvpSessionData(cgiEnvpVec);
 
 	std::map<std::string, std::string>& headers = this->_request.get()->second.getHeaders();
 	std::string serverName = this->_serverConfig->getDirectives(SERVER_NAME).asString();
@@ -513,21 +557,17 @@ std::vector<std::string> CgiResponseBuilder::parsPathEnvp() {
 	return (result);
 }
 
-CgiResponseBuilder::~CgiResponseBuilder() {
-	std::cerr << "CgiResponseBuilder Destructor called\n";
-	close(this->_writePipe[1]);
-	close(this->_readPipe[0]);
-}
+CgiResponseBuilder::~CgiResponseBuilder() {}
 
 void CgiResponseBuilder::setHeader() {}
 
 void CgiResponseBuilder::reset() {}
 
 void CgiResponseBuilder::cleanPipes() {
-	close(this->_readPipe[0]);
-	close(this->_readPipe[1]);
-	close(this->_writePipe[0]);
-	close(this->_writePipe[1]);
+	close(this->_pipes[PIPE_PREAD]);
+	close(this->_pipes[PIPE_PWRITE]);
+	close(this->_pipes[PIPE_CWRITE]);
+	close(this->_pipes[PIPE_CREAD]);
 }
 
 void CgiResponseBuilder::removeIOHandlers() {
@@ -543,4 +583,19 @@ void CgiResponseBuilder::removeReadIO() {
 void CgiResponseBuilder::removeWriteIO() {
 	reactor::Dispatcher::getInstance()->removeIOHandler(this->_cgiWriteSharedData->getFd(),
 														this->_cgiWriteSharedData->getType());
+}
+
+utils::shared_ptr<IBuilder<reactor::sharedData_t> > CgiResponseBuilder::createCgiResponseBuilder(
+	const reactor::sharedData_t& sharedData, const request_t& request,
+	const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig) {
+	return utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		new CgiResponseBuilder(sharedData, request, serverConfig, locationConfig));
+}
+
+utils::shared_ptr<IBuilder<reactor::sharedData_t> > CgiResponseBuilder::createCgiResponseBuilder(
+	const reactor::sharedData_t& sharedData, const request_t& request,
+	const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig,
+	SessionData* sessionData) {
+	return utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+		new CgiResponseBuilder(sharedData, request, serverConfig, locationConfig, sessionData));
 }

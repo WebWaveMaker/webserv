@@ -1,4 +1,3 @@
-// ConfigParser.cpp
 #include "ConfigParser.hpp"
 
 ConfigParser::ConfigParser() {}

@@ -20,7 +20,6 @@ std::string AccessLogger::getHttpMethodStr(const enum HttpMethods& method) {
 			return "DELETE ";
 		case PUT:
 			return "PUT ";
-
 		default:
 			break;
 	}
@@ -30,8 +29,8 @@ std::string AccessLogger::getHttpMethodStr(const enum HttpMethods& method) {
 std::string AccessLogger::makeLogMsg(const std::string& msg, const std::string& func, void* arg) {
 	const Client* client = static_cast<Client*>(arg);
 
-	return inet_ntoa(client->getAddr().sin_addr) + utils::getCurTime(logTimeFormat::accessTimeFormat) + func + " " +
-		   msg + "\n";
+	return utils::getCurTime(logTimeFormat::accessTimeFormat) + msg + " " + func + " " +
+		   inet_ntoa(client->getAddr().sin_addr) + " Fd: " + utils::itos(client->getFd()) + "\n";
 }
 
 /**
@@ -48,8 +47,11 @@ void AccessLogger::log(const std::string& msg, const char* func, const int enum_
 	const std::string methodStr = this->getHttpMethodStr(static_cast<HttpMethods>(enum__));
 	const std::string buf = this->makeLogMsg(methodStr + msg, func, arg);
 
-	std::cout << buf << std::endl;
+	std::cout << buf;
+}
 
-	// if (write(this->fd_, buf.c_str(), buf.size()) == SYSTEMCALL_ERROR)
-	// 	ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "AccessLogger log error");
+void AccessLogger::log(const std::string& msg, const char* func, void* arg) {
+	const std::string buf = this->makeLogMsg(msg, func, arg);
+
+	std::cout << buf;
 }

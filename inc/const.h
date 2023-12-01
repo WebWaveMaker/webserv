@@ -10,8 +10,13 @@
 #define SET_COOKIE "Set-Cookie"
 #define COOKIE "Cookie"
 #define MULTIPART_FORM_DATA "multipart/form-data"
+#define HOST "Host"
 
-#define BUFFER_SIZE 100000
+#ifndef __APPLE__
+#define __APPLE__ 0
+#endif
+
+#define BUFFER_SIZE 8192
 #define FT 42
 #define CRLF_LEN 2
 
@@ -21,5 +26,7 @@
 #define SYSTEMCALL_ERROR -1
 
 #define SESSION_EXPIRED_TIME 60
+
+#define DEFAULT_PATH "./config/server/default.conf"
 
 #endif

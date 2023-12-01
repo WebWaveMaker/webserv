@@ -15,10 +15,11 @@ namespace reactor {
 		for (std::vector<fd_t>::size_type i = 0; i < clientFds->size(); ++i) {
 			std::time_t curTime = std::time(NULL);
 			std::time_t fdTime = demultiplexer->getFdTime((*clientFds.get())[i]);
-			if (std::difftime(curTime, fdTime) >= ServerManager::getInstance()
-													  ->getServerConfig((*clientFds.get())[i])
-													  ->getDirectives(KEEPALIVE_TIMEOUT)
-													  .asUint()) {
+			unsigned int keepAliveTime = ServerManager::getInstance()
+											 ->getServerDefaultConfig((*clientFds.get())[i])
+											 ->getDirectives(KEEPALIVE_TIMEOUT)
+											 .asUint();
+			if (std::difftime(curTime, fdTime) >= keepAliveTime) {
 				if (Dispatcher::getInstance()->isWriting((*clientFds.get())[i]))
 					continue;
 				Dispatcher::getInstance()->addFdToClose((*clientFds.get())[i]);

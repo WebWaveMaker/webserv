@@ -5,7 +5,6 @@ reactor::ClientReadHandler::ClientReadHandler(sharedData_t& sharedData) : AEvent
 reactor::ClientReadHandler::~ClientReadHandler() {}
 
 void reactor::ClientReadHandler::handleEvent() {
-	// std::cerr << "read handler\n";
 	if (this->getState() == TERMINATE)
 		return;
 	std::vector<char> buffer(BUFFER_SIZE);
@@ -13,15 +12,13 @@ void reactor::ClientReadHandler::handleEvent() {
 
 	if (readByte == SYSTEMCALL_ERROR) {
 		this->setState(TERMINATE);
-		std::cerr << "errFd: " << this->getHandle() << std::endl;
-		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
+		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "read fail");
 		return;
 	}
 	if (readByte == 0) {
 		this->setState(TERMINATE);
 		return;
 	}
-	// std::cerr << std::string(buffer.begin(), buffer.begin() + readByte) << std::endl;
 	this->setReadByte(readByte);
 	this->getBuffer().insert(this->getBuffer().end(), buffer.begin(), buffer.begin() + readByte);
 }

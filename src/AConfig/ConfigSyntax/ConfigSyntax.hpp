@@ -14,7 +14,6 @@ class ConfigSyntax {
 	static void returnSyntax(const std::vector<std::string>& values);
 	static void rootSyntax(const std::vector<std::string>& values);
 	static void errorPageSyntax(const std::vector<std::string>& values);
-	static void errorLogSyntax(const std::vector<std::string>& values);
 	static void checkSyntax(const std::string& directive, const std::vector<std::string>& values);
 	static void locationSyntax(const std::string& directive);
 };

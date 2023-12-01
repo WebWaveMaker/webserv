@@ -1,6 +1,4 @@
 #include "ConfigValue.hpp"
-//all test passed
-// Constructors for each type
 
 ConfigValue::ConfigValue(bool b) : type(BOOL) {
 	data.boolean = b;
@@ -154,8 +152,6 @@ ConfigValue& ConfigValue::operator=(const ConfigValue& other) {
 	return *this;
 }
 
-// Getter functions
-
 void* ConfigValue::asNULL() const {
 	if (type != NONE) {
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid type asNULL");
@@ -171,8 +167,6 @@ bool ConfigValue::asBool() const {
 }
 
 unsigned int ConfigValue::asUint() const {
-	// std::cerr << type << std::endl;
-	// std::cerr << data.integer << std::endl;
 	if (type != UINT) {
 		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid type asUint");
 	}
