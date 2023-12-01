@@ -38,7 +38,7 @@ class CgiResponseBuilder : public IBuilder<reactor::sharedData_t> {
 
 	void setEnvpSessionData(std::vector<std::string>& cgiEnvpVec);
 	std::string makeCgiFullPath();
-	bool makeSocketPair();
+	bool makePipes();
 	void makeWriteSharedData();
 	bool makeunChunked();
 	bool doFork();

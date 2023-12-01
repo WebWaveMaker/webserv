@@ -55,7 +55,7 @@ void CgiResponseBuilder::prepare() {
 	if (this->_cgiFullPath.empty())
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			NOT_FOUND, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
-	if (this->makeSocketPair() == false)
+	if (this->makePipes() == false)
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			INTERNAL_SERVER_ERROR, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 	this->makeWriteSharedData();
@@ -80,15 +80,17 @@ bool CgiResponseBuilder::build() {
 		if (waitpid(this->_cgiPid, &status, WNOHANG) > 0) {
 			if (WIFEXITED(status) == false) {
 				this->removeIOHandlers();
-				this->cleanPipes();
+				close(this->_pipes[PIPE_PREAD]);
+				close(this->_pipes[PIPE_PWRITE]);
 				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 					BAD_GATEWAY, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 			}
 		} else {
-			if (std::difftime(std::time(NULL), this->_cgiTime) >= 6000) {
+			if (std::difftime(std::time(NULL), this->_cgiTime) >= 300) {
 				kill(this->_cgiPid, SIGTERM);
 				this->removeIOHandlers();
-				this->cleanPipes();
+				close(this->_pipes[PIPE_PREAD]);
+				close(this->_pipes[PIPE_PWRITE]);
 				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 					BAD_GATEWAY, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 			}
@@ -107,6 +109,7 @@ bool CgiResponseBuilder::setBody() {
 		 this->_request->first == CHUNKED_DONE) &&
 		this->_cgiWriteSharedData->getBuffer().empty() && this->_cgiWriteSharedData->getState() != RESOLVE) {
 		this->removeWriteIO();
+		close(this->_pipes[PIPE_PWRITE]);
 		this->_cgiWriteSharedData->setState(RESOLVE);
 	}
 	if (this->_startLineState == false)
@@ -126,6 +129,7 @@ bool CgiResponseBuilder::setBody() {
 				BAD_GATEWAY, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 		}
 		this->removeReadIO();
+		close(this->_pipes[PIPE_PREAD]);
 		this->_cgiReadSharedData->setState(RESOLVE);
 		return true;
 	}
@@ -301,7 +305,7 @@ void CgiResponseBuilder::setStartLine() {
 	this->_response.setStartLine(DefaultResponseBuilder::getInstance()->setDefaultStartLine(200));
 }
 
-bool CgiResponseBuilder::makeSocketPair() {
+bool CgiResponseBuilder::makePipes() {
 	if (pipe(this->_writePipe) < 0 || pipe(this->_readPipe) < 0) {
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
 		return false;
@@ -553,9 +557,7 @@ std::vector<std::string> CgiResponseBuilder::parsPathEnvp() {
 	return (result);
 }
 
-CgiResponseBuilder::~CgiResponseBuilder() {
-	this->cleanPipes();
-}
+CgiResponseBuilder::~CgiResponseBuilder() {}
 
 void CgiResponseBuilder::setHeader() {}
 
@@ -563,9 +565,9 @@ void CgiResponseBuilder::reset() {}
 
 void CgiResponseBuilder::cleanPipes() {
 	close(this->_pipes[PIPE_PREAD]);
+	close(this->_pipes[PIPE_PWRITE]);
 	close(this->_pipes[PIPE_CWRITE]);
 	close(this->_pipes[PIPE_CREAD]);
-	close(this->_pipes[PIPE_PWRITE]);
 }
 
 void CgiResponseBuilder::removeIOHandlers() {

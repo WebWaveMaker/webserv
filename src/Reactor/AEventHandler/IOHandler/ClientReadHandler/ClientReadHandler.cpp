@@ -12,7 +12,7 @@ void reactor::ClientReadHandler::handleEvent() {
 
 	if (readByte == SYSTEMCALL_ERROR) {
 		this->setState(TERMINATE);
-		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
+		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__, "read fail");
 		return;
 	}
 	if (readByte == 0) {

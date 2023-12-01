@@ -11,10 +11,7 @@
 #include <map>			 // For std::map
 #include <stdexcept>	 // For std::runtime_error
 
-// #include "AExeHandler.hpp"
-// #include "AccessLogger.hpp"	 // For AccessLogger
 #include "ClientRequestHandlerFactory.hpp"
-// #include "ErrorLogger.hpp"	// For ErrorLogger
 #include "ServerReadHandlerFactory.hpp"
 
 #endif
