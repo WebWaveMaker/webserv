@@ -1,9 +1,9 @@
-FROM alpine:latest
+FROM ubuntu:latest
 
-RUN apk update && apk add make g++
+RUN apt update && apt install g++ make libkqueue-dev -y
 
 WORKDIR /app
 
 COPY . .
 
-CMD [ "sh", "-c", "make fclean && make && make fclean" ]
+CMD [ "sh", "-c", "make check JOB=8 && make fclean" ]

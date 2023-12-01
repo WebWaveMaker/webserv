@@ -11,4 +11,5 @@ See the [github Wiki](https://github.com/WebWaveMaker/webserv/wiki)
 - [Branch Strategy](https://github.com/WebWaveMaker/webserv/wiki/Branch-Strategy)
 - [Code Convention](https://github.com/WebWaveMaker/webserv/wiki/Code-Convention)
 - [Commit Convention](https://github.com/WebWaveMaker/webserv/wiki/Commit-Convention)
+- [Development Setting](https://github.com/WebWaveMaker/webserv/wiki/Development-Setting)
 

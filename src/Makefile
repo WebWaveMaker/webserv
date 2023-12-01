@@ -1,15 +1,3 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: jgo <jgo@student.42seoul.kr>               +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2022/11/23 14:05:59 by jgo               #+#    #+#              #
-#    Updated: 2023/10/04 20:50:44 by jgo              ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 ifndef TOPDIR
 	TOPDIR := $(abspath ../)
 endif
@@ -18,7 +6,21 @@ include $(TOPDIR)/config/makefile/common.mk
 
 NAME :=	$(PROJECT_NAME)
 
-DIRS := ServerManager
+DIRS :=	AConfig \
+		ALogger \
+		Builder \
+		Client \
+		Factory \
+		HttpMessage \
+		HttpSession \
+		Parser \
+		Reactor \
+		Server \
+		ServerManager \
+		Mime \
+		utils \
+		UserDB
+
 LIBS :=	$(addsuffix .a, $(addprefix lib/, $(DIRS)))
 SRCS := main.cpp
 

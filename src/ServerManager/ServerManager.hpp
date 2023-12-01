@@ -4,14 +4,33 @@
 
 #include "ServerManager.h"
 
-class ServerManager {
+class Server;
+
+class ServerManager : public u::TSingleton<ServerManager> {
    private:
+	ConfigParser _configParser;
+	config_t _serverConfigs;
+	std::map<int, Server*> _servers;
+	char** _envp;
+
    public:
 	ServerManager();
-	ServerManager(int ac, char **&av);
-	ServerManager(const ServerManager& obj);
+	void init(int ac, char**&, char**& envp);
+	void handleSigPipe();
+	void createServer(config_t& serverConfigs);
+	void createClient(int serverFd, int clientFd, struct sockaddr_in& clientAddr);
+	void eraseClient(fd_t fd);
+	Server* getServer(int serverFd) const;
+	utils::shared_ptr<ServerConfig> getServerDefaultConfig(const int clientFd) const;
+	utils::shared_ptr<ServerConfig> getServerConfig(const int clientFd, std::string host) const;
+	config_t getServerConfigs() const;
+	utils::shared_ptr<std::vector<fd_t> > getClientFds();
+	void registerReadEvent(fd_t fd);
+	void registerTimeoutEvent();
+	std::string getClientIp(fd_t fd);
+	char** getEnvp() const;
 	~ServerManager();
-	ServerManager& operator=(const ServerManager& obj);
+	static std::string findLocationBlock(const request_t& request, const utils::shared_ptr<ServerConfig>& serverConfig);
 };
 
 #endif

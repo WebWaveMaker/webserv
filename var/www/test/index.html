@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>HTTP 1.1 서버 테스트</title>
+    <script src="http-requests.js"></script>
+</head>
+
+<body>
+    <label for="url">URL:</label><br>
+    <input type="text" id="url" placeholder="http://localhost:8080/resource"><br>
+    <label for="start-line">Start Line:</label><br>
+    <textarea id="start-line" rows="1" placeholder="POST /resource HTTP/1.1"></textarea><br>
+    <label for="headers">Headers:</label><br>
+    <textarea id="headers" rows="4" placeholder="Content-Type: application/json\nAccept: */*"></textarea><br>
+    <label for="body">Body:</label><br>
+    <textarea id="body" rows="4" placeholder='{"key":"value"}'></textarea><br>
+
+    <label for="fileUpload">File to upload:</label><br>
+    <input type="file" id="fileUpload"><br>
+
+    <button onclick="sendRequest('GET')">GET</button>
+    <button onclick="sendRequest('POST')">POST</button>
+    <button onclick="sendRequest('DELETE')">DELETE</button>
+    <button onclick="sendRequest('PUT')">PUT</button>
+
+    <pre id="response"></pre>
+</body>
+
+</html>
