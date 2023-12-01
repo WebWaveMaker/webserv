@@ -6,7 +6,7 @@ Server::Server(utils::shared_ptr<ServerConfig>& serverConfig) : _serverConfig(se
 		this->_port = this->_serverConfig->getDirectives(LISTEN).asUint();
 		this->_serverName = this->_serverConfig->getDirectives(SERVER_NAME).asString();
 	} catch (std::exception& e) {
-		throw;
+		throw std::runtime_error("Server error");
 	}
 }
 
@@ -34,7 +34,7 @@ void Server::listenServer() {
 		this->registerReadEvent();
 	} catch (std::exception& e) {
 		close(this->_fd);
-		throw;
+		throw std::runtime_error("listenServer error");
 	}
 }
 
@@ -51,12 +51,12 @@ void Server::bindListen() {
 
 	if (bind(this->_fd, (struct sockaddr*)&this->_serverAddr, sizeof(this->_serverAddr)) < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
-		throw;
+		throw std::runtime_error("bind error");
 	}
 
 	if (listen(this->_fd, 128) < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
-		throw;
+		throw std::runtime_error("listen error");
 	}
 }
 
@@ -66,17 +66,17 @@ void Server::makeSocket() {
 
 	if (this->_fd < 0) {
 		this->_errorLogger->systemCallError(__FILE__, __LINE__, __func__);
-		throw;
+		throw std::runtime_error("socket error");
 	}
 	if (fcntl(this->_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC) < 0) {
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
-		throw;
+		throw std::runtime_error("fcntl error");
 	}
 
 	int opt = 1;
 	if (setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
 		ErrorLogger::systemCallError(__FILE__, __LINE__, __func__);
-		throw;
+		throw std::runtime_error("setsockopt error");
 	}
 }
 
@@ -98,7 +98,7 @@ void Server::createClient(int clientFd, struct sockaddr_in& clientAddr) {
 		this->_accessLogger->log(this->_serverConfig->getDirectives(SERVER_NAME).asString(), __func__, UNKNOWN,
 								 newClient.get());
 	} catch (std::exception& e) {
-		throw;
+		throw std::runtime_error("createClient error");
 	}
 }
 

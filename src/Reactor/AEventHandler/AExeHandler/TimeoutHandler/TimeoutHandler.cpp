@@ -16,7 +16,7 @@ namespace reactor {
 			std::time_t curTime = std::time(NULL);
 			std::time_t fdTime = demultiplexer->getFdTime((*clientFds.get())[i]);
 			unsigned int keepAliveTime = ServerManager::getInstance()
-											 ->getServerConfig((*clientFds.get())[i])
+											 ->getServerDefaultConfig((*clientFds.get())[i])
 											 ->getDirectives(KEEPALIVE_TIMEOUT)
 											 .asUint();
 			if (std::difftime(curTime, fdTime) >= keepAliveTime) {

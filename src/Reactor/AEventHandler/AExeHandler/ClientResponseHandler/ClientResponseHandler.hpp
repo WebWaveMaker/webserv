@@ -15,7 +15,6 @@ namespace reactor {
 		bool _registered;
 
 		utils::shared_ptr<IBuilder<sharedData_t> > chooseBuilder();
-		std::string findLocationBlock();
 
 	   public:
 		ClientResponseHandler(sharedData_t& sharedData);

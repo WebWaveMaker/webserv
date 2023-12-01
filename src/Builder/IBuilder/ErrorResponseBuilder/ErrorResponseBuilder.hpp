@@ -8,9 +8,10 @@ class ErrorResponseBuilder : public IBuilder<reactor::sharedData_t> {
    private:
 	int _errorCode;
 	reactor::sharedData_t _sharedData;
+	request_t _request;
 	reactor::sharedData_t _readSharedData;	// for file read;
-	const utils::shared_ptr<ServerConfig> _serverConfig;
-	const utils::shared_ptr<LocationConfig> _locationConfig;
+	utils::shared_ptr<ServerConfig> _serverConfig;
+	utils::shared_ptr<LocationConfig> _locationConfig;
 
 	std::string _path;
 	fd_t _fd;
@@ -21,14 +22,14 @@ class ErrorResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	void finalError();
 
    public:
-	ErrorResponseBuilder(const int errorCode, reactor::sharedData_t sharedData,
+	ErrorResponseBuilder(const int errorCode, reactor::sharedData_t sharedData, request_t request,
 						 const utils::shared_ptr<ServerConfig>& config,
 						 const utils::shared_ptr<LocationConfig>& locationConfig);
 	~ErrorResponseBuilder();
 
 	static utils::shared_ptr<IBuilder<reactor::sharedData_t> > createErrorResponseBuilder(
-		const int status, const reactor::sharedData_t& sharedData, const utils::shared_ptr<ServerConfig>& serverConfig,
-		const utils::shared_ptr<LocationConfig>& locationConfig);
+		const int status, const reactor::sharedData_t& sharedData, request_t request,
+		const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig);
 
 	virtual enum AsyncState getReadState() const { return this->_readSharedData->getState(); }
 	virtual void setReadState(enum AsyncState state) { this->_readSharedData->setState(state); }

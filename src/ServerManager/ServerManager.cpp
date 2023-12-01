@@ -15,7 +15,7 @@ void ServerManager::init(int ac, char**& av, char**& envp) {
 		this->handleSigPipe();
 		this->createServer(this->_serverConfigs);
 	} catch (std::exception& e) {
-		throw;
+		throw e;
 	}
 }
 
@@ -42,7 +42,7 @@ void ServerManager::createServer(config_t& ServerConfigs) {
 		}
 		usePort.clear();
 	} catch (std::exception& e) {
-		throw;
+		throw e;
 	}
 }
 
@@ -74,13 +74,12 @@ config_t ServerManager::getServerConfigs() const {
 }
 
 utils::shared_ptr<ServerConfig> ServerManager::getServerConfig(const int clientFd, std::string host) const {
-	std::string host = host;
 	std::string portStr = "80";
 	if (host.empty())
 		return utils::shared_ptr<ServerConfig>();
 	size_t colPos = host.find(':');
 	if (colPos != std::string::npos) {
-		portStr = host.substr(colPos);
+		portStr = host.substr(colPos + 1);
 		host.erase(colPos);
 	}
 	unsigned int port = utils::stoui(portStr);
@@ -159,4 +158,37 @@ std::string ServerManager::getClientIp(fd_t fd) {
 		}
 	}
 	return std::string("");
+}
+
+std::string ServerManager::findLocationBlock(const request_t& request,
+											 const utils::shared_ptr<ServerConfig>& serverConfig) {
+	std::string requestTarget = request->second.getRequestTarget();
+
+	size_t dotPos = requestTarget.find('.');
+	if (dotPos == std::string::npos)
+		return requestTarget;
+	size_t slashPos = requestTarget.find('/', dotPos);
+	if (slashPos == std::string::npos) {
+		requestTarget.erase(0, dotPos);
+		if (serverConfig->getLocation("/" + requestTarget + "/").get() == NULL)
+			return request->second.getRequestTarget();
+		std::vector<HttpMethods> methods =
+			serverConfig->getLocation("/" + requestTarget + "/")->getDirectives(LIMIT_EXCEPT).asMedVec();
+		for (std::vector<HttpMethods>::iterator it = methods.begin(); it != methods.end(); ++it) {
+			if (*it == request->second.getMethod())
+				return "/" + requestTarget;
+		}
+		return request->second.getRequestTarget();
+	}
+	requestTarget.erase(slashPos);
+	requestTarget.erase(0, dotPos);
+	if (serverConfig->getLocation("/" + requestTarget + "/").get() == NULL)
+		return request->second.getRequestTarget();
+	std::vector<HttpMethods> methods =
+		serverConfig->getLocation("/" + requestTarget + "/")->getDirectives(LIMIT_EXCEPT).asMedVec();
+	for (std::vector<HttpMethods>::iterator it = methods.begin(); it != methods.end(); ++it) {
+		if (*it == request->second.getMethod())
+			return "/" + requestTarget;
+	}
+	return request->second.getRequestTarget();
 }

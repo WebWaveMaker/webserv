@@ -25,13 +25,14 @@ bool DeleteResponseBuilder::implDeleteFile(const std::string& path) {
 	switch (checkFileMode(path)) {
 		case MODE_FILE:
 			if (std::remove(path.c_str()) == SYSTEMCALL_ERROR)
-				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-					INTERNAL_SERVER_ERROR, this->_sharedData, this->_serverConfig, this->_locationConfig));
+				throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+					new ErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData, this->_request,
+											 this->_serverConfig, this->_locationConfig));
 			this->_path = path;
 			return true;
 		case MODE_DIRECTORY:
-			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-				new ErrorResponseBuilder(FORBIDDEN, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+				FORBIDDEN, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 			break;
 		default:
 			break;
@@ -49,8 +50,8 @@ void DeleteResponseBuilder::deleteFile() {
 		return;
 	if (this->implDeleteFile(serverPath))
 		return;
-	throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-		new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+	throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+		NOT_FOUND, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 }
 
 reactor::sharedData_t DeleteResponseBuilder::getProduct() {

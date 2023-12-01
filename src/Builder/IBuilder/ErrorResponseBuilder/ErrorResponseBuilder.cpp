@@ -1,9 +1,19 @@
 #include "ErrorResponseBuilder.hpp"
+#include "ServerManager.hpp"
 
-ErrorResponseBuilder::ErrorResponseBuilder(const int errorCode, reactor::sharedData_t sharedData,
+ErrorResponseBuilder::ErrorResponseBuilder(const int errorCode, reactor::sharedData_t sharedData, request_t request,
 										   const utils::shared_ptr<ServerConfig>& config,
 										   const utils::shared_ptr<LocationConfig>& locationConfig)
-	: _errorCode(errorCode), _sharedData(sharedData), _serverConfig(config), _locationConfig(locationConfig) {
+	: _errorCode(errorCode),
+	  _sharedData(sharedData),
+	  _request(request),
+	  _serverConfig(config),
+	  _locationConfig(locationConfig) {
+	if (this->_serverConfig.get() == u::nullptr_t)
+		this->_serverConfig = ServerManager::getInstance()->getServerDefaultConfig(this->_sharedData->getFd());
+	if (this->_locationConfig.get() == u::nullptr_t)
+		this->_locationConfig =
+			_serverConfig->getLocationConfig(ServerManager::findLocationBlock(this->_request, _serverConfig));
 	this->reset();
 	this->prepare();
 }
@@ -27,7 +37,7 @@ void ErrorResponseBuilder::setHeader() {
 	struct stat fileInfo;
 
 	if (stat(this->_path.c_str(), &fileInfo) == SYSTEMCALL_ERROR) {
-		throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData,
+		throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData, this->_request,
 															   this->_serverConfig, this->_locationConfig);
 	}
 	std::map<std::string, std::string> headers;
@@ -114,8 +124,8 @@ void ErrorResponseBuilder::prepare() {
 }
 
 utils::shared_ptr<IBuilder<reactor::sharedData_t> > ErrorResponseBuilder::createErrorResponseBuilder(
-	const int status, const reactor::sharedData_t& sharedData, const utils::shared_ptr<ServerConfig>& serverConfig,
-	const utils::shared_ptr<LocationConfig>& locationConfig) {
+	const int status, const reactor::sharedData_t& sharedData, request_t request,
+	const utils::shared_ptr<ServerConfig>& serverConfig, const utils::shared_ptr<LocationConfig>& locationConfig) {
 	return utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-		new ErrorResponseBuilder(status, sharedData, serverConfig, locationConfig));
+		new ErrorResponseBuilder(status, sharedData, request, serverConfig, locationConfig));
 }

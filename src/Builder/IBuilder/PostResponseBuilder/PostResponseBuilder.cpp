@@ -43,8 +43,8 @@ void PostResponseBuilder::setPath(const std::string& target, const std::string t
 	} else if (access(serverPath.c_str(), F_OK) == 0) {
 		this->_path = serverPath + target;
 	} else {
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			NOT_FOUND, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 	}
 }
 
@@ -53,7 +53,7 @@ bool PostResponseBuilder::findUser(const std::string& username) {
 	struct dirent* dp;
 
 	if ((dirp = opendir(_folderPath.c_str())) == u::nullptr_t)
-		throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData,
+		throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData, this->_request,
 															   this->_serverConfig, this->_locationConfig);
 	while ((dp = readdir(dirp)) != u::nullptr_t) {
 		if (dp->d_name[0] == '.' || dp->d_name == _fileForSignup)
@@ -131,8 +131,9 @@ bool PostResponseBuilder::build() {
 		_isRemoved = true;
 		reactor::Dispatcher::getInstance()->removeIOHandler(this->_writeSharedData->getFd(),
 															this->_writeSharedData->getType());
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			this->_request->second.getErrorCode(), this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+			new ErrorResponseBuilder(this->_request->second.getErrorCode(), this->_sharedData, this->_request,
+									 this->_serverConfig, this->_locationConfig));
 	}
 	return this->setBody();
 }
@@ -142,7 +143,7 @@ void PostResponseBuilder::prepare() {
 	const std::string& target = this->_request->second.getRequestTarget();
 	if (target[target.size() - 1] == '/')
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-			UNSUPPORTED_MEDIA_TYPE, this->_sharedData, this->_serverConfig, this->_locationConfig));
+			UNSUPPORTED_MEDIA_TYPE, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 	this->setPath(target.substr(1), this->_request->second.getTargetPath().substr(1));
 	if (checkFileMode(this->_path) == MODE_FILE)
 		this->_isExist = true;

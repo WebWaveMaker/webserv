@@ -35,7 +35,7 @@ void GetResponseBuilder::setHeader() {
 	struct stat fileInfo;
 
 	if (stat(this->_path.c_str(), &fileInfo) == SYSTEMCALL_ERROR) {
-		throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData,
+		throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData, this->_request,
 															   this->_serverConfig, this->_locationConfig);
 	}
 	if (fileInfo.st_size == 0) {
@@ -102,32 +102,34 @@ fd_t GetResponseBuilder::fileProcessing() {
 		this->_serverConfig->getDirectives(ROOT).asString() +
 		utils::removeSubstring(this->_request->second.getRequestTarget(), this->_locationConfig->getPath()));
 	if (this->_locationConfig->getPath() == this->_request->second.getRequestTarget() + '/')
-		return directoryProcessing();
+		throw RedirectResponseBuilder::createRedirectResponseBuilder(
+			SEE_OTHER, this->_request->second.getRequestTarget() + '/', this->_sharedData, this->_request,
+			this->_serverConfig);
 	if (mode == MODE_DIRECTORY)
 		return directoryProcessing();
 	if (mode == MODE_ERROR && serverMode == MODE_ERROR)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			NOT_FOUND, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 	return this->findReadFile();
 }
 
 std::vector<std::string> GetResponseBuilder::readDir(const std::string& path) {
 	if (path == "")
-		throw ErrorResponseBuilder::createErrorResponseBuilder(FORBIDDEN, this->_sharedData, this->_serverConfig,
-															   this->_locationConfig);
+		throw ErrorResponseBuilder::createErrorResponseBuilder(FORBIDDEN, this->_sharedData, this->_request,
+															   this->_serverConfig, this->_locationConfig);
 	DIR* dirp;
 	struct dirent* dp;
 
 	if ((dirp = opendir(path.c_str())) == u::nullptr_t)
-		throw ErrorResponseBuilder::createErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig,
-															   this->_locationConfig);
+		throw ErrorResponseBuilder::createErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_request,
+															   this->_serverConfig, this->_locationConfig);
 	std::vector<std::string> dirVec;
 	while ((dp = readdir(dirp)) != u::nullptr_t) {
 		if (dp->d_name[0] == '.')
 			continue;
 		if (dp == u::nullptr_t)
-			throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData,
-																   this->_serverConfig, this->_locationConfig);
+			throw ErrorResponseBuilder::createErrorResponseBuilder(
+				INTERNAL_SERVER_ERROR, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig);
 		dirVec.push_back(dp->d_name);
 	}
 	closedir(dirp);
@@ -142,8 +144,8 @@ void GetResponseBuilder::makeListHtml(const std::string& path, const std::vector
 
 	for (std::vector<std::string>::const_iterator cit = dirVec.begin(); cit != dirVec.end(); ++cit) {
 		if (stat((path + "/" + *cit).c_str(), &fileStat) == SYSTEMCALL_ERROR)
-			throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData,
-																   this->_serverConfig, this->_locationConfig);
+			throw ErrorResponseBuilder::createErrorResponseBuilder(
+				INTERNAL_SERVER_ERROR, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig);
 		if (S_ISDIR(fileStat.st_mode))
 			html += "<a href=\"" + *cit + "\"/>" + *cit + "/</a>";
 		else
@@ -176,8 +178,8 @@ void GetResponseBuilder::makeListHtml(const std::string& path, const std::vector
 
 fd_t GetResponseBuilder::directoryListing() {
 	if (this->_locationConfig->getDirectives(AUTOINDEX).asBool() == false)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(FORBIDDEN, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			FORBIDDEN, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 	const std::string path = this->_locationConfig->getPath() == this->_request->second.getRequestTarget()
 								 ? this->_locationConfig->getOwnRoot()
 								 : "";
@@ -194,8 +196,8 @@ fd_t GetResponseBuilder::directoryProcessing() {
 		middle = "";
 	if (this->checkFileMode(this->_locationConfig->getDirectives(ROOT).asString() +
 							this->_request->second.getTargetFile()) == MODE_FILE)
-		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
-			new ErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig, this->_locationConfig));
+		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
+			NOT_FOUND, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 	if (this->_locationConfig->getOwnIndex().empty())
 		return this->directoryListing();
 	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString() + middle;
@@ -220,8 +222,8 @@ void GetResponseBuilder::prepare() {
 					? this->fileProcessing()
 					: this->directoryProcessing();
 	if (this->_fd == FD_ERROR)
-		throw ErrorResponseBuilder::createErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_serverConfig,
-															   this->_locationConfig);
+		throw ErrorResponseBuilder::createErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_request,
+															   this->_serverConfig, this->_locationConfig);
 	if (this->_fd == FD_LISTING)
 		return;
 	this->setStartLine();

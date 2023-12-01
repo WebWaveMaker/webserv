@@ -5,8 +5,12 @@ namespace reactor {
 	ClientResponseHandler::ClientResponseHandler(sharedData_t& sharedData)
 		: AExeHandler(sharedData),
 		  _request(sharedData->getRequest()),
-		  _serverConfig(ServerManager::getInstance()->getServerConfig(this->getHandle(), this->_request)),
-		  _locationConfig(_serverConfig->getLocationConfig(this->findLocationBlock())),
+		  _serverConfig(ServerManager::getInstance()->getServerConfig(this->getHandle(),
+																	  this->_request->second.getHeaders()[HOST])),
+		  _locationConfig(
+			  _serverConfig.get() != u::nullptr_t
+				  ? _serverConfig->getLocationConfig(ServerManager::findLocationBlock(this->_request, _serverConfig))
+				  : u::shared_ptr<LocationConfig>()),
 		  _keepalive(true),
 		  _director(this->chooseBuilder()),
 		  _registered(false) {
@@ -19,38 +23,6 @@ namespace reactor {
 		std::cout << "[" << this->_request->second.getUserAgent() << " " << this->_request->second.getMethodStr() << " "
 				  << this->_request->second.getRequestTarget() << "] "
 				  << "Response end" << std::endl;
-	}
-
-	std::string ClientResponseHandler::findLocationBlock() {
-		std::string requestTarget = this->_request->second.getRequestTarget();
-
-		size_t dotPos = requestTarget.find('.');
-		if (dotPos == std::string::npos)
-			return requestTarget;
-		size_t slashPos = requestTarget.find('/', dotPos);
-		if (slashPos == std::string::npos) {
-			requestTarget.erase(0, dotPos);
-			if (this->_serverConfig->getLocation("/" + requestTarget + "/").get() == NULL)
-				return this->_request->second.getRequestTarget();
-			std::vector<HttpMethods> methods =
-				this->_serverConfig->getLocation("/" + requestTarget + "/")->getDirectives(LIMIT_EXCEPT).asMedVec();
-			for (std::vector<HttpMethods>::iterator it = methods.begin(); it != methods.end(); ++it) {
-				if (*it == this->_request->second.getMethod())
-					return "/" + requestTarget;
-			}
-			return this->_request->second.getRequestTarget();
-		}
-		requestTarget.erase(slashPos);
-		requestTarget.erase(0, dotPos);
-		if (this->_serverConfig->getLocation("/" + requestTarget + "/").get() == NULL)
-			return this->_request->second.getRequestTarget();
-		std::vector<HttpMethods> methods =
-			this->_serverConfig->getLocation("/" + requestTarget + "/")->getDirectives(LIMIT_EXCEPT).asMedVec();
-		for (std::vector<HttpMethods>::iterator it = methods.begin(); it != methods.end(); ++it) {
-			if (*it == this->_request->second.getMethod())
-				return "/" + requestTarget;
-		}
-		return this->_request->second.getRequestTarget();
 	}
 
 	void ClientResponseHandler::handleEvent() {
@@ -91,21 +63,21 @@ namespace reactor {
 		try {
 			SessionData* sessionData =
 				HttpSession::getInstance()->getSessionData(this->_request->second.getSessionId());
-			if (_locationConfig.get() == u::nullptr_t)
-				throw ErrorResponseBuilder::createErrorResponseBuilder(NOT_FOUND, this->_sharedData,
-																	   this->_serverConfig, this->_locationConfig);
 			if (this->_request->first == HTTP_ERROR)
 				throw ErrorResponseBuilder::createErrorResponseBuilder(this->_request->second.getErrorCode(),
-																	   this->_sharedData, this->_serverConfig,
-																	   this->_locationConfig);
+																	   this->_sharedData, this->_request,
+																	   this->_serverConfig, this->_locationConfig);
+			if (_locationConfig.get() == u::nullptr_t)
+				throw ErrorResponseBuilder::createErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_request,
+																	   this->_serverConfig, this->_locationConfig);
 			if (this->_request->second.getHeaders()["Keep-Alive"] == "close")
 				this->_keepalive = false;
 
 			const std::vector<enum HttpMethods> methods = this->_locationConfig->getDirectives(LIMIT_EXCEPT).asMedVec();
 
 			if (std::find(methods.begin(), methods.end(), this->_request->second.getMethod()) == methods.end())
-				throw ErrorResponseBuilder::createErrorResponseBuilder(METHOD_NOT_ALLOWED, this->_sharedData,
-																	   this->_serverConfig, this->_locationConfig);
+				throw ErrorResponseBuilder::createErrorResponseBuilder(
+					METHOD_NOT_ALLOWED, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig);
 			if (this->_locationConfig->isRedirect()) {
 				std::vector<std::string> rv = this->_locationConfig->getDirectives(RETURN).asStrVec();
 
@@ -129,16 +101,16 @@ namespace reactor {
 				return (*responseBuilderFunctions[method])(this->_sharedData, this->_request, this->_serverConfig,
 														   this->_locationConfig, sessionData);
 			} else {
-				return ErrorResponseBuilder::createErrorResponseBuilder(BAD_REQUEST, this->_sharedData,
+				return ErrorResponseBuilder::createErrorResponseBuilder(BAD_REQUEST, this->_sharedData, this->_request,
 																		this->_serverConfig, this->_locationConfig);
 			}
 		} catch (utils::shared_ptr<IBuilder<sharedData_t> >& e) {
 			return e;
 		} catch (...) {
-			return ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData,
-																	this->_serverConfig, this->_locationConfig);
+			return ErrorResponseBuilder::createErrorResponseBuilder(
+				INTERNAL_SERVER_ERROR, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig);
 		}
-		return ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData,
-																this->_serverConfig, this->_locationConfig);
+		return ErrorResponseBuilder::createErrorResponseBuilder(
+			INTERNAL_SERVER_ERROR, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig);
 	}
 }  // namespace reactor

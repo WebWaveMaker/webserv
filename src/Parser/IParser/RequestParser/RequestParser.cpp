@@ -1,7 +1,8 @@
 #include "RequestParser.hpp"
+#include "ServerManager.hpp"
 
-RequestParser::RequestParser(utils::shared_ptr<ServerConfig> serverConfig)
-	: IParser(), _msgs(), _curMsg(u::nullptr_t), _serverConfig(serverConfig) {}
+RequestParser::RequestParser(const fd_t clientFd, utils::shared_ptr<ServerConfig> serverConfig)
+	: IParser(), _clientFd(clientFd), _msgs(), _curMsg(u::nullptr_t), _serverConfig(serverConfig) {}
 
 RequestParser::~RequestParser() {}
 
@@ -104,6 +105,15 @@ bool RequestParser::parseHeader(std::string& buf) {
 
 		headers[key] = val;
 	}
+
+	utils::shared_ptr<ServerConfig> serverConfig =
+		ServerManager::getInstance()->getServerConfig(this->_clientFd, headers[HOST]);
+
+	if (serverConfig.get() == u::nullptr_t)
+		return setErrorRequest(HTTP_ERROR, BAD_REQUEST);
+
+	if (this->_serverConfig != serverConfig)
+		this->_serverConfig = serverConfig;
 
 	if ((curMsg.getMethod() == POST || curMsg.getMethod() == PUT) && this->checkContentLengthZero(headers) &&
 		headers[TRANSFER_ENCODING] != "chunked")

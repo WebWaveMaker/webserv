@@ -11,8 +11,9 @@ PostResponseBuilder::Login::Login(PostResponseBuilder* builder)
 	for (std::vector<std::string>::const_iterator cit = vec.begin(); cit != vec.end(); ++cit) {
 		std::vector<std::string> vec2 = utils::split(*cit, "=");
 		if (vec2.size() != 2)
-			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
-				BAD_REQUEST, builder->_sharedData, builder->_serverConfig, builder->_locationConfig));
+			throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(
+				new ErrorResponseBuilder(BAD_REQUEST, builder->_sharedData, builder->_request, builder->_serverConfig,
+										 builder->_locationConfig));
 		if (vec2[0] == "username")
 			username = vec2[1];
 		else if (vec2[0] == "password")

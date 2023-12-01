@@ -30,6 +30,7 @@ class ServerManager : public u::TSingleton<ServerManager> {
 	std::string getClientIp(fd_t fd);
 	char** getEnvp() const;
 	~ServerManager();
+	static std::string findLocationBlock(const request_t& request, const utils::shared_ptr<ServerConfig>& serverConfig);
 };
 
 #endif

@@ -6,6 +6,7 @@
 
 class RequestParser : public IParser<request_t, std::string> {
    private:
+	const fd_t _clientFd;
 	std::queue<request_t> _msgs;
 	request_t* _curMsg;
 	utils::shared_ptr<ServerConfig> _serverConfig;
@@ -27,7 +28,7 @@ class RequestParser : public IParser<request_t, std::string> {
 	inline std::string cutBuf(std::string& buf, const std::string::size_type size);
 
    public:
-	RequestParser(utils::shared_ptr<ServerConfig> serverConfig);
+	RequestParser(const fd_t clientFd, utils::shared_ptr<ServerConfig> serverConfig);
 	virtual request_t parse(std::string& content);
 	request_t get(void);
 	virtual ~RequestParser();

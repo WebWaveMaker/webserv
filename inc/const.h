@@ -10,12 +10,13 @@
 #define SET_COOKIE "Set-Cookie"
 #define COOKIE "Cookie"
 #define MULTIPART_FORM_DATA "multipart/form-data"
+#define HOST "Host"
 
 #ifndef __APPLE__
 #define __APPLE__ 0
 #endif
 
-#define BUFFER_SIZE 100000
+#define BUFFER_SIZE 8192
 #define FT 42
 #define CRLF_LEN 2
 
