@@ -21,7 +21,7 @@ class PutResponseBuilder : public IBuilder<reactor::sharedData_t> {
 
 	void handleSession();
 
-	void setPath(const std::string& target, const std::string targetPath);
+	void setPath(const std::string& target);
 
    public:
 	PutResponseBuilder(reactor::sharedData_t sharedData, request_t request,

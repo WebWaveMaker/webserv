@@ -2,9 +2,6 @@
 #include "Login.hpp"
 #include "SignUp.hpp"
 
-const std::string PostResponseBuilder::_folderPath = ".users";
-const std::string PostResponseBuilder::_fileForSignup = "for_users";
-
 PostResponseBuilder::PostResponseBuilder(reactor::sharedData_t sharedData, request_t request,
 										 const utils::shared_ptr<ServerConfig>& serverConfig,
 										 const utils::shared_ptr<LocationConfig>& locationConfig,
@@ -34,37 +31,18 @@ reactor::sharedData_t PostResponseBuilder::getProduct() {
 	return this->_sharedData;
 }
 
-void PostResponseBuilder::setPath(const std::string& target, const std::string targetPath) {
-	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString() + targetPath;
-	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString() + targetPath;
+void PostResponseBuilder::setPath(const std::string& target) {
+	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString();
+	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString();
 
-	if (access(locPath.c_str(), F_OK) == 0) {
+	if (access((locPath).c_str(), F_OK) == 0) {
 		this->_path = locPath + target;
-	} else if (access(serverPath.c_str(), F_OK) == 0) {
+	} else if (access((serverPath).c_str(), F_OK) == 0) {
 		this->_path = serverPath + target;
 	} else {
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			NOT_FOUND, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
 	}
-}
-
-bool PostResponseBuilder::findUser(const std::string& username) {
-	DIR* dirp;
-	struct dirent* dp;
-
-	if ((dirp = opendir(_folderPath.c_str())) == u::nullptr_t)
-		throw ErrorResponseBuilder::createErrorResponseBuilder(INTERNAL_SERVER_ERROR, this->_sharedData, this->_request,
-															   this->_serverConfig, this->_locationConfig);
-	while ((dp = readdir(dirp)) != u::nullptr_t) {
-		if (dp->d_name[0] == '.' || dp->d_name == _fileForSignup)
-			continue;
-		if (dp->d_name == username) {
-			closedir(dirp);
-			return true;
-		}
-	}
-	closedir(dirp);
-	return false;
 }
 
 void PostResponseBuilder::doDefaultBehavior() {}
@@ -144,12 +122,17 @@ void PostResponseBuilder::prepare() {
 	if (target[target.size() - 1] == '/')
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			UNSUPPORTED_MEDIA_TYPE, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
-	this->setPath(target.substr(1), this->_request->second.getTargetPath().substr(1));
+	const std::string targetFile =
+		utils::removeSubstring(this->_request->second.getRequestTarget(), this->_locationConfig->getPath());
+	this->setPath(targetFile);
 	if (checkFileMode(this->_path) == MODE_FILE)
 		this->_isExist = true;
 	else
 		this->_isExist = false;
 	this->_fd = reactor::FileCloseManager::getInstance()->makeFd(this->_path, "w");
+	if (this->_fd == FD_ERROR)
+		throw ErrorResponseBuilder::createErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_request,
+															   this->_serverConfig, this->_locationConfig);
 	this->_writeSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(_fd, EVENT_WRITE, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileWriteHandlerFactory>(this->_writeSharedData);

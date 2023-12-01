@@ -26,13 +26,13 @@ PutResponseBuilder::~PutResponseBuilder() {
 	reactor::FileCloseManager::getInstance()->closeFd(this->_fd);
 }
 
-void PutResponseBuilder::setPath(const std::string& target, const std::string targetPath) {
-	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString() + targetPath;
-	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString() + targetPath;
+void PutResponseBuilder::setPath(const std::string& target) {
+	const std::string locPath = this->_locationConfig->getDirectives(ROOT).asString();
+	const std::string serverPath = this->_serverConfig->getDirectives(ROOT).asString();
 
-	if (access(locPath.c_str(), F_OK) == 0) {
+	if (access((locPath).c_str(), F_OK) == 0) {
 		this->_path = locPath + target;
-	} else if (access(serverPath.c_str(), F_OK) == 0) {
+	} else if (access((serverPath).c_str(), F_OK) == 0) {
 		this->_path = serverPath + target;
 	} else {
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
@@ -110,12 +110,17 @@ void PutResponseBuilder::prepare() {
 	if (target[target.size() - 1] == '/')
 		throw utils::shared_ptr<IBuilder<reactor::sharedData_t> >(new ErrorResponseBuilder(
 			UNSUPPORTED_MEDIA_TYPE, this->_sharedData, this->_request, this->_serverConfig, this->_locationConfig));
-	this->setPath(target.substr(1), this->_request->second.getTargetPath().substr(1));
+	const std::string targetFile =
+		utils::removeSubstring(this->_request->second.getRequestTarget(), this->_locationConfig->getPath());
+	this->setPath(targetFile);
 	if (checkFileMode(this->_path) == MODE_FILE)
 		this->_isExist = true;
 	else
 		this->_isExist = false;
 	this->_fd = reactor::FileCloseManager::getInstance()->makeFd(this->_path, "w");
+	if (this->_fd == FD_ERROR)
+		throw ErrorResponseBuilder::createErrorResponseBuilder(NOT_FOUND, this->_sharedData, this->_request,
+															   this->_serverConfig, this->_locationConfig);
 	this->_writeSharedData =
 		utils::shared_ptr<reactor::SharedData>(new reactor::SharedData(_fd, EVENT_WRITE, std::vector<char>()));
 	reactor::Dispatcher::getInstance()->registerIOHandler<reactor::FileWriteHandlerFactory>(this->_writeSharedData);

@@ -19,16 +19,12 @@ class PostResponseBuilder : public IBuilder<reactor::sharedData_t> {
 	std::string _path;
 	fd_t _fd;
 
-	static const std::string _fileForSignup;
-	static const std::string _folderPath;
-
-	void setPath(const std::string& target, const std::string targetPath);
+	void setPath(const std::string& target);
 
 	void handleSession();
 
 	void doDefaultBehavior();
 	void divideEntryPoint();
-	bool findUser(const std::string& username);
 
 	class SignUp;
 	class Login;

@@ -27,6 +27,6 @@
 
 #define SESSION_EXPIRED_TIME 60
 
-#define DEFAULT_PATH "./config/test/default.conf"
+#define DEFAULT_PATH "./config/server/default.conf"
 
 #endif
