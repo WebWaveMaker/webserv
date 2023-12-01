@@ -90,8 +90,6 @@ ConfigValue LocationConfig::getDirectives(Directives method) const {
 			return _parent->getDirectives(KEEPALIVE_TIMEOUT);
 		} else if (method == DEFAULT_TYPE) {
 			return _parent->getDirectives(DEFAULT_TYPE);
-		} else if (method == ERROR_LOG) {
-			return _parent->getDirectives(ERROR_LOG);
 		} else if (method == CLIENT_MAX_BODY_SIZE) {
 			return _parent->getDirectives(CLIENT_MAX_BODY_SIZE);
 		} else if (method == LIMIT_EXCEPT) {

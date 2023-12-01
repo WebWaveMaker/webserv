@@ -6,7 +6,6 @@ enum Directives {
 	ERROR_PAGE,			   // http, server, location	int, string default : specific to error codes
 	KEEPALIVE_TIMEOUT,	   // http, server	int default : 75
 	DEFAULT_TYPE,		   // http, server	string default : application/octet-stream
-	ERROR_LOG,			   // http, server	string, enum LogLevels default : logs/error.log error
 	CLIENT_MAX_BODY_SIZE,  // http, server	int default : 1m
 	LISTEN,				   // server, 	int default : 80
 	SERVER_NAME,		   // server, 	string default : empty

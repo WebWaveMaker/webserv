@@ -22,10 +22,6 @@ void HttpConfig::setDirectives(const std::string& directive, const std::vector<s
 		setErrorPage(values);
 	} else if (directive == "default_type") {
 		_directives.insert(std::make_pair(DEFAULT_TYPE, addStringValue(values[0])));
-	} else if (directive == "error_log") {
-		if (values.size() != 2)
-			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid number of parameters for error_log");
-		_directives.insert(std::make_pair(ERROR_LOG, addLogValue(values)));
 	} else if (directive == "client_max_body_size") {
 		_directives.insert(std::make_pair(CLIENT_MAX_BODY_SIZE, addUnsignedIntValue(values[0])));
 	} else if (directive == "include") {
@@ -63,9 +59,6 @@ ConfigValue HttpConfig::getDirectives(Directives method) const {
 			return ConfigValue(DEF_KEEPALIVE_TIMEOUT);
 		} else if (method == DEFAULT_TYPE) {
 			return ConfigValue(std::string(DEF_DEFAULT_TYPE));
-		} else if (method == ERROR_LOG) {
-			std::pair<std::string, LogLevels> log(std::string(DEF_ERROR_LOG_PATH), LOG_ERROR);
-			return ConfigValue((std::pair<std::string, LogLevels>)log);
 		} else if (method == CLIENT_MAX_BODY_SIZE) {
 			return ConfigValue(DEF_CLIENT_MAX_BODY_SIZE);
 		} else if (method == LISTEN) {

@@ -36,10 +36,6 @@ void ServerConfig::setDirectives(const std::string& directive, const std::vector
 		setErrorPage(values);
 	} else if (directive == "default_type") {
 		_directives.insert(std::make_pair(DEFAULT_TYPE, addStringValue(values[0])));
-	} else if (directive == "error_log") {
-		if (values.size() != 2)
-			throw ErrorLogger::parseError(__FILE__, __LINE__, __func__, "Invalid number of parameters for error_log");
-		_directives.insert(std::make_pair(ERROR_LOG, addLogValue(values)));
 	} else if (directive == "client_max_body_size") {
 		_directives.insert(std::make_pair(CLIENT_MAX_BODY_SIZE, addUnsignedIntValue(values[0])));
 	} else if (directive == "listen") {
@@ -106,8 +102,6 @@ ConfigValue ServerConfig::getDirectives(Directives method) const {
 			return _parent->getDirectives(KEEPALIVE_TIMEOUT);
 		} else if (method == DEFAULT_TYPE) {
 			return _parent->getDirectives(DEFAULT_TYPE);
-		} else if (method == ERROR_LOG) {
-			return _parent->getDirectives(ERROR_LOG);
 		} else if (method == CLIENT_MAX_BODY_SIZE) {
 			return _parent->getDirectives(CLIENT_MAX_BODY_SIZE);
 		} else if (method == LIMIT_EXCEPT) {

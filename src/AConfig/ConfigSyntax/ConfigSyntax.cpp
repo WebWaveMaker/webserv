@@ -93,26 +93,6 @@ void ConfigSyntax::errorPageSyntax(const std::vector<std::string>& values) {
 	}
 }
 
-void ConfigSyntax::errorLogSyntax(const std::vector<std::string>& values) {
-	if (values.size() != 2) {
-		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
-									  "The syntax of the directive's parameter is incorrect: the directive is "
-									  "[error_log]");
-	}
-	if (ConfigSyntax::isSlashFront(values[0]) == false) {
-		throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
-									  "The syntax of the directive's parameter is incorrect: the directive is "
-									  "[error_log] and the parameter is " +
-										  values[0]);
-	}
-	if (values[1] == "debug" || values[1] == "info" || values[1] == "warn" || values[1] == "error") {
-		return;
-	}
-	throw ErrorLogger::parseError(__FILE__, __LINE__, __func__,
-								  "The syntax of the directive's parameter is incorrect: the directive is "
-								  "[error_log]");
-}
-
 void ConfigSyntax::checkSyntax(const std::string& directive, const std::vector<std::string>& values) {
 	if (directive == "index") {
 		ConfigSyntax::indexSyntax(values);
@@ -124,8 +104,6 @@ void ConfigSyntax::checkSyntax(const std::string& directive, const std::vector<s
 		ConfigSyntax::rootSyntax(values);
 	} else if (directive == "error_page") {
 		ConfigSyntax::errorPageSyntax(values);
-	} else if (directive == "error_log") {
-		ConfigSyntax::errorLogSyntax(values);
 	}
 }
 
