@@ -14,6 +14,7 @@ class HttpSession : public utils::TSingleton<HttpSession> {
 	sessionId_t createSession(const std::time_t& expiredTime);
 	SessionData* getSessionData(const sessionId_t& sessionId);
 	bool hasSession(const sessionId_t& sessionId);
+	void removeSession(const sessionId_t& sessionId);
 };
 
 #endif

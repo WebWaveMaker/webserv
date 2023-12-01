@@ -22,3 +22,9 @@ bool HttpSession::hasSession(const sessionId_t& sessionId) {
 		return false;
 	return this->_sessionStore->hasSession(sessionId);
 }
+
+void HttpSession::removeSession(const sessionId_t& sessionId) {
+	if (hasSession(sessionId) == false)
+		return;
+	this->_sessionStore->removeSession(sessionId);
+}

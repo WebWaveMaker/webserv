@@ -114,7 +114,7 @@ void Server::removeClient(int key) {
 	std::map<int, utils::shared_ptr<Client> >::iterator it = this->_clients->find(key);
 
 	if (it != this->_clients->end()) {
-		this->_accessLogger->log(this->_serverConfig->getDirectives(SERVER_NAME).asString(), __func__, UNKNOWN,
+		this->_accessLogger->log(this->_serverConfig->getDirectives(SERVER_NAME).asString(), __func__,
 								 it->second.get());
 		this->_clients->erase(it);
 	} else {

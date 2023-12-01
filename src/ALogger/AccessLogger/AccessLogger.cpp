@@ -47,5 +47,11 @@ void AccessLogger::log(const std::string& msg, const char* func, const int enum_
 	const std::string methodStr = this->getHttpMethodStr(static_cast<HttpMethods>(enum__));
 	const std::string buf = this->makeLogMsg(methodStr + msg, func, arg);
 
-	std::cout << buf << std::endl;
+	std::cout << buf;
+}
+
+void AccessLogger::log(const std::string& msg, const char* func, void* arg) {
+	const std::string buf = this->makeLogMsg(msg, func, arg);
+
+	std::cout << buf;
 }
